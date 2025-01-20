@@ -40,6 +40,10 @@ jobs:
         with:
           cmdline-tools-version: '8.0'
 
+      # Grant execute permissions to gradlew
+      - name: Grant execute permissions to gradlew
+        run: chmod +x ./gradlew
+
       # Build and Test
       - name: Run Unit and UI Tests
         run: ./gradlew testDebugUnitTest connectedDebugAndroidTest
