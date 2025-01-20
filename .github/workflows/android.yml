@@ -3,10 +3,11 @@ name: Android CI
 on:
   push:
     branches:
-      - main
+      - master
+      - dev/huy
   pull_request:
     branches:
-      - main
+      - master
 
 jobs:
   test:

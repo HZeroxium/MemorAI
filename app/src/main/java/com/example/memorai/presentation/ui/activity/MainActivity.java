@@ -1,34 +1,52 @@
 package com.example.memorai.presentation.ui.activity;
 
 import android.os.Bundle;
+
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.navigation.NavController;
-import androidx.navigation.fragment.NavHostFragment;
-import androidx.navigation.ui.NavigationUI;
+import androidx.fragment.app.Fragment;
+
 import com.example.memorai.R;
+import com.example.memorai.databinding.ActivityMainBinding;
+import com.example.memorai.presentation.ui.fragment.PhotoListFragment;
 
 public class MainActivity extends AppCompatActivity {
-    private NavController navController;
+
+    private ActivityMainBinding binding;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
 
-        // Retrieve NavHostFragment
-        NavHostFragment navHostFragment = (NavHostFragment) getSupportFragmentManager()
-                .findFragmentById(R.id.nav_host_fragment);
+        // Initialize ViewBinding
+        binding = ActivityMainBinding.inflate(getLayoutInflater());
+        setContentView(binding.getRoot());
 
-        if (navHostFragment != null) {
-            navController = navHostFragment.getNavController();
-            NavigationUI.setupActionBarWithNavController(this, navController);
-        } else {
-            throw new IllegalStateException("NavHostFragment not found!");
+        if (savedInstanceState == null) {
+            // Load initial fragment
+            replaceFragment(new PhotoListFragment(), false);
         }
     }
 
+    /**
+     * Replace the current fragment with the provided one.
+     *
+     * @param fragment       The new fragment to display.
+     * @param addToBackStack Whether the transaction should be added to the back stack.
+     */
+    private void replaceFragment(Fragment fragment, boolean addToBackStack) {
+        var transaction = getSupportFragmentManager().beginTransaction()
+                .replace(R.id.container, fragment);
+
+        if (addToBackStack) {
+            transaction.addToBackStack(null);
+        }
+
+        transaction.commit();
+    }
+
     @Override
-    public boolean onSupportNavigateUp() {
-        return navController != null && navController.navigateUp() || super.onSupportNavigateUp();
+    protected void onDestroy() {
+        super.onDestroy();
+        binding = null; // Avoid memory leaks
     }
 }
