@@ -1,16 +1,37 @@
-<resources xmlns:tools="http://schemas.android.com/tools">
-    <!-- Base application theme. -->
-    <style name="Theme.MemorAI" parent="Theme.MaterialComponents.DayNight.DarkActionBar">
-        <!-- Primary brand color. -->
-        <item name="colorPrimary">@color/purple_200</item>
-        <item name="colorPrimaryVariant">@color/purple_700</item>
-        <item name="colorOnPrimary">@color/black</item>
-        <!-- Secondary brand color. -->
-        <item name="colorSecondary">@color/teal_200</item>
-        <item name="colorSecondaryVariant">@color/teal_200</item>
-        <item name="colorOnSecondary">@color/black</item>
-        <!-- Status bar color. -->
-        <item name="android:statusBarColor">?attr/colorPrimaryVariant</item>
-        <!-- Customize your theme here. -->
+<?xml version="1.0" encoding="utf-8"?><!-- res/values/themes/themes.xml (night) -->
+<resources>
+    <!-- Dark Theme -->
+    <style name="Theme.MemorAI" parent="Theme.Material3.DayNight">
+        <!-- Primary Colors -->
+        <item name="colorPrimary">@color/primaryColor</item>
+        <item name="colorOnPrimary">@color/onPrimaryColor</item>
+        <item name="colorPrimaryContainer">@color/primaryContainerColor</item>
+        <item name="colorOnPrimaryContainer">@color/onPrimaryContainerColor</item>
+
+        <!-- Secondary Colors -->
+        <item name="colorSecondary">@color/secondaryColor</item>
+        <item name="colorOnSecondary">@color/onSecondaryColor</item>
+        <item name="colorSecondaryContainer">@color/secondaryContainerColor</item>
+        <item name="colorOnSecondaryContainer">@color/onSecondaryContainerColor</item>
+
+        <!-- Tertiary Colors -->
+        <item name="colorTertiary">@color/tertiaryColor</item>
+        <item name="colorOnTertiary">@color/onTertiaryColor</item>
+        <item name="colorTertiaryContainer">@color/tertiaryContainerColor</item>
+        <item name="colorOnTertiaryContainer">@color/onTertiaryContainerColor</item>
+
+        <!-- Background and Surface -->
+        <!--        <item name="colorBackground">@color/backgroundColor</item>-->
+        <item name="colorOnBackground">@color/onBackgroundColor</item>
+        <item name="colorSurface">@color/surfaceColor</item>
+        <item name="colorOnSurface">@color/onSurfaceColor</item>
+        <item name="colorSurfaceVariant">@color/surfaceVariantColor</item>
+        <item name="colorOnSurfaceVariant">@color/onSurfaceVariantColor</item>
+
+        <!-- Error -->
+        <item name="colorError">@color/errorColor</item>
+        <item name="colorOnError">@color/onErrorColor</item>
+        <item name="colorErrorContainer">@color/errorContainerColor</item>
+        <item name="colorOnErrorContainer">@color/onErrorContainerColor</item>
     </style>
 </resources>

@@ -3,4 +3,5 @@
     <string name="enter_album_name">Enter album name</string>
     <string name="add">Add</string>
     <string name="album_thumbnail">Album thumbnail</string>
+    <string name="dark_mode_text">Dark Mode</string>
 </resources>
