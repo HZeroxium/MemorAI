@@ -15,6 +15,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.example.memorai.R;
 import com.example.memorai.domain.model.Photo;
 import com.example.memorai.presentation.ui.adapter.PhotoAdapter;
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -77,6 +78,17 @@ public class PhotoListFragment extends Fragment {
 
         // Gán adapter cho RecyclerView
         recyclerView.setAdapter(photoAdapter);
+
+        // Handle Add Photo button
+        FloatingActionButton fabAddPhoto = view.findViewById(R.id.fabAddPhoto);
+        fabAddPhoto.setOnClickListener(v -> {
+            // Chuyển sang AddPhotoFragment
+            requireActivity().getSupportFragmentManager()
+                    .beginTransaction()
+                    .replace(R.id.container, new AddPhotoFragment())
+                    .addToBackStack(null)
+                    .commit();
+        });
     }
 
     /**

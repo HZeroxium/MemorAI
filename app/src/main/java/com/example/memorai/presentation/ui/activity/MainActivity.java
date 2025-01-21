@@ -1,3 +1,4 @@
+// presentation/ui/activity/MainActivity.java
 package com.example.memorai.presentation.ui.activity;
 
 import android.os.Bundle;

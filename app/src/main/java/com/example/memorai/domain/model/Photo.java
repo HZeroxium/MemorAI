@@ -1,3 +1,4 @@
+// domain/model/Photo.java
 package com.example.memorai.domain.model;
 
 public class Photo {
