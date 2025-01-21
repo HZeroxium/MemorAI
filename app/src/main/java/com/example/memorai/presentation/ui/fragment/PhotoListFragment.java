@@ -18,7 +18,6 @@ import com.example.memorai.domain.model.Photo;
 import com.example.memorai.presentation.ui.adapter.PhotoAdapter;
 import com.example.memorai.presentation.viewmodel.PhotoViewModel;
 
-import java.util.ArrayList;
 import java.util.List;
 
 public class PhotoListFragment extends Fragment {
@@ -129,16 +128,6 @@ public class PhotoListFragment extends Fragment {
         photoViewModel.loadAllPhotos();
     }
 
-
-    private List<Photo> getSamplePhotos() {
-        List<Photo> list = new ArrayList<>();
-        list.add(new Photo("https://picsum.photos/id/237/800/600")); // random image
-        list.add(new Photo("https://picsum.photos/id/238/800/600"));
-        list.add(new Photo("https://picsum.photos/id/239/800/600"));
-        list.add(new Photo("https://picsum.photos/id/240/800/600"));
-        // ...
-        return list;
-    }
 
     private void updatePhotos(List<Photo> photos) {
         photoAdapter.submitList(photos);

@@ -5,7 +5,6 @@ import android.content.Context;
 
 import com.example.memorai.data.local.AppDatabase;
 import com.example.memorai.data.local.dao.PhotoDao;
-import com.example.memorai.data.local.entity.PhotoEntity;
 import com.example.memorai.data.mappers.PhotoMapper;
 import com.example.memorai.domain.model.Photo;
 import com.example.memorai.domain.repository.PhotoRepository;
@@ -27,35 +26,32 @@ public class PhotoRepositoryImpl implements PhotoRepository {
 
     @Override
     public List<Photo> getAllPhotos() {
-        List<PhotoEntity> entities = photoDao.getAllPhotosSync();
-        return entities.stream().map(PhotoMapper::toDomain).collect(Collectors.toList());
+        return photoDao.getAllPhotosSync()
+                .stream()
+                .map(PhotoMapper::toDomain)
+                .collect(Collectors.toList());
     }
 
     @Override
     public List<Photo> getPhotosByAlbum(int albumId) {
-        List<PhotoEntity> entities = photoDao.getPhotosByAlbumSync(albumId);
-        return entities.stream().map(PhotoMapper::toDomain).collect(Collectors.toList());
+        return photoDao.getPhotosByAlbumSync(albumId)
+                .stream()
+                .map(PhotoMapper::toDomain)
+                .collect(Collectors.toList());
     }
 
     @Override
     public void insertPhoto(Photo photo) {
-        executor.execute(() -> {
-            PhotoEntity entity = PhotoMapper.toEntity(photo);
-            photoDao.insertPhoto(entity);
-        });
+        executor.execute(() -> photoDao.insertPhoto(PhotoMapper.toEntity(photo)));
     }
 
     @Override
     public void updatePhoto(Photo photo) {
-        executor.execute(() -> {
-            photoDao.updatePhoto(PhotoMapper.toEntity(photo));
-        });
+        executor.execute(() -> photoDao.updatePhoto(PhotoMapper.toEntity(photo)));
     }
 
     @Override
     public void deletePhoto(Photo photo) {
-        executor.execute(() -> {
-            photoDao.deletePhoto(PhotoMapper.toEntity(photo));
-        });
+        executor.execute(() -> photoDao.deletePhoto(PhotoMapper.toEntity(photo)));
     }
 }

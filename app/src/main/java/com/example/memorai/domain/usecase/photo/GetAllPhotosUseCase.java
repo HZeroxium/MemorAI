@@ -7,13 +7,13 @@ import com.example.memorai.domain.repository.PhotoRepository;
 import java.util.List;
 
 public class GetAllPhotosUseCase {
-    private final PhotoRepository repo;
+    private final PhotoRepository repository;
 
-    public GetAllPhotosUseCase(PhotoRepository repo) {
-        this.repo = repo;
+    public GetAllPhotosUseCase(PhotoRepository repository) {
+        this.repository = repository;
     }
 
     public List<Photo> execute() {
-        return repo.getAllPhotos();
+        return repository.getAllPhotos();
     }
 }

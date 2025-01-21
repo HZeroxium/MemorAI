@@ -48,8 +48,10 @@ public class PhotoViewModel extends AndroidViewModel {
     }
 
     public void loadAllPhotos() {
-        List<Photo> result = getAllPhotosUC.execute();
-        allPhotos.setValue(result);
+        new Thread(() -> {
+            List<Photo> photos = getAllPhotosUC.execute();
+            allPhotos.postValue(photos);
+        }).start();
     }
 
     public void loadPhotosByAlbum(int albumId) {
