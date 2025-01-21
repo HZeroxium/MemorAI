@@ -1,10 +1,35 @@
-<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?><!-- res/values/colors.xml -->
 <resources>
-    <color name="purple_200">#FFBB86FC</color>
-    <color name="purple_500">#FF6200EE</color>
-    <color name="purple_700">#FF3700B3</color>
-    <color name="teal_200">#FF03DAC5</color>
-    <color name="teal_700">#FF018786</color>
-    <color name="black">#FF000000</color>
-    <color name="white">#FFFFFFFF</color>
+    <!-- Primary Palette -->
+    <color name="primaryColor">#6750A4</color>
+    <color name="onPrimaryColor">#FFFFFF</color>
+    <color name="primaryContainerColor">#EADDFF</color>
+    <color name="onPrimaryContainerColor">#21005D</color>
+
+    <!-- Secondary Palette -->
+    <color name="secondaryColor">#625B71</color>
+    <color name="onSecondaryColor">#FFFFFF</color>
+    <color name="secondaryContainerColor">#E8DEF8</color>
+    <color name="onSecondaryContainerColor">#1D192B</color>
+
+    <!-- Tertiary Palette -->
+    <color name="tertiaryColor">#7D5260</color>
+    <color name="onTertiaryColor">#FFFFFF</color>
+    <color name="tertiaryContainerColor">#FFD8E4</color>
+    <color name="onTertiaryContainerColor">#31111D</color>
+
+    <!-- Neutral Palette -->
+    <color name="backgroundColor">#FFFBFE</color>
+    <color name="onBackgroundColor">#1C1B1F</color>
+    <color name="surfaceColor">#FFFBFE</color>
+    <color name="onSurfaceColor">#1C1B1F</color>
+    <color name="surfaceVariantColor">#E7E0EC</color>
+    <color name="onSurfaceVariantColor">#49454F</color>
+
+    <!-- Error Palette -->
+    <color name="errorColor">#B3261E</color>
+    <color name="onErrorColor">#FFFFFF</color>
+    <color name="errorContainerColor">#F9DEDC</color>
+    <color name="onErrorContainerColor">#410E0B</color>
 </resources>
+

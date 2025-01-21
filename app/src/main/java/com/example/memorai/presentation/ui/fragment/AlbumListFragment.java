@@ -1,45 +1,88 @@
+// presentation/ui/fragment/AlbumListFragment.java
 package com.example.memorai.presentation.ui.fragment;
 
+import android.app.AlertDialog;
 import android.os.Bundle;
+import android.text.InputType;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.EditText;
+
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
+import androidx.navigation.Navigation;
 import androidx.recyclerview.widget.LinearLayoutManager;
-import androidx.recyclerview.widget.RecyclerView;
+
 import com.example.memorai.R;
+import com.example.memorai.databinding.FragmentAlbumListBinding;
 import com.example.memorai.presentation.ui.adapter.AlbumAdapter;
 import com.example.memorai.presentation.viewmodel.AlbumViewModel;
 
 public class AlbumListFragment extends Fragment {
+    private FragmentAlbumListBinding binding;
     private AlbumViewModel albumViewModel;
     private AlbumAdapter albumAdapter;
 
+    @Nullable
     @Override
-    public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        return inflater.inflate(R.layout.fragment_album_list, container, false);
+    public View onCreateView(@NonNull LayoutInflater inflater,
+                             @Nullable ViewGroup container,
+                             @Nullable Bundle savedInstanceState) {
+        binding = FragmentAlbumListBinding.inflate(inflater, container, false);
+        return binding.getRoot();
     }
 
     @Override
-    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
+    public void onViewCreated(@NonNull View view,
+                              @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        albumViewModel = new ViewModelProvider(this).get(AlbumViewModel.class);
-        RecyclerView recyclerView = view.findViewById(R.id.rv_album_list);
-        recyclerView.setLayoutManager(new LinearLayoutManager(requireContext()));
-
+        // Setup RecyclerView
         albumAdapter = new AlbumAdapter();
-        recyclerView.setAdapter(albumAdapter);
+        binding.recyclerViewAlbums.setLayoutManager(new LinearLayoutManager(requireContext()));
+        binding.recyclerViewAlbums.setAdapter(albumAdapter);
 
-        // Observe data from ViewModel
-        albumViewModel.getAlbumList().observe(getViewLifecycleOwner(), albumList -> {
-            albumAdapter.submitList(albumList);
+        // Handle album click
+        albumAdapter.setOnAlbumClickListener(album -> {
+            Bundle args = new Bundle();
+            args.putInt("album_id", album.getId());
+            Navigation.findNavController(view).navigate(R.id.photoListFragment, args);
         });
 
-        // Load dummy data
-        albumViewModel.loadDummyAlbums();
+        // Handle Add Album Button
+        binding.fabAddAlbum.setOnClickListener(v -> showAddAlbumDialog());
+
+        // ViewModel to observe albums
+        albumViewModel = new ViewModelProvider(this).get(AlbumViewModel.class);
+        albumViewModel.observeAllAlbums().observe(getViewLifecycleOwner(), albums ->
+                albumAdapter.submitList(albums)
+        );
+        albumViewModel.loadAllAlbums();
+    }
+
+    private void showAddAlbumDialog() {
+        EditText editText = new EditText(requireContext());
+        editText.setInputType(InputType.TYPE_CLASS_TEXT);
+
+        new AlertDialog.Builder(requireContext())
+                .setTitle("Create Album")
+                .setView(editText)
+                .setPositiveButton("OK", (dialog, which) -> {
+                    String albumName = editText.getText().toString().trim();
+                    if (!albumName.isEmpty()) {
+                        albumViewModel.addAlbum(albumName);
+                    }
+                })
+                .setNegativeButton("Cancel", null)
+                .show();
+    }
+
+    @Override
+    public void onDestroyView() {
+        super.onDestroyView();
+        binding = null;
     }
 }

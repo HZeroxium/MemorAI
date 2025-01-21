@@ -1,13 +1,41 @@
-<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?><!-- res/navigation/nav_graph.xml -->
 <navigation xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
-    app:startDestination="@id/albumListFragment">
+    app:startDestination="@id/photoListFragment">
 
-    <!-- Define the AlbumListFragment -->
+    <fragment
+        android:id="@+id/photoListFragment"
+        android:name="com.example.memorai.presentation.ui.fragment.PhotoListFragment"
+        android:label="Photos"
+        tools:layout="@layout/fragment_photo_list">
+        <action
+            android:id="@+id/photoDetailFragment"
+            app:destination="@id/photoDetailFragment" />
+        <action
+            android:id="@+id/addPhotoFragment"
+            app:destination="@id/addPhotoFragment" />
+    </fragment>
+
     <fragment
         android:id="@+id/albumListFragment"
         android:name="com.example.memorai.presentation.ui.fragment.AlbumListFragment"
-        android:label="Album List"
-        tools:layout="@layout/fragment_album_list" />
+        android:label="Albums"
+        tools:layout="@layout/fragment_album_list">
+        <action
+            android:id="@+id/photoListFragment"
+            app:destination="@id/photoListFragment" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/photoDetailFragment"
+        android:name="com.example.memorai.presentation.ui.fragment.PhotoDetailFragment"
+        android:label="Photo Detail"
+        tools:layout="@layout/fragment_photo_detail" />
+
+    <fragment
+        android:id="@+id/addPhotoFragment"
+        android:name="com.example.memorai.presentation.ui.fragment.AddPhotoFragment"
+        android:label="Add Photo"
+        tools:layout="@layout/fragment_add_photo" />
 </navigation>

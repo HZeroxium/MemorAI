@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?><!-- res/menu/bottom_navigation_menu.xml -->
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item
+        android:id="@+id/photoListFragment"
+        android:icon="@drawable/ic_photos"
+        android:title="@string/photos" />
+    <item
+        android:id="@+id/albumListFragment"
+        android:icon="@drawable/ic_albums"
+        android:title="@string/albums" />
+</menu>
