@@ -48,16 +48,25 @@ jobs:
       - name: Start Emulator
         uses: reactivecircus/android-emulator-runner@v2
         with:
-          api-level: 34
+          api-level: 30  # Reduced to a lower API level for compatibility
           target: google_apis
           arch: x86_64
           profile: Pixel_4
+          cores: 2
+          ram-size: 2048M
+          sdcard-size: 512M
           emulator-options: "-no-snapshot -no-audio -no-window"
+          disable-linux-hw-accel: true  # Ensure software emulation for Linux
+          emulator-boot-timeout: 600
 
       # Wait for the emulator to boot
       - name: Wait for emulator to boot
-        run: adb wait-for-device
+        run: adb wait-for-device shell getprop sys.boot_completed | grep -m 1 '1'
 
       # Build and Test
       - name: Run Unit and UI Tests
         run: ./gradlew testDebugUnitTest connectedDebugAndroidTest
+
+      # Terminate Emulator
+      - name: Terminate Emulator
+        run: adb emu kill
