@@ -10,6 +10,11 @@ public class Album {
         this.name = name;
     }
 
+    public Album(String name, long createdAt) {
+        this.name = name;
+        this.createdAt = createdAt;
+    }
+
     public int getId() {
         return id;
     }

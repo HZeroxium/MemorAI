@@ -2,6 +2,7 @@
 package com.example.memorai.presentation.ui.activity;
 
 import android.os.Bundle;
+import android.view.View;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.app.AppCompatDelegate;
@@ -61,6 +62,14 @@ public class MainActivity extends AppCompatActivity {
             }
             NavController navController = navHostFragment.getNavController();
             NavigationUI.setupWithNavController(binding.bottomNavigation, navController);
+
+            navController.addOnDestinationChangedListener((controller, destination, arguments) -> {
+                if (destination.getId() == R.id.photoDetailFragment) {
+                    binding.bottomNavigation.setVisibility(View.GONE);
+                } else {
+                    binding.bottomNavigation.setVisibility(View.VISIBLE);
+                }
+            });
         } catch (IllegalStateException e) {
             e.printStackTrace();
             throw new IllegalStateException("Failed to initialize NavHostFragment: " + e.getMessage());

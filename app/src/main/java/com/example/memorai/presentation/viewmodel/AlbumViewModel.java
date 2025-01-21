@@ -28,7 +28,7 @@ public class AlbumViewModel extends AndroidViewModel {
 
     public AlbumViewModel(@NonNull Application app) {
         super(app);
-        AlbumRepository repo = (AlbumRepository) new AlbumRepositoryImpl(app);
+        AlbumRepository repo = new AlbumRepositoryImpl(app);
         addAlbumUC = new AddAlbumUseCase(repo);
         getAllAlbumsUC = new GetAllAlbumsUseCase(repo);
         updateAlbumUC = new UpdateAlbumUseCase(repo);
@@ -40,21 +40,22 @@ public class AlbumViewModel extends AndroidViewModel {
     }
 
     public void loadAllAlbums() {
-        List<Album> result = getAllAlbumsUC.execute();
-        allAlbums.setValue(result);
+        new Thread(() -> {
+            List<Album> albums = getAllAlbumsUC.execute();
+            allAlbums.postValue(albums);
+        }).start();
     }
 
     public void addAlbum(String name) {
-        Album a = new Album(name);
-        a.setCreatedAt(System.currentTimeMillis());
-        addAlbumUC.execute(a);
+        Album album = new Album(name, System.currentTimeMillis());
+        addAlbumUC.execute(album);
     }
 
-    public void updateAlbum(Album a) {
-        updateAlbumUC.execute(a);
+    public void updateAlbum(Album album) {
+        updateAlbumUC.execute(album);
     }
 
-    public void deleteAlbum(Album a) {
-        deleteAlbumUC.execute(a);
+    public void deleteAlbum(Album album) {
+        deleteAlbumUC.execute(album);
     }
 }

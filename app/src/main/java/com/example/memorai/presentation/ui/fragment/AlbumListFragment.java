@@ -18,7 +18,6 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 
 import com.example.memorai.R;
 import com.example.memorai.databinding.FragmentAlbumListBinding;
-import com.example.memorai.domain.model.Album;
 import com.example.memorai.presentation.ui.adapter.AlbumAdapter;
 import com.example.memorai.presentation.viewmodel.AlbumViewModel;
 
@@ -62,11 +61,6 @@ public class AlbumListFragment extends Fragment {
                 albumAdapter.submitList(albums)
         );
         albumViewModel.loadAllAlbums();
-    }
-
-    private void openAlbumDetails(Album album) {
-        // Possible next fragment or detail screen for the album
-        // e.g. show photos from that album
     }
 
     private void showAddAlbumDialog() {
