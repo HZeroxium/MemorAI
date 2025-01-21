@@ -14,7 +14,8 @@
         android:layout_width="match_parent"
         android:layout_height="200dp"
         android:adjustViewBounds="true"
-        android:contentDescription="Test"
-        android:scaleType="centerCrop" />
+        android:contentDescription="@string/item_photo_cd_text"
+        android:scaleType="centerCrop"
+        android:transitionName="shared_photo" />
 
 </androidx.cardview.widget.CardView>

@@ -1,3 +1,4 @@
+// presentation/ui/fragment/PhotoListFragment.java
 package com.example.memorai.presentation.ui.fragment;
 
 import android.os.Bundle;
@@ -50,8 +51,28 @@ public class PhotoListFragment extends Fragment {
         photoAdapter = new PhotoAdapter(requireContext(), samplePhotos);
         // Xử lý click
         photoAdapter.setOnPhotoClickListener((photo, position) -> {
-            // TODO: Chuyển sang màn hình chi tiết ảnh
-            // Hoặc Toast, v.v.
+            // Tạo PhotoDetailFragment mới
+            PhotoDetailFragment fragment = new PhotoDetailFragment();
+
+            // Gói dữ liệu ảnh
+            Bundle bundle = new Bundle();
+            bundle.putString("photo_url", photo.getUrl());
+            fragment.setArguments(bundle);
+
+            // Nếu dùng SharedElement Transition, ta cần View ImageView
+            // Từ PhotoAdapter,
+            // => Nên trả về holder.imageViewPhoto hoặc holder.itemView
+            // Giả sử ta gọi "viewHolderRef" là tham chiếu
+            // (hoặc di chuyển logic này vào Adapter)
+
+            // Chuyển sang Fragment chi tiết
+            requireActivity().getSupportFragmentManager()
+                    .beginTransaction()
+                    // .addSharedElement(viewHolderRef, "shared_photo_transition")
+                    //  ^ Để shared element effect, khớp với transitionName
+                    .replace(R.id.container, fragment)
+                    .addToBackStack(null)
+                    .commit();
         });
 
         // Gán adapter cho RecyclerView

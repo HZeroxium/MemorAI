@@ -4,4 +4,8 @@
     <string name="add">Add</string>
     <string name="album_thumbnail">Album thumbnail</string>
     <string name="dark_mode_text">Dark Mode</string>
+    <string name="photo_detail">Photo detail</string>
+    <string name="share">Share</string>
+    <string name="share_with">Share with</string>
+    <string name="item_photo_cd_text">Test</string>
 </resources>

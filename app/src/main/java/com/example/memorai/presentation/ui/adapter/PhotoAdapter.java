@@ -1,3 +1,4 @@
+// presentation/ui/adapter/PhotoAdapter.java
 package com.example.memorai.presentation.ui.adapter;
 
 import android.content.Context;
