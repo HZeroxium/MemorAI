@@ -48,6 +48,3 @@ jobs:
       - name: Run Unit Tests
         run: ./gradlew testDebugUnitTest
 
-      # Terminate Emulator
-      - name: Terminate Emulator
-        run: adb -s emulator-5554 emu kill
