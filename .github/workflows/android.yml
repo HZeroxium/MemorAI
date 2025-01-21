@@ -44,23 +44,29 @@ jobs:
       - name: Grant execute permissions to gradlew
         run: chmod +x ./gradlew
 
+      # Check ADB Installation
+      - name: Check ADB Installation
+        run: adb version
+
       # Start Android Emulator
       - name: Start Emulator
         uses: reactivecircus/android-emulator-runner@v2
         with:
-          api-level: 30  # Reduced to a lower API level for compatibility
+          api-level: 30
           target: google_apis
           arch: x86_64
           profile: Pixel_4
           cores: 2
           ram-size: 2048M
-          sdcard-size: 512M
-          emulator-options: "-no-snapshot -no-audio -no-window"
-          disable-linux-hw-accel: true  # Ensure software emulation for Linux
-          emulator-boot-timeout: 600
+          sdcard-path-or-size: 512M
+          emulator-options: "-no-snapshot -no-audio -no-window -no-accel"
+          emulator-boot-timeout: 1200
+          disable-linux-hw-accel: true
+          avd-name: test
+          force-avd-creation: true
 
-      # Wait for the emulator to boot
-      - name: Wait for emulator to boot
+      # Wait for Emulator to Boot
+      - name: Wait for Emulator to Boot
         run: adb wait-for-device shell getprop sys.boot_completed | grep -m 1 '1'
 
       # Build and Test
