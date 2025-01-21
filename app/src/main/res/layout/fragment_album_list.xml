@@ -1,12 +1,11 @@
-<?xml version="1.0" encoding="utf-8"?><!--res/layout/fragment_photo_list.xml -->
+<?xml version="1.0" encoding="utf-8"?><!-- res/layout/fragment_album_list.xml -->
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-    <!-- Photo list -->
     <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/recyclerViewPhotos"
+        android:id="@+id/recyclerViewAlbums"
         android:layout_width="0dp"
         android:layout_height="0dp"
         android:clipToPadding="false"
@@ -17,14 +16,13 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
-    <!-- Add photo button -->
     <com.google.android.material.floatingactionbutton.FloatingActionButton
-        android:id="@+id/fabAddPhoto"
+        android:id="@+id/fabAddAlbum"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:contentDescription="@string/add_photo"
-        android:src="@drawable/ic_add_photo"
+        android:layout_margin="16dp"
+        android:contentDescription="@string/add_album"
+        android:src="@drawable/ic_add_album"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_marginBaseline="16dp" />
+        app:layout_constraintEnd_toEndOf="parent" />
 </androidx.constraintlayout.widget.ConstraintLayout>

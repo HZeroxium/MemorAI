@@ -12,4 +12,5 @@
     <string name="open_gallery">Open gallery</string>
     <string name="preview_image">Preview image\n</string>
     <string name="add_photo">Add photo</string>
+    <string name="add_album">Add album</string>
 </resources>

@@ -1,15 +1,28 @@
-// domain/model/Album.java
-package com.example.memorai.domain.model;
+// data/local/entity/AlbumEntity.java
+package com.example.memorai.data.local.entity;
 
-public class Album {
+import androidx.room.ColumnInfo;
+import androidx.room.Entity;
+import androidx.room.PrimaryKey;
+
+@Entity(tableName = "albums")
+public class AlbumEntity {
+
+    @PrimaryKey(autoGenerate = true)
     private int id;
+
+    @ColumnInfo(name = "name")
     private String name;
+
+    @ColumnInfo(name = "created_at")
     private long createdAt;
 
-    public Album(String name) {
+    public AlbumEntity(String name, long createdAt) {
         this.name = name;
+        this.createdAt = createdAt;
     }
 
+    // Getters/Setters
     public int getId() {
         return id;
     }

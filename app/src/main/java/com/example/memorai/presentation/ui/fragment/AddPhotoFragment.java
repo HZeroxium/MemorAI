@@ -19,9 +19,11 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
+import androidx.lifecycle.ViewModelProvider;
 
 import com.bumptech.glide.Glide;
 import com.example.memorai.R;
+import com.example.memorai.presentation.viewmodel.PhotoViewModel;
 
 public class AddPhotoFragment extends Fragment {
 
@@ -167,11 +169,25 @@ public class AddPhotoFragment extends Fragment {
         if (cameraUri != null) {
             Glide.with(this).load(cameraUri).into(imageViewPreview);
             // TODO: Ở bước sau, lưu cameraUri vào Database hoặc upload Firebase, v.v.
+
+            // Lưu photo vào Room
+            // (VD: albumId = 1, tạm, hoặc real albumId user chọn)
+            PhotoViewModel photoViewModel = new ViewModelProvider(this)
+                    .get(PhotoViewModel.class);
+
+            // Chẳng hạn albumId = 1
+            int albumId = 1;
+            photoViewModel.addPhoto(cameraUri.toString(), albumId);
         }
     }
 
     private void handleGalleryResult(Uri galleryUri) {
         Glide.with(this).load(galleryUri).into(imageViewPreview);
         // TODO: Lưu galleryUri vào Room Database hoặc list Photo
+        PhotoViewModel photoViewModel = new ViewModelProvider(this)
+                .get(PhotoViewModel.class);
+
+        int albumId = 1;
+        photoViewModel.addPhoto(galleryUri.toString(), albumId);
     }
 }
