@@ -2,9 +2,7 @@
 package com.example.memorai.presentation.ui.fragment;
 
 import android.Manifest;
-import android.app.Activity;
 import android.content.ContentValues;
-import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Bundle;
@@ -15,6 +13,8 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.Toast;
 
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.core.content.ContextCompat;
@@ -27,14 +27,9 @@ import com.example.memorai.presentation.viewmodel.PhotoViewModel;
 
 public class AddPhotoFragment extends Fragment {
 
-    private static final int REQUEST_CAMERA_CODE = 100;    // Code for camera intent
-    private static final int REQUEST_GALLERY_CODE = 101;   // Code for gallery intent
-
-    private static final int PERMISSION_CAMERA = 200;
-    private static final int PERMISSION_READ_STORAGE = 201;
-
-    private Uri photoUri;             // Lưu URI ảnh từ camera
-    private ImageView imageViewPreview; // Hiển thị ảnh ngay sau khi chụp/chọn
+    private ImageView imageViewPreview;
+    private Uri photoUri;
+    private PhotoViewModel photoViewModel;
 
     @Nullable
     @Override
@@ -43,6 +38,30 @@ public class AddPhotoFragment extends Fragment {
                              @Nullable Bundle savedInstanceState) {
         return inflater.inflate(R.layout.fragment_add_photo, container, false);
     }
+    /**
+     * Launcher for Camera Intent.
+     */
+    private final ActivityResultLauncher<Uri> cameraLauncher =
+            registerForActivityResult(new ActivityResultContracts.TakePicture(), success -> {
+                if (success && photoUri != null) {
+                    displayImage(photoUri);
+                    savePhotoToDatabase(photoUri);
+                } else {
+                    Toast.makeText(requireContext(), "Camera operation failed", Toast.LENGTH_SHORT).show();
+                }
+            });
+    /**
+     * Launcher for Gallery Intent.
+     */
+    private final ActivityResultLauncher<String> galleryLauncher =
+            registerForActivityResult(new ActivityResultContracts.GetContent(), uri -> {
+                if (uri != null) {
+                    displayImage(uri);
+                    savePhotoToDatabase(uri);
+                } else {
+                    Toast.makeText(requireContext(), "No image selected", Toast.LENGTH_SHORT).show();
+                }
+            });
 
     @Override
     public void onViewCreated(@NonNull View view,
@@ -50,144 +69,71 @@ public class AddPhotoFragment extends Fragment {
         super.onViewCreated(view, savedInstanceState);
 
         imageViewPreview = view.findViewById(R.id.imageViewPreview);
+        photoViewModel = new ViewModelProvider(requireActivity()).get(PhotoViewModel.class);
 
-        // Xử lý nút Open Camera
         view.findViewById(R.id.btnOpenCamera).setOnClickListener(v -> openCamera());
-
-        // Xử lý nút Open Gallery
         view.findViewById(R.id.btnOpenGallery).setOnClickListener(v -> openGallery());
     }
 
+    /**
+     * Open Camera and Capture Image.
+     */
     private void openCamera() {
-        // Kiểm tra quyền CAMERA
         if (ContextCompat.checkSelfPermission(requireContext(), Manifest.permission.CAMERA)
                 == PackageManager.PERMISSION_GRANTED) {
-            // Đã có quyền
-            launchCameraIntent();
+            photoUri = createImageUri();
+            if (photoUri != null) {
+                cameraLauncher.launch(photoUri);
+            } else {
+                Toast.makeText(requireContext(), "Failed to create image URI", Toast.LENGTH_SHORT).show();
+            }
         } else {
-            // Chưa có quyền -> yêu cầu
-            requestPermissions(new String[]{Manifest.permission.CAMERA}, PERMISSION_CAMERA);
+            permissionLauncher.launch(Manifest.permission.CAMERA);
         }
-    }
+    }    /**
+     * Permission Launcher for Camera and Storage.
+     */
+    private final ActivityResultLauncher<String> permissionLauncher =
+            registerForActivityResult(new ActivityResultContracts.RequestPermission(), isGranted -> {
+                if (isGranted) {
+                    openCamera(); // Retry the camera intent
+                } else {
+                    Toast.makeText(requireContext(), "Permission denied", Toast.LENGTH_SHORT).show();
+                }
+            });
 
+    /**
+     * Open Gallery to Select Image.
+     */
     private void openGallery() {
-        // Kiểm tra quyền READ_EXTERNAL_STORAGE
-        if (ContextCompat.checkSelfPermission(requireContext(), Manifest.permission.READ_EXTERNAL_STORAGE)
-                == PackageManager.PERMISSION_GRANTED) {
-            // Đã có quyền
-            launchGalleryIntent();
-        } else {
-            // Chưa có quyền -> yêu cầu
-            requestPermissions(new String[]{Manifest.permission.READ_EXTERNAL_STORAGE}, PERMISSION_READ_STORAGE);
-        }
+        galleryLauncher.launch("image/*");
     }
 
     /**
-     * Tạo Intent chụp ảnh, lưu ảnh vào MediaStore.
-     */
-    private void launchCameraIntent() {
-        Intent cameraIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
-        // Tạo URI để camera lưu ảnh
-        photoUri = createImageUri();
-        if (photoUri != null) {
-            cameraIntent.putExtra(MediaStore.EXTRA_OUTPUT, photoUri);
-            startActivityForResult(cameraIntent, REQUEST_CAMERA_CODE);
-        } else {
-            Toast.makeText(requireContext(), "Failed to create image Uri", Toast.LENGTH_SHORT).show();
-        }
-    }
-
-    /**
-     * Tạo Intent chọn ảnh từ Gallery.
-     */
-    private void launchGalleryIntent() {
-        Intent galleryIntent = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
-        // Hoặc dùng ACTION_OPEN_DOCUMENT nếu muốn Android 11+ an toàn hơn
-        startActivityForResult(galleryIntent, REQUEST_GALLERY_CODE);
-    }
-
-    /**
-     * Tạo URI ảnh trong MediaStore (public). Hoặc có thể tạo file trong private storage + FileProvider.
+     * Create an image URI in MediaStore.
      */
     private Uri createImageUri() {
         ContentValues values = new ContentValues();
-        values.put(MediaStore.Images.Media.TITLE, "Captured_Img_" + System.currentTimeMillis());
-        values.put(MediaStore.Images.Media.DESCRIPTION, "From Camera");
+        values.put(MediaStore.Images.Media.TITLE, "Captured_Image_" + System.currentTimeMillis());
+        values.put(MediaStore.Images.Media.DESCRIPTION, "Captured via Camera");
         return requireContext().getContentResolver()
                 .insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, values);
     }
 
     /**
-     * Xử lý kết quả yêu cầu quyền
+     * Display selected/captured image in ImageView.
      */
-    @Override
-    public void onRequestPermissionsResult(int requestCode,
-                                           @NonNull String[] permissions,
-                                           @NonNull int[] grantResults) {
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-        if (requestCode == PERMISSION_CAMERA) {
-            // CAMERA
-            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                launchCameraIntent();
-            } else {
-                Toast.makeText(requireContext(), "Camera Permission Denied", Toast.LENGTH_SHORT).show();
-            }
-        } else if (requestCode == PERMISSION_READ_STORAGE) {
-            // READ_EXTERNAL_STORAGE
-            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                launchGalleryIntent();
-            } else {
-                Toast.makeText(requireContext(), "Storage Permission Denied", Toast.LENGTH_SHORT).show();
-            }
-        }
+    private void displayImage(Uri uri) {
+        Glide.with(this).load(uri).into(imageViewPreview);
     }
 
     /**
-     * Xử lý kết quả trả về từ Camera/Gallery
+     * Save photo URI to database.
      */
-    @Override
-    public void onActivityResult(int requestCode,
-                                 int resultCode,
-                                 Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
-        if (resultCode == Activity.RESULT_OK) {
-            switch (requestCode) {
-                case REQUEST_CAMERA_CODE:
-                    handleCameraResult(photoUri);
-                    break;
-                case REQUEST_GALLERY_CODE:
-                    if (data != null && data.getData() != null) {
-                        handleGalleryResult(data.getData());
-                    }
-                    break;
-            }
-        }
+    private void savePhotoToDatabase(Uri uri) {
+        photoViewModel.addPhoto(uri.toString(), 1); // Example: albumId = 1
+        Toast.makeText(requireContext(), "Photo added successfully", Toast.LENGTH_SHORT).show();
     }
 
-    private void handleCameraResult(Uri cameraUri) {
-        // Hiển thị ảnh
-        if (cameraUri != null) {
-            Glide.with(this).load(cameraUri).into(imageViewPreview);
-            // TODO: Ở bước sau, lưu cameraUri vào Database hoặc upload Firebase, v.v.
 
-            // Lưu photo vào Room
-            // (VD: albumId = 1, tạm, hoặc real albumId user chọn)
-            PhotoViewModel photoViewModel = new ViewModelProvider(this)
-                    .get(PhotoViewModel.class);
-
-            // Chẳng hạn albumId = 1
-            int albumId = 1;
-            photoViewModel.addPhoto(cameraUri.toString(), albumId);
-        }
-    }
-
-    private void handleGalleryResult(Uri galleryUri) {
-        Glide.with(this).load(galleryUri).into(imageViewPreview);
-        // TODO: Lưu galleryUri vào Room Database hoặc list Photo
-        PhotoViewModel photoViewModel = new ViewModelProvider(this)
-                .get(PhotoViewModel.class);
-
-        int albumId = 1;
-        photoViewModel.addPhoto(galleryUri.toString(), albumId);
-    }
 }

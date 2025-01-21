@@ -10,6 +10,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
+import androidx.navigation.Navigation;
 import androidx.recyclerview.widget.GridLayoutManager;
 
 import com.example.memorai.R;
@@ -35,94 +36,29 @@ public class PhotoListFragment extends Fragment {
         return binding.getRoot();
     }
 
-//    @Override
-//    public void onViewCreated(@NonNull View view,
-//                              @Nullable Bundle savedInstanceState) {
-//        super.onViewCreated(view, savedInstanceState);
-//
-//        recyclerView = view.findViewById(R.id.recyclerViewPhotos);
-//
-//        // Dùng GridLayoutManager để hiển thị 2 cột (ví dụ)
-//        GridLayoutManager layoutManager = new GridLayoutManager(requireContext(), 2);
-//        recyclerView.setLayoutManager(layoutManager);
-//
-//        // Tạo danh sách ảnh mẫu
-//        List<Photo> samplePhotos = getSamplePhotos();
-//
-//        // Tạo adapter
-//        photoAdapter = new PhotoAdapter(requireContext(), samplePhotos);
-//        // Xử lý click
-//        photoAdapter.setOnPhotoClickListener((photo, position) -> {
-//            // Tạo PhotoDetailFragment mới
-//            PhotoDetailFragment fragment = new PhotoDetailFragment();
-//
-//            // Gói dữ liệu ảnh
-//            Bundle bundle = new Bundle();
-//            bundle.putString("photo_url", photo.getUrl());
-//            fragment.setArguments(bundle);
-//
-//            // Nếu dùng SharedElement Transition, ta cần View ImageView
-//            // Từ PhotoAdapter,
-//            // => Nên trả về holder.imageViewPhoto hoặc holder.itemView
-//            // Giả sử ta gọi "viewHolderRef" là tham chiếu
-//            // (hoặc di chuyển logic này vào Adapter)
-//
-//            // Chuyển sang Fragment chi tiết
-//            requireActivity().getSupportFragmentManager()
-//                    .beginTransaction()
-//                    // .addSharedElement(viewHolderRef, "shared_photo_transition")
-//                    //  ^ Để shared element effect, khớp với transitionName
-//                    .replace(R.id.container, fragment)
-//                    .addToBackStack(null)
-//                    .commit();
-//        });
-//
-//        // Gán adapter cho RecyclerView
-//        recyclerView.setAdapter(photoAdapter);
-//
-//        // Handle Add Photo button
-//        FloatingActionButton fabAddPhoto = view.findViewById(R.id.fabAddPhoto);
-//        fabAddPhoto.setOnClickListener(v -> {
-//            // Chuyển sang AddPhotoFragment
-//            requireActivity().getSupportFragmentManager()
-//                    .beginTransaction()
-//                    .replace(R.id.container, new AddPhotoFragment())
-//                    .addToBackStack(null)
-//                    .commit();
-//        });
-//    }
-
     @Override
     public void onViewCreated(@NonNull View view,
                               @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
+        // Setup RecyclerView
         photoAdapter = new PhotoAdapter();
         binding.recyclerViewPhotos.setLayoutManager(new GridLayoutManager(requireContext(), 2));
         binding.recyclerViewPhotos.setAdapter(photoAdapter);
 
+        // Set up photo click listener
         photoAdapter.setOnPhotoClickListener((sharedView, photo) -> {
-            PhotoDetailFragment fragment = new PhotoDetailFragment();
             Bundle args = new Bundle();
             args.putString("photo_url", photo.getUrl());
-            fragment.setArguments(args);
-
-            requireActivity().getSupportFragmentManager()
-                    .beginTransaction()
-                    .addSharedElement(sharedView, "shared_photo_transition")
-                    .replace(R.id.container, fragment)
-                    .addToBackStack(null)
-                    .commit();
+            Navigation.findNavController(view).navigate(R.id.photoDetailFragment, args);
         });
 
-        binding.fabAddPhoto.setOnClickListener(v -> {
-            requireActivity().getSupportFragmentManager()
-                    .beginTransaction()
-                    .replace(R.id.container, new AddPhotoFragment())
-                    .addToBackStack(null)
-                    .commit();
-        });
+        // Handle Add Photo Button
+        binding.fabAddPhoto.setOnClickListener(v ->
+                Navigation.findNavController(view).navigate(R.id.addPhotoFragment)
+        );
 
+        // ViewModel to observe photos
         photoViewModel = new ViewModelProvider(this).get(PhotoViewModel.class);
         photoViewModel.observeAllPhotos().observe(getViewLifecycleOwner(), this::updatePhotos);
         photoViewModel.loadAllPhotos();

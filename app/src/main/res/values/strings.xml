@@ -13,4 +13,6 @@
     <string name="preview_image">Preview image\n</string>
     <string name="add_photo">Add photo</string>
     <string name="add_album">Add album</string>
+    <string name="photos">Photos</string>
+    <string name="albums">Albums</string>
 </resources>

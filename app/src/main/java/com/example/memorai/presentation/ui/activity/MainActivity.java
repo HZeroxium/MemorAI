@@ -5,11 +5,12 @@ import android.os.Bundle;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.app.AppCompatDelegate;
-import androidx.fragment.app.Fragment;
+import androidx.navigation.NavController;
+import androidx.navigation.fragment.NavHostFragment;
+import androidx.navigation.ui.NavigationUI;
 
 import com.example.memorai.R;
 import com.example.memorai.databinding.ActivityMainBinding;
-import com.example.memorai.presentation.ui.fragment.PhotoListFragment;
 
 public class MainActivity extends AppCompatActivity {
     private ActivityMainBinding binding;
@@ -20,6 +21,14 @@ public class MainActivity extends AppCompatActivity {
         binding = ActivityMainBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
 
+        setupDarkMode();
+        setupNavigation();
+    }
+
+    /**
+     * Thiết lập Dark Mode với SharedPreferences
+     */
+    private void setupDarkMode() {
         boolean isDarkModeEnabled = getSharedPreferences("settings", MODE_PRIVATE)
                 .getBoolean("dark_mode", false);
         AppCompatDelegate.setDefaultNightMode(
@@ -38,15 +47,24 @@ public class MainActivity extends AppCompatActivity {
                 ));
             }).start();
         });
-
-        if (savedInstanceState == null) replaceFragment(new PhotoListFragment(), false);
     }
 
-    private void replaceFragment(Fragment fragment, boolean addToBackStack) {
-        var transaction = getSupportFragmentManager().beginTransaction()
-                .replace(R.id.container, fragment);
-        if (addToBackStack) transaction.addToBackStack(null);
-        transaction.commit();
+    /**
+     * Thiết lập Navigation Component
+     */
+    private void setupNavigation() {
+        try {
+            NavHostFragment navHostFragment = (NavHostFragment) getSupportFragmentManager()
+                    .findFragmentById(R.id.nav_host_fragment);
+            if (navHostFragment == null) {
+                throw new IllegalStateException("NavHostFragment not found in MainActivity.");
+            }
+            NavController navController = navHostFragment.getNavController();
+            NavigationUI.setupWithNavController(binding.bottomNavigation, navController);
+        } catch (IllegalStateException e) {
+            e.printStackTrace();
+            throw new IllegalStateException("Failed to initialize NavHostFragment: " + e.getMessage());
+        }
     }
 
     @Override

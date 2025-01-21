@@ -13,8 +13,10 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
+import androidx.navigation.Navigation;
 import androidx.recyclerview.widget.LinearLayoutManager;
 
+import com.example.memorai.R;
 import com.example.memorai.databinding.FragmentAlbumListBinding;
 import com.example.memorai.domain.model.Album;
 import com.example.memorai.presentation.ui.adapter.AlbumAdapter;
@@ -39,18 +41,26 @@ public class AlbumListFragment extends Fragment {
                               @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
+        // Setup RecyclerView
         albumAdapter = new AlbumAdapter();
         binding.recyclerViewAlbums.setLayoutManager(new LinearLayoutManager(requireContext()));
         binding.recyclerViewAlbums.setAdapter(albumAdapter);
 
-        albumAdapter.setOnAlbumClickListener(album -> openAlbumDetails(album));
+        // Handle album click
+        albumAdapter.setOnAlbumClickListener(album -> {
+            Bundle args = new Bundle();
+            args.putInt("album_id", album.getId());
+            Navigation.findNavController(view).navigate(R.id.photoListFragment, args);
+        });
 
+        // Handle Add Album Button
         binding.fabAddAlbum.setOnClickListener(v -> showAddAlbumDialog());
 
+        // ViewModel to observe albums
         albumViewModel = new ViewModelProvider(this).get(AlbumViewModel.class);
-        albumViewModel.observeAllAlbums().observe(getViewLifecycleOwner(), albums -> {
-            albumAdapter.submitList(albums);
-        });
+        albumViewModel.observeAllAlbums().observe(getViewLifecycleOwner(), albums ->
+                albumAdapter.submitList(albums)
+        );
         albumViewModel.loadAllAlbums();
     }
 
