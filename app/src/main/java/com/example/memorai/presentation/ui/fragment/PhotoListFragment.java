@@ -21,11 +21,14 @@ import com.example.memorai.presentation.viewmodel.PhotoViewModel;
 
 import java.util.List;
 
+import dagger.hilt.android.AndroidEntryPoint;
+
+@AndroidEntryPoint
 public class PhotoListFragment extends Fragment {
 
     private FragmentPhotoListBinding binding;
-    private PhotoViewModel photoViewModel;
     private PhotoAdapter photoAdapter;
+    private PhotoViewModel photoViewModel;
 
     @Nullable
     @Override
@@ -49,7 +52,7 @@ public class PhotoListFragment extends Fragment {
         // Set up photo click listener
         photoAdapter.setOnPhotoClickListener((sharedView, photo) -> {
             Bundle args = new Bundle();
-            args.putString("photo_url", photo.getUrl());
+            args.putString("photo_url", photo.getFilePath());
             Navigation.findNavController(view).navigate(R.id.photoDetailFragment, args);
         });
 

@@ -13,6 +13,9 @@ import androidx.navigation.ui.NavigationUI;
 import com.example.memorai.R;
 import com.example.memorai.databinding.ActivityMainBinding;
 
+import dagger.hilt.android.AndroidEntryPoint;
+
+@AndroidEntryPoint
 public class MainActivity extends AppCompatActivity {
     private ActivityMainBinding binding;
 
@@ -26,9 +29,6 @@ public class MainActivity extends AppCompatActivity {
         setupNavigation();
     }
 
-    /**
-     * Thiết lập Dark Mode với SharedPreferences
-     */
     private void setupDarkMode() {
         boolean isDarkModeEnabled = getSharedPreferences("settings", MODE_PRIVATE)
                 .getBoolean("dark_mode", false);
@@ -50,9 +50,6 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
-    /**
-     * Thiết lập Navigation Component
-     */
     private void setupNavigation() {
         try {
             NavHostFragment navHostFragment = (NavHostFragment) getSupportFragmentManager()

@@ -23,8 +23,12 @@ import androidx.lifecycle.ViewModelProvider;
 
 import com.bumptech.glide.Glide;
 import com.example.memorai.R;
+import com.example.memorai.domain.model.Photo;
 import com.example.memorai.presentation.viewmodel.PhotoViewModel;
 
+import dagger.hilt.android.AndroidEntryPoint;
+
+@AndroidEntryPoint
 public class AddPhotoFragment extends Fragment {
 
     private ImageView imageViewPreview;
@@ -131,7 +135,12 @@ public class AddPhotoFragment extends Fragment {
      * Save photo URI to database.
      */
     private void savePhotoToDatabase(Uri uri) {
-        photoViewModel.addPhoto(uri.toString(), 1); // Example: albumId = 1
+        Photo photo = new Photo(
+                String.valueOf(System.currentTimeMillis()),
+                "e1d61c7a-ca85-4b20-99aa-d4f3ea976a83", // Example: albumId = 1
+                uri.toString()
+        );
+        photoViewModel.addPhoto(photo); // Example: albumId = 1
         Toast.makeText(requireContext(), "Photo added successfully", Toast.LENGTH_SHORT).show();
     }
 

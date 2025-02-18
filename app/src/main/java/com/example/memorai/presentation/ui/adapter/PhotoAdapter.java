@@ -21,19 +21,21 @@ public class PhotoAdapter extends ListAdapter<Photo, PhotoAdapter.PhotoViewHolde
             new DiffUtil.ItemCallback<Photo>() {
                 @Override
                 public boolean areItemsTheSame(@NonNull Photo oldItem, @NonNull Photo newItem) {
-                    return oldItem.getId() == newItem.getId();
+                    return oldItem.getId().equals(newItem.getId());
                 }
 
                 @Override
                 public boolean areContentsTheSame(@NonNull Photo oldItem, @NonNull Photo newItem) {
-                    return oldItem.getUrl().equals(newItem.getUrl())
-                            && oldItem.getAlbumId() == newItem.getAlbumId()
-                            && oldItem.getCreatedAt() == newItem.getCreatedAt();
+                    return oldItem.equals(newItem);
                 }
             };
 
     public PhotoAdapter() {
         super(DIFF_CALLBACK);
+    }
+
+    public void setOnPhotoClickListener(OnPhotoClickListener listener) {
+        this.onPhotoClickListener = listener;
     }
 
     @NonNull
@@ -43,15 +45,11 @@ public class PhotoAdapter extends ListAdapter<Photo, PhotoAdapter.PhotoViewHolde
         return new PhotoViewHolder(v);
     }
 
-    public void setOnPhotoClickListener(OnPhotoClickListener listener) {
-        this.onPhotoClickListener = listener;
-    }
-
     @Override
     public void onBindViewHolder(@NonNull PhotoViewHolder holder, int position) {
         Photo photo = getItem(position);
         Glide.with(holder.itemView.getContext())
-                .load(photo.getUrl())
+                .load(photo.getFilePath())
                 .placeholder(R.drawable.placeholder_image)
                 .error(R.drawable.error_image)
                 .into(holder.imageViewPhoto);

@@ -15,6 +15,9 @@ import com.bumptech.glide.Glide;
 import com.example.memorai.R;
 import com.example.memorai.databinding.FragmentPhotoDetailBinding;
 
+import dagger.hilt.android.AndroidEntryPoint;
+
+@AndroidEntryPoint
 public class PhotoDetailFragment extends Fragment {
     private FragmentPhotoDetailBinding binding;
     private String photoUrl;

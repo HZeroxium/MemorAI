@@ -1,38 +1,41 @@
 // presentation/viewModel/AlbumViewModel.java
 package com.example.memorai.presentation.viewmodel;
 
-import android.app.Application;
-
-import androidx.annotation.NonNull;
-import androidx.lifecycle.AndroidViewModel;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
+import androidx.lifecycle.ViewModel;
 
-import com.example.memorai.data.repository.AlbumRepositoryImpl;
 import com.example.memorai.domain.model.Album;
-import com.example.memorai.domain.repository.AlbumRepository;
 import com.example.memorai.domain.usecase.album.CreateAlbumUseCase;
 import com.example.memorai.domain.usecase.album.DeleteAlbumUseCase;
 import com.example.memorai.domain.usecase.album.GetAlbumsUseCase;
 import com.example.memorai.domain.usecase.album.UpdateAlbumUseCase;
 
 import java.util.List;
+import java.util.UUID;
 
-public class AlbumViewModel extends AndroidViewModel {
-    private final CreateAlbumUseCase addAlbumUC;
-    private final GetAlbumsUseCase getAllAlbumsUC;
-    private final UpdateAlbumUseCase updateAlbumUC;
-    private final DeleteAlbumUseCase deleteAlbumUC;
+import javax.inject.Inject;
+
+import dagger.hilt.android.lifecycle.HiltViewModel;
+
+@HiltViewModel
+public class AlbumViewModel extends ViewModel {
+    private final CreateAlbumUseCase createAlbumUseCase;
+    private final GetAlbumsUseCase getAlbumsUseCase;
+    private final UpdateAlbumUseCase updateAlbumUseCase;
+    private final DeleteAlbumUseCase deleteAlbumUseCase;
 
     private final MutableLiveData<List<Album>> allAlbums = new MutableLiveData<>();
 
-    public AlbumViewModel(@NonNull Application app) {
-        super(app);
-        AlbumRepository repo = new AlbumRepositoryImpl(app);
-        addAlbumUC = new CreateAlbumUseCase(repo);
-        getAllAlbumsUC = new GetAlbumsUseCase(repo);
-        updateAlbumUC = new UpdateAlbumUseCase(repo);
-        deleteAlbumUC = new DeleteAlbumUseCase(repo);
+    @Inject
+    public AlbumViewModel(CreateAlbumUseCase createAlbumUseCase,
+                          GetAlbumsUseCase getAlbumsUseCase,
+                          UpdateAlbumUseCase updateAlbumUseCase,
+                          DeleteAlbumUseCase deleteAlbumUseCase) {
+        this.createAlbumUseCase = createAlbumUseCase;
+        this.getAlbumsUseCase = getAlbumsUseCase;
+        this.updateAlbumUseCase = updateAlbumUseCase;
+        this.deleteAlbumUseCase = deleteAlbumUseCase;
     }
 
     public LiveData<List<Album>> observeAllAlbums() {
@@ -41,21 +44,22 @@ public class AlbumViewModel extends AndroidViewModel {
 
     public void loadAllAlbums() {
         new Thread(() -> {
-            List<Album> albums = getAllAlbumsUC.execute();
+            List<Album> albums = getAlbumsUseCase.execute();
             allAlbums.postValue(albums);
         }).start();
     }
 
-    public void addAlbum(String name) {
-        Album album = new Album(name, System.currentTimeMillis());
-        addAlbumUC.execute(album);
+    public void addAlbum(String albumName) {
+        Album album = new Album(UUID.randomUUID().toString(), albumName, "", "", System.currentTimeMillis(), System.currentTimeMillis());
+        new Thread(() -> createAlbumUseCase.execute(album)).start();
     }
 
     public void updateAlbum(Album album) {
-        updateAlbumUC.execute(album);
+        new Thread(() -> updateAlbumUseCase.execute(album)).start();
     }
 
-    public void deleteAlbum(Album album) {
-        deleteAlbumUC.execute(album);
+    public void deleteAlbum(String albumId) {
+        new Thread(() -> deleteAlbumUseCase.execute(albumId)).start();
     }
 }
+

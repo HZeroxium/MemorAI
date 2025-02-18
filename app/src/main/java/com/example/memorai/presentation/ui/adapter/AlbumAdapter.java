@@ -18,13 +18,12 @@ public class AlbumAdapter extends ListAdapter<Album, AlbumAdapter.AlbumViewHolde
             new DiffUtil.ItemCallback<Album>() {
                 @Override
                 public boolean areItemsTheSame(@NonNull Album oldItem, @NonNull Album newItem) {
-                    return oldItem.getId() == newItem.getId();
+                    return oldItem.getId().equals(newItem.getId());
                 }
 
                 @Override
                 public boolean areContentsTheSame(@NonNull Album oldItem, @NonNull Album newItem) {
-                    return oldItem.getName().equals(newItem.getName())
-                            && oldItem.getCreatedAt() == newItem.getCreatedAt();
+                    return oldItem.equals(newItem);
                 }
             };
     private OnAlbumClickListener onAlbumClickListener;
@@ -49,7 +48,9 @@ public class AlbumAdapter extends ListAdapter<Album, AlbumAdapter.AlbumViewHolde
         Album album = getItem(position);
         holder.textViewAlbumName.setText(album.getName());
         holder.itemView.setOnClickListener(v -> {
-            if (onAlbumClickListener != null) onAlbumClickListener.onAlbumClick(album);
+            if (onAlbumClickListener != null) {
+                onAlbumClickListener.onAlbumClick(album);
+            }
         });
     }
 
@@ -66,4 +67,5 @@ public class AlbumAdapter extends ListAdapter<Album, AlbumAdapter.AlbumViewHolde
         }
     }
 }
+
 

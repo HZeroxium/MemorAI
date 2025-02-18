@@ -23,6 +23,14 @@ public final class Photo {
         this.updatedAt = updatedAt;
     }
 
+    public Photo(String id, String albumId, String filePath, List<String> tags) {
+        this(id, albumId, filePath, tags, System.currentTimeMillis(), System.currentTimeMillis());
+    }
+
+    public Photo(String id, String albumId, String filePath) {
+        this(id, albumId, filePath, null);
+    }
+
     public String getId() {
         return id;
     }
