@@ -62,6 +62,7 @@ dependencies {
     // Dagger Hilt
     implementation(libs.hilt.android)
     implementation(libs.androidx.preference)
+    implementation(libs.litert)
     kapt(libs.hilt.compiler)
 
     // Room Database
