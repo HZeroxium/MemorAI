@@ -1,49 +1,32 @@
 // data/local/entity/AlbumEntity.java
 package com.example.memorai.data.local.entity;
 
+import androidx.annotation.NonNull;
 import androidx.room.ColumnInfo;
 import androidx.room.Entity;
 import androidx.room.PrimaryKey;
 
-@Entity(tableName = "albums")
+@Entity(tableName = "album")
 public class AlbumEntity {
-
-    @PrimaryKey(autoGenerate = true)
-    private int id;
+    @PrimaryKey
+    @ColumnInfo(name = "id")
+    @NonNull
+    public String id = "";
 
     @ColumnInfo(name = "name")
-    private String name;
+    public String name;
+
+    @ColumnInfo(name = "description")
+    public String description;
+
+    @ColumnInfo(name = "cover_photo_url")
+    public String coverPhotoUrl;
 
     @ColumnInfo(name = "created_at")
-    private long createdAt;
+    public long createdAt;
 
-    public AlbumEntity(String name, long createdAt) {
-        this.name = name;
-        this.createdAt = createdAt;
-    }
-
-    // Getters/Setters
-    public int getId() {
-        return id;
-    }
-
-    public void setId(int id) {
-        this.id = id;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public long getCreatedAt() {
-        return createdAt;
-    }
-
-    public void setCreatedAt(long createdAt) {
-        this.createdAt = createdAt;
-    }
+    @ColumnInfo(name = "updated_at")
+    public long updatedAt;
 }
+
+

@@ -13,9 +13,7 @@ import com.example.memorai.domain.model.Photo;
 import com.example.memorai.domain.repository.PhotoRepository;
 import com.example.memorai.domain.usecase.photo.AddPhotoUseCase;
 import com.example.memorai.domain.usecase.photo.DeletePhotoUseCase;
-import com.example.memorai.domain.usecase.photo.GetAllPhotosUseCase;
 import com.example.memorai.domain.usecase.photo.GetPhotosByAlbumUseCase;
-import com.example.memorai.domain.usecase.photo.UpdatePhotoUseCase;
 
 import java.util.List;
 

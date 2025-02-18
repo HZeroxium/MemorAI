@@ -11,16 +11,16 @@ import androidx.lifecycle.MutableLiveData;
 import com.example.memorai.data.repository.AlbumRepositoryImpl;
 import com.example.memorai.domain.model.Album;
 import com.example.memorai.domain.repository.AlbumRepository;
-import com.example.memorai.domain.usecase.album.AddAlbumUseCase;
+import com.example.memorai.domain.usecase.album.CreateAlbumUseCase;
 import com.example.memorai.domain.usecase.album.DeleteAlbumUseCase;
-import com.example.memorai.domain.usecase.album.GetAllAlbumsUseCase;
+import com.example.memorai.domain.usecase.album.GetAlbumsUseCase;
 import com.example.memorai.domain.usecase.album.UpdateAlbumUseCase;
 
 import java.util.List;
 
 public class AlbumViewModel extends AndroidViewModel {
-    private final AddAlbumUseCase addAlbumUC;
-    private final GetAllAlbumsUseCase getAllAlbumsUC;
+    private final CreateAlbumUseCase addAlbumUC;
+    private final GetAlbumsUseCase getAllAlbumsUC;
     private final UpdateAlbumUseCase updateAlbumUC;
     private final DeleteAlbumUseCase deleteAlbumUC;
 
@@ -29,8 +29,8 @@ public class AlbumViewModel extends AndroidViewModel {
     public AlbumViewModel(@NonNull Application app) {
         super(app);
         AlbumRepository repo = new AlbumRepositoryImpl(app);
-        addAlbumUC = new AddAlbumUseCase(repo);
-        getAllAlbumsUC = new GetAllAlbumsUseCase(repo);
+        addAlbumUC = new CreateAlbumUseCase(repo);
+        getAllAlbumsUC = new GetAlbumsUseCase(repo);
         updateAlbumUC = new UpdateAlbumUseCase(repo);
         deleteAlbumUC = new DeleteAlbumUseCase(repo);
     }

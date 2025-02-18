@@ -1,50 +1,74 @@
 // data/repository/AlbumRepositoryImpl.java
 package com.example.memorai.data.repository;
 
-import android.content.Context;
-
-import com.example.memorai.data.local.AppDatabase;
 import com.example.memorai.data.local.dao.AlbumDao;
+import com.example.memorai.data.local.entity.AlbumEntity;
 import com.example.memorai.data.mappers.AlbumMapper;
 import com.example.memorai.domain.model.Album;
 import com.example.memorai.domain.repository.AlbumRepository;
 
 import java.util.List;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import java.util.stream.Collectors;
 
+import javax.inject.Inject;
+import javax.inject.Singleton;
+
+@Singleton
 public class AlbumRepositoryImpl implements AlbumRepository {
 
     private final AlbumDao albumDao;
-    private final ExecutorService executor;
 
-    public AlbumRepositoryImpl(Context context) {
-        AppDatabase db = AppDatabase.getInstance(context);
-        albumDao = db.albumDao();
-        executor = Executors.newSingleThreadExecutor();
+    @Inject
+    public AlbumRepositoryImpl(AlbumDao albumDao) {
+        this.albumDao = albumDao;
     }
 
     @Override
-    public List<Album> getAllAlbums() {
-        return albumDao.getAllAlbums()
-                .stream()
-                .map(AlbumMapper::toDomain)
-                .collect(Collectors.toList());
+    public List<Album> getAlbums() {
+        List<AlbumEntity> entities = albumDao.getAllAlbums();
+        return entities.stream().map(AlbumMapper::toDomain).collect(Collectors.toList());
     }
 
     @Override
-    public void insertAlbum(Album album) {
-        executor.execute(() -> albumDao.insertAlbum(AlbumMapper.toEntity(album)));
+    public Album getAlbumById(String albumId) {
+        AlbumEntity entity = albumDao.getAlbumById(albumId);
+        return entity != null ? AlbumMapper.toDomain(entity) : null;
+    }
+
+    @Override
+    public void addAlbum(Album album) {
+        albumDao.insertAlbum(AlbumMapper.fromDomain(album));
     }
 
     @Override
     public void updateAlbum(Album album) {
-        executor.execute(() -> albumDao.updateAlbum(AlbumMapper.toEntity(album)));
+        albumDao.updateAlbum(AlbumMapper.fromDomain(album));
     }
 
     @Override
-    public void deleteAlbum(Album album) {
-        executor.execute(() -> albumDao.deleteAlbum(AlbumMapper.toEntity(album)));
+    public void deleteAlbum(String albumId) {
+        AlbumEntity entity = albumDao.getAlbumById(albumId);
+        if (entity != null) {
+            albumDao.deleteAlbum(entity);
+        }
+    }
+
+    @Override
+    public List<Album> searchAlbums(String query) {
+        List<AlbumEntity> entities = albumDao.searchAlbums(query);
+        return entities.stream().map(AlbumMapper::toDomain).collect(Collectors.toList());
+    }
+
+    @Override
+    public List<Album> getAlbumsSorted(String sortBy) {
+        List<AlbumEntity> entities;
+        if ("date".equalsIgnoreCase(sortBy)) {
+            entities = albumDao.getAlbumsSortedByDate();
+        } else if ("name".equalsIgnoreCase(sortBy)) {
+            entities = albumDao.getAlbumsSortedByName();
+        } else {
+            entities = albumDao.getAllAlbums();
+        }
+        return entities.stream().map(AlbumMapper::toDomain).collect(Collectors.toList());
     }
 }

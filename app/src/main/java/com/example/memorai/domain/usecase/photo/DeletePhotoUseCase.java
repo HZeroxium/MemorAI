@@ -1,17 +1,20 @@
 // domain/usecase/photo/DeletePhotoUseCase.java
 package com.example.memorai.domain.usecase.photo;
 
-import com.example.memorai.domain.model.Photo;
 import com.example.memorai.domain.repository.PhotoRepository;
 
-public class DeletePhotoUseCase {
-    private final PhotoRepository repo;
+import javax.inject.Inject;
 
-    public DeletePhotoUseCase(PhotoRepository repo) {
-        this.repo = repo;
+public class DeletePhotoUseCase {
+    private final PhotoRepository photoRepository;
+
+    @Inject
+    public DeletePhotoUseCase(PhotoRepository photoRepository) {
+        this.photoRepository = photoRepository;
     }
 
-    public void execute(Photo photo) {
-        repo.deletePhoto(photo);
+    public void execute(String photoId) {
+        photoRepository.deletePhoto(photoId);
     }
 }
+

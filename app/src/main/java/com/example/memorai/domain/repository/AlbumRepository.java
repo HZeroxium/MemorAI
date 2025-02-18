@@ -6,11 +6,19 @@ import com.example.memorai.domain.model.Album;
 import java.util.List;
 
 public interface AlbumRepository {
-    List<Album> getAllAlbums();
+    List<Album> getAlbums();
 
-    void insertAlbum(Album album);
+    Album getAlbumById(String albumId);
 
+    void addAlbum(Album album);
     void updateAlbum(Album album);
 
-    void deleteAlbum(Album album);
+    void deleteAlbum(String albumId);
+
+    // Search albums by keyword
+    List<Album> searchAlbums(String query);
+
+    // Get albums sorted by criteria (e.g., "date", "name")
+    List<Album> getAlbumsSorted(String sortBy);
 }
+

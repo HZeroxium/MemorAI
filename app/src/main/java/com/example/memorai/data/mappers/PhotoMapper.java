@@ -4,22 +4,26 @@ package com.example.memorai.data.mappers;
 import com.example.memorai.data.local.entity.PhotoEntity;
 import com.example.memorai.domain.model.Photo;
 
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+
 public class PhotoMapper {
     public static Photo toDomain(PhotoEntity entity) {
-        Photo photo = new Photo(entity.getPhotoUrl());
-        photo.setId(entity.getPhotoId());
-        photo.setAlbumId(entity.getAlbumId());
-        photo.setCreatedAt(entity.getCreatedAt());
-        return photo;
+        List<String> tags = (entity.tags != null && !entity.tags.isEmpty()) ?
+                Arrays.asList(entity.tags.split(",")) : Collections.emptyList();
+        return new Photo(entity.id, entity.albumId, entity.filePath, tags, entity.createdAt, entity.updatedAt);
     }
 
-    public static PhotoEntity toEntity(Photo photo) {
-        PhotoEntity entity = new PhotoEntity(
-                photo.getUrl(),
-                photo.getAlbumId(),
-                photo.getCreatedAt()
-        );
-        entity.setPhotoId(photo.getId());
+    public static PhotoEntity fromDomain(Photo photo) {
+        PhotoEntity entity = new PhotoEntity();
+        entity.id = photo.getId();
+        entity.albumId = photo.getAlbumId();
+        entity.filePath = photo.getFilePath();
+        entity.tags = String.join(",", photo.getTags());
+        entity.createdAt = photo.getCreatedAt();
+        entity.updatedAt = photo.getUpdatedAt();
         return entity;
     }
 }
+
