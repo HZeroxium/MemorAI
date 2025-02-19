@@ -61,6 +61,8 @@ dependencies {
 
     // Dagger Hilt
     implementation(libs.hilt.android)
+    implementation(libs.androidx.preference)
+    implementation(libs.litert)
     kapt(libs.hilt.compiler)
 
     // Room Database
@@ -99,6 +101,13 @@ dependencies {
     // Navigation
     implementation(libs.navigation.fragment.ktx)
     implementation(libs.navigation.ui.ktx)
+
+    // Retrofit2
+    implementation("com.squareup.retrofit2:retrofit:2.11.0")
+    implementation("com.squareup.retrofit2:converter-gson:2.11.0")
+
+    // DataStore
+    implementation(libs.androidx.datastore.preferences)
 }
 
 kapt {

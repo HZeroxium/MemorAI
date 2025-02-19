@@ -13,8 +13,14 @@ import java.util.List;
 
 @Dao
 public interface AlbumDao {
+    @Query("SELECT * FROM album")
+    List<AlbumEntity> getAllAlbums();
+
+    @Query("SELECT * FROM album WHERE id = :albumId LIMIT 1")
+    AlbumEntity getAlbumById(String albumId);
+
     @Insert
-    long insertAlbum(AlbumEntity album);
+    void insertAlbum(AlbumEntity album);
 
     @Update
     void updateAlbum(AlbumEntity album);
@@ -22,6 +28,14 @@ public interface AlbumDao {
     @Delete
     void deleteAlbum(AlbumEntity album);
 
-    @Query("SELECT * FROM albums ORDER BY created_at DESC")
-    List<AlbumEntity> getAllAlbums(); // new sync method
+    // For search and sort features
+    @Query("SELECT * FROM album WHERE name LIKE '%' || :query || '%'")
+    List<AlbumEntity> searchAlbums(String query);
+
+    @Query("SELECT * FROM album ORDER BY created_at ASC")
+    List<AlbumEntity> getAlbumsSortedByDate();
+
+    @Query("SELECT * FROM album ORDER BY name ASC")
+    List<AlbumEntity> getAlbumsSortedByName();
 }
+

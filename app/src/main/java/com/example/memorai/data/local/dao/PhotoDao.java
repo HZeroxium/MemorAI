@@ -13,8 +13,14 @@ import java.util.List;
 
 @Dao
 public interface PhotoDao {
+    @Query("SELECT * FROM photo WHERE album_id = :albumId")
+    List<PhotoEntity> getPhotosByAlbum(String albumId);
+
+    @Query("SELECT * FROM photo WHERE id = :photoId LIMIT 1")
+    PhotoEntity getPhotoById(String photoId);
+
     @Insert
-    long insertPhoto(PhotoEntity photo);
+    void insertPhoto(PhotoEntity photo);
 
     @Update
     void updatePhoto(PhotoEntity photo);
@@ -22,9 +28,13 @@ public interface PhotoDao {
     @Delete
     void deletePhoto(PhotoEntity photo);
 
-    @Query("SELECT * FROM photos ORDER BY created_at DESC")
-    List<PhotoEntity> getAllPhotosSync(); // new sync method
+    // For search and sort features
+    @Query("SELECT * FROM photo WHERE file_path LIKE '%' || :query || '%' OR tags LIKE '%' || :query || '%'")
+    List<PhotoEntity> searchPhotos(String query);
 
-    @Query("SELECT * FROM photos WHERE album_id = :albumId ORDER BY created_at DESC")
-    List<PhotoEntity> getPhotosByAlbumSync(int albumId); // new sync method
+    @Query("SELECT * FROM photo WHERE album_id = :albumId ORDER BY created_at ASC")
+    List<PhotoEntity> getPhotosSortedByDate(String albumId);
+
+    @Query("SELECT * FROM photo WHERE album_id = :albumId ORDER BY file_path ASC")
+    List<PhotoEntity> getPhotosSortedByName(String albumId);
 }

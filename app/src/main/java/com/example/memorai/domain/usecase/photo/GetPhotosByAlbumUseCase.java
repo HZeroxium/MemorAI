@@ -6,14 +6,18 @@ import com.example.memorai.domain.repository.PhotoRepository;
 
 import java.util.List;
 
-public class GetPhotosByAlbumUseCase {
-    private final PhotoRepository repo;
+import javax.inject.Inject;
 
-    public GetPhotosByAlbumUseCase(PhotoRepository repo) {
-        this.repo = repo;
+public class GetPhotosByAlbumUseCase {
+    private final PhotoRepository photoRepository;
+
+    @Inject
+    public GetPhotosByAlbumUseCase(PhotoRepository photoRepository) {
+        this.photoRepository = photoRepository;
     }
 
-    public List<Photo> execute(int albumId) {
-        return repo.getPhotosByAlbum(albumId);
+    public List<Photo> execute(String albumId) {
+        return photoRepository.getPhotosByAlbum(albumId);
     }
 }
+

@@ -6,14 +6,18 @@ import com.example.memorai.domain.repository.AlbumRepository;
 
 import java.util.List;
 
-public class GetAllAlbumsUseCase {
-    private final AlbumRepository repo;
+import javax.inject.Inject;
 
-    public GetAllAlbumsUseCase(AlbumRepository repo) {
-        this.repo = repo;
+public class GetAlbumsUseCase {
+    private final AlbumRepository albumRepository;
+
+    @Inject
+    public GetAlbumsUseCase(AlbumRepository albumRepository) {
+        this.albumRepository = albumRepository;
     }
 
     public List<Album> execute() {
-        return repo.getAllAlbums();
+        return albumRepository.getAlbums();
     }
 }
+

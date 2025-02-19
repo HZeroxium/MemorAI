@@ -4,14 +4,18 @@ package com.example.memorai.domain.usecase.album;
 import com.example.memorai.domain.model.Album;
 import com.example.memorai.domain.repository.AlbumRepository;
 
-public class UpdateAlbumUseCase {
-    private final AlbumRepository repo;
+import javax.inject.Inject;
 
-    public UpdateAlbumUseCase(AlbumRepository repo) {
-        this.repo = repo;
+public class UpdateAlbumUseCase {
+    private final AlbumRepository albumRepository;
+
+    @Inject
+    public UpdateAlbumUseCase(AlbumRepository albumRepository) {
+        this.albumRepository = albumRepository;
     }
 
     public void execute(Album album) {
-        repo.updateAlbum(album);
+        albumRepository.updateAlbum(album);
     }
 }
+

@@ -38,4 +38,23 @@
         android:name="com.example.memorai.presentation.ui.fragment.AddPhotoFragment"
         android:label="Add Photo"
         tools:layout="@layout/fragment_add_photo" />
+
+    <fragment
+        android:id="@+id/editPhotoFragment"
+        android:name="com.example.memorai.presentation.ui.fragment.EditPhotoFragment"
+        android:label="Edit Photo"
+        tools:layout="@layout/fragment_edit_photo" />
+
+    <fragment
+        android:id="@+id/cloudSyncFragment"
+        android:name="com.example.memorai.presentation.ui.fragment.CloudSyncFragment"
+        android:label="Cloud Sync"
+        tools:layout="@layout/fragment_cloud_sync" />
+
+    <fragment
+        android:id="@+id/settingsFragment"
+        android:name="com.example.memorai.presentation.ui.fragment.SettingsFragment"
+        android:label="Settings"
+        tools:layout="@layout/fragment_settings" />
+
 </navigation>

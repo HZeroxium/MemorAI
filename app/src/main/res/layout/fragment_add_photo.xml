@@ -30,6 +30,7 @@
         android:layout_height="0dp"
         android:layout_margin="16dp"
         android:layout_marginBottom="@string/preview_image"
+        android:contentDescription="TODO"
         android:scaleType="centerCrop"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"

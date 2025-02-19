@@ -19,6 +19,7 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.MemorAI"
+        android:name="com.example.memorai.MemoraiApplication"
         tools:targetApi="31">
 
         <!-- Khai báo MainActivity -->

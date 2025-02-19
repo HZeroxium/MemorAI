@@ -1,74 +1,41 @@
 // data/local/entity/PhotoEntity.java
 package com.example.memorai.data.local.entity;
 
+import static androidx.room.ForeignKey.CASCADE;
+
+import androidx.annotation.NonNull;
 import androidx.room.ColumnInfo;
 import androidx.room.Entity;
 import androidx.room.ForeignKey;
+import androidx.room.Index;
 import androidx.room.PrimaryKey;
 
-@Entity(
-        tableName = "photos",
-        foreignKeys = @ForeignKey(
-                entity = AlbumEntity.class,
+@Entity(tableName = "photo",
+        foreignKeys = @ForeignKey(entity = AlbumEntity.class,
                 parentColumns = "id",
                 childColumns = "album_id",
-                onDelete = ForeignKey.CASCADE
-        )
-)
+                onDelete = CASCADE),
+        indices = {@Index(value = "album_id")})
 public class PhotoEntity {
+    @PrimaryKey
+    @ColumnInfo(name = "id")
+    @NonNull
+    public String id = "";
 
-    @PrimaryKey(autoGenerate = true)
-    private int photoId;
+    @ColumnInfo(name = "album_id")
+    public String albumId;
 
-    @ColumnInfo(name = "photo_url")
-    private String photoUrl;
+    @ColumnInfo(name = "file_path")
+    public String filePath;
 
-    @ColumnInfo(name = "album_id", index = true)
-    private int albumId;
+    @ColumnInfo(name = "tags")
+    public String tags; // Comma-separated tags
 
     @ColumnInfo(name = "created_at")
-    private long createdAt;
+    public long createdAt;
 
-    // Ví dụ: có thể thêm trường "tags", "isFavorite", "description"...
-//     @ColumnInfo(name = "tags")
-//     private String tags;
-
-    public PhotoEntity(String photoUrl, int albumId, long createdAt) {
-        this.photoUrl = photoUrl;
-        this.albumId = albumId;
-        this.createdAt = createdAt;
-    }
-
-    // Getters/Setters
-    public int getPhotoId() {
-        return photoId;
-    }
-
-    public void setPhotoId(int photoId) {
-        this.photoId = photoId;
-    }
-
-    public String getPhotoUrl() {
-        return photoUrl;
-    }
-
-    public void setPhotoUrl(String photoUrl) {
-        this.photoUrl = photoUrl;
-    }
-
-    public int getAlbumId() {
-        return albumId;
-    }
-
-    public void setAlbumId(int albumId) {
-        this.albumId = albumId;
-    }
-
-    public long getCreatedAt() {
-        return createdAt;
-    }
-
-    public void setCreatedAt(long createdAt) {
-        this.createdAt = createdAt;
-    }
+    @ColumnInfo(name = "updated_at")
+    public long updatedAt;
 }
+
+

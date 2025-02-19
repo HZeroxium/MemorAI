@@ -21,6 +21,9 @@ import com.example.memorai.databinding.FragmentAlbumListBinding;
 import com.example.memorai.presentation.ui.adapter.AlbumAdapter;
 import com.example.memorai.presentation.viewmodel.AlbumViewModel;
 
+import dagger.hilt.android.AndroidEntryPoint;
+
+@AndroidEntryPoint
 public class AlbumListFragment extends Fragment {
     private FragmentAlbumListBinding binding;
     private AlbumViewModel albumViewModel;
@@ -48,7 +51,7 @@ public class AlbumListFragment extends Fragment {
         // Handle album click
         albumAdapter.setOnAlbumClickListener(album -> {
             Bundle args = new Bundle();
-            args.putInt("album_id", album.getId());
+            args.putInt("album_id", Integer.parseInt(album.getId()));
             Navigation.findNavController(view).navigate(R.id.photoListFragment, args);
         });
 

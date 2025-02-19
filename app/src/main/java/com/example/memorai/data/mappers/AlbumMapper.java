@@ -6,18 +6,17 @@ import com.example.memorai.domain.model.Album;
 
 public class AlbumMapper {
     public static Album toDomain(AlbumEntity entity) {
-        Album album = new Album(entity.getName());
-        album.setId(entity.getId());
-        album.setCreatedAt(entity.getCreatedAt());
-        return album;
+        return new Album(entity.id, entity.name, entity.description, entity.coverPhotoUrl, entity.createdAt, entity.updatedAt);
     }
 
-    public static AlbumEntity toEntity(Album album) {
-        AlbumEntity entity = new AlbumEntity(
-                album.getName(),
-                album.getCreatedAt()
-        );
-        entity.setId(album.getId());
+    public static AlbumEntity fromDomain(Album album) {
+        AlbumEntity entity = new AlbumEntity();
+        entity.id = album.getId();
+        entity.name = album.getName();
+        entity.description = album.getDescription();
+        entity.coverPhotoUrl = album.getCoverPhotoUrl();
+        entity.createdAt = album.getCreatedAt();
+        entity.updatedAt = album.getUpdatedAt();
         return entity;
     }
 }

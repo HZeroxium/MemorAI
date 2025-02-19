@@ -1,17 +1,20 @@
 // domain/usecase/album/DeleteAlbumUseCase.java
 package com.example.memorai.domain.usecase.album;
 
-import com.example.memorai.domain.model.Album;
 import com.example.memorai.domain.repository.AlbumRepository;
 
-public class DeleteAlbumUseCase {
-    private final AlbumRepository repo;
+import javax.inject.Inject;
 
-    public DeleteAlbumUseCase(AlbumRepository repo) {
-        this.repo = repo;
+public class DeleteAlbumUseCase {
+    private final AlbumRepository albumRepository;
+
+    @Inject
+    public DeleteAlbumUseCase(AlbumRepository albumRepository) {
+        this.albumRepository = albumRepository;
     }
 
-    public void execute(Album album) {
-        repo.deleteAlbum(album);
+    public void execute(String albumId) {
+        albumRepository.deleteAlbum(albumId);
     }
 }
+

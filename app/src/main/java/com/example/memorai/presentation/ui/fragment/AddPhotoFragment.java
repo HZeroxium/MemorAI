@@ -7,6 +7,7 @@ import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.MediaStore;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -23,13 +24,18 @@ import androidx.lifecycle.ViewModelProvider;
 
 import com.bumptech.glide.Glide;
 import com.example.memorai.R;
+import com.example.memorai.domain.model.Photo;
 import com.example.memorai.presentation.viewmodel.PhotoViewModel;
 
+import dagger.hilt.android.AndroidEntryPoint;
+
+@AndroidEntryPoint
 public class AddPhotoFragment extends Fragment {
 
     private ImageView imageViewPreview;
     private Uri photoUri;
     private PhotoViewModel photoViewModel;
+    public static final String ROOT_ALBUM_ID = "1";
 
     @Nullable
     @Override
@@ -57,6 +63,7 @@ public class AddPhotoFragment extends Fragment {
             registerForActivityResult(new ActivityResultContracts.GetContent(), uri -> {
                 if (uri != null) {
                     displayImage(uri);
+                    Log.d("AddPhotoFragment", "onActivityResult: " + uri);
                     savePhotoToDatabase(uri);
                 } else {
                     Toast.makeText(requireContext(), "No image selected", Toast.LENGTH_SHORT).show();
@@ -82,6 +89,7 @@ public class AddPhotoFragment extends Fragment {
         if (ContextCompat.checkSelfPermission(requireContext(), Manifest.permission.CAMERA)
                 == PackageManager.PERMISSION_GRANTED) {
             photoUri = createImageUri();
+            Log.d("AddPhotoFragment", "openCamera: " + photoUri);
             if (photoUri != null) {
                 cameraLauncher.launch(photoUri);
             } else {
@@ -131,8 +139,17 @@ public class AddPhotoFragment extends Fragment {
      * Save photo URI to database.
      */
     private void savePhotoToDatabase(Uri uri) {
-        photoViewModel.addPhoto(uri.toString(), 1); // Example: albumId = 1
-        Toast.makeText(requireContext(), "Photo added successfully", Toast.LENGTH_SHORT).show();
+        Photo photo = new Photo(
+                String.valueOf(System.currentTimeMillis()),
+                ROOT_ALBUM_ID, // Example: albumId = 1
+                uri.toString()
+        );
+        if (photo.getFilePath() != null) {
+            photoViewModel.addPhoto(photo);
+            Toast.makeText(requireContext(), "Photo added successfully", Toast.LENGTH_SHORT).show();
+        } else {
+            Toast.makeText(requireContext(), "Failed to save photo", Toast.LENGTH_SHORT).show();
+        }
     }
 
 
