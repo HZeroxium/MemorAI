@@ -6,24 +6,30 @@ import android.view.View;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.app.AppCompatDelegate;
+import androidx.lifecycle.ViewModelProvider;
 import androidx.navigation.NavController;
 import androidx.navigation.fragment.NavHostFragment;
 import androidx.navigation.ui.NavigationUI;
 
 import com.example.memorai.R;
 import com.example.memorai.databinding.ActivityMainBinding;
+import com.example.memorai.presentation.viewmodel.AlbumViewModel;
 
 import dagger.hilt.android.AndroidEntryPoint;
 
 @AndroidEntryPoint
 public class MainActivity extends AppCompatActivity {
     private ActivityMainBinding binding;
+    private AlbumViewModel albumViewModel;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         binding = ActivityMainBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
+
+        albumViewModel = new ViewModelProvider(this).get(AlbumViewModel.class);
+        albumViewModel.ensureDefaultAlbumExists(); // Ensure default album exists
 
         setupDarkMode();
         setupNavigation();
@@ -37,17 +43,15 @@ public class MainActivity extends AppCompatActivity {
         );
         binding.switchDarkMode.setChecked(isDarkModeEnabled);
 
-        binding.switchDarkMode.setOnCheckedChangeListener((buttonView, isChecked) -> {
-            new Thread(() -> {
-                getSharedPreferences("settings", MODE_PRIVATE)
-                        .edit()
-                        .putBoolean("dark_mode", isChecked)
-                        .apply();
-                runOnUiThread(() -> AppCompatDelegate.setDefaultNightMode(
-                        isChecked ? AppCompatDelegate.MODE_NIGHT_YES : AppCompatDelegate.MODE_NIGHT_NO
-                ));
-            }).start();
-        });
+        binding.switchDarkMode.setOnCheckedChangeListener((buttonView, isChecked) -> new Thread(() -> {
+            getSharedPreferences("settings", MODE_PRIVATE)
+                    .edit()
+                    .putBoolean("dark_mode", isChecked)
+                    .apply();
+            runOnUiThread(() -> AppCompatDelegate.setDefaultNightMode(
+                    isChecked ? AppCompatDelegate.MODE_NIGHT_YES : AppCompatDelegate.MODE_NIGHT_NO
+            ));
+        }).start());
     }
 
     private void setupNavigation() {
@@ -68,7 +72,6 @@ public class MainActivity extends AppCompatActivity {
                 }
             });
         } catch (IllegalStateException e) {
-            e.printStackTrace();
             throw new IllegalStateException("Failed to initialize NavHostFragment: " + e.getMessage());
         }
     }

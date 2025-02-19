@@ -61,5 +61,20 @@ public class AlbumViewModel extends ViewModel {
     public void deleteAlbum(String albumId) {
         new Thread(() -> deleteAlbumUseCase.execute(albumId)).start();
     }
+
+    public void ensureDefaultAlbumExists() {
+        new Thread(() -> {
+            List<Album> albums = getAlbumsUseCase.execute();
+            if (albums == null || albums.isEmpty()) {
+                // Default album does not exist, create one
+                Album defaultAlbum = new Album("1",
+                        "root", "", "",
+                        System.currentTimeMillis(),
+                        System.currentTimeMillis());
+                createAlbumUseCase.execute(defaultAlbum);
+            }
+        }).start();
+    }
+
 }
 

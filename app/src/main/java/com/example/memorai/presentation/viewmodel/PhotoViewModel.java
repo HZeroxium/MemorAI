@@ -28,6 +28,8 @@ public class PhotoViewModel extends ViewModel {
     private final SearchPhotosUseCase searchPhotosUseCase;
     private final SortPhotosUseCase sortPhotosUseCase;
 
+    public static final String ROOT_ALBUM_ID = "1";
+
     private final MutableLiveData<List<Photo>> albumPhotos = new MutableLiveData<>();
 
     @Inject
@@ -51,7 +53,7 @@ public class PhotoViewModel extends ViewModel {
 
     public void loadAllPhotos() {
         new Thread(() -> {
-            List<Photo> photos = getPhotosByAlbumUseCase.execute(null);
+            List<Photo> photos = getPhotosByAlbumUseCase.execute(ROOT_ALBUM_ID);
             albumPhotos.postValue(photos);
         }).start();
     }
