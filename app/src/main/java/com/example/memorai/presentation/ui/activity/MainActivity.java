@@ -31,28 +31,28 @@ public class MainActivity extends AppCompatActivity {
         albumViewModel = new ViewModelProvider(this).get(AlbumViewModel.class);
         albumViewModel.ensureDefaultAlbumExists(); // Ensure default album exists
 
-        setupDarkMode();
+//        setupDarkMode();
         setupNavigation();
     }
 
-    private void setupDarkMode() {
-        boolean isDarkModeEnabled = getSharedPreferences("settings", MODE_PRIVATE)
-                .getBoolean("dark_mode", false);
-        AppCompatDelegate.setDefaultNightMode(
-                isDarkModeEnabled ? AppCompatDelegate.MODE_NIGHT_YES : AppCompatDelegate.MODE_NIGHT_NO
-        );
-        binding.switchDarkMode.setChecked(isDarkModeEnabled);
-
-        binding.switchDarkMode.setOnCheckedChangeListener((buttonView, isChecked) -> new Thread(() -> {
-            getSharedPreferences("settings", MODE_PRIVATE)
-                    .edit()
-                    .putBoolean("dark_mode", isChecked)
-                    .apply();
-            runOnUiThread(() -> AppCompatDelegate.setDefaultNightMode(
-                    isChecked ? AppCompatDelegate.MODE_NIGHT_YES : AppCompatDelegate.MODE_NIGHT_NO
-            ));
-        }).start());
-    }
+//    private void setupDarkMode() {
+//        boolean isDarkModeEnabled = getSharedPreferences("settings", MODE_PRIVATE)
+//                .getBoolean("dark_mode", false);
+//        AppCompatDelegate.setDefaultNightMode(
+//                isDarkModeEnabled ? AppCompatDelegate.MODE_NIGHT_YES : AppCompatDelegate.MODE_NIGHT_NO
+//        );
+//        binding.switchDarkMode.setChecked(isDarkModeEnabled);
+//
+//        binding.switchDarkMode.setOnCheckedChangeListener((buttonView, isChecked) -> new Thread(() -> {
+//            getSharedPreferences("settings", MODE_PRIVATE)
+//                    .edit()
+//                    .putBoolean("dark_mode", isChecked)
+//                    .apply();
+//            runOnUiThread(() -> AppCompatDelegate.setDefaultNightMode(
+//                    isChecked ? AppCompatDelegate.MODE_NIGHT_YES : AppCompatDelegate.MODE_NIGHT_NO
+//            ));
+//        }).start());
+//    }
 
     private void setupNavigation() {
         try {
