@@ -1,43 +1,171 @@
-<?xml version="1.0" encoding="utf-8"?><!--layout/fragment_settings.xml-->
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:padding="16dp">
+    android:orientation="vertical"
+    android:padding="20dp">
 
-    <TextView
-        android:id="@+id/textViewLanguageLabel"
-        android:layout_width="wrap_content"
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Language:"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        android:layout_marginBottom="15dp">
 
-    <TextView
-        android:id="@+id/textViewLanguage"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="8dp"
-        android:text="en"
-        app:layout_constraintStart_toEndOf="@id/textViewLanguageLabel"
-        app:layout_constraintTop_toTopOf="parent" />
+        <!-- Icon Exit -->
+        <ImageButton
+            android:id="@+id/btnExit"
+            android:layout_width="73dp"
+            android:layout_height="match_parent"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:contentDescription="Exit"
+            android:src="@drawable/ic_exit"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            tools:ignore="HardcodedText,TouchTargetSizeCheck" />
 
-    <com.google.android.material.switchmaterial.SwitchMaterial
-        android:id="@+id/switchDarkMode"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="24dp"
-        android:text="Dark Mode"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/textViewLanguage" />
+        <!-- TextView Settings -->
+        <TextView
+            android:id="@+id/tvSettings"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:drawableRight="@drawable/ic_gear_icon"
+            android:drawablePadding="5dp"
+            android:gravity="center"
+            android:text="Settings"
+            android:textSize="30sp"
+            android:textStyle="bold"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="0.262"
+            app:layout_constraintStart_toEndOf="@+id/btnExit"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintVertical_bias="0.0"
+            tools:ignore="HardcodedText,RtlHardcoded,UseCompatTextViewDrawableXml" />
+    </androidx.constraintlayout.widget.ConstraintLayout>
 
-    <com.google.android.material.switchmaterial.SwitchMaterial
-        android:id="@+id/switchCloudSync"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="24dp"
-        android:text="Cloud Sync"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/switchDarkMode" />
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="440dp"
+        android:layout_margin="16dp"
+        android:background="@drawable/rounded_corner_bg"
+        android:elevation="4dp"
+        android:padding="16dp">
 
-</androidx.constraintlayout.widget.ConstraintLayout>
+        <!-- Dark Mode Label -->
+
+        <!-- Dark Mode Switch -->
+
+        <!-- Language Label -->
+        <TextView
+            android:id="@+id/tvDarkMode"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="20dp"
+            android:gravity="center"
+            android:minWidth="48dp"
+            android:minHeight="48dp"
+            android:text="Dark Mode"
+            android:textColor="@android:color/black"
+            android:textSize="18sp"
+            app:layout_constraintBottom_toTopOf="@+id/tvLanguage"
+            app:layout_constraintEnd_toStartOf="@+id/switchDarkMode"
+            app:layout_constraintHorizontal_bias="0.0"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintVertical_bias="0.5"
+            app:layout_constraintVertical_chainStyle="packed" />
+
+        <Switch
+            android:id="@+id/switchDarkMode"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:minWidth="48dp"
+            android:minHeight="48dp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="@id/tvDarkMode" />
+
+        <TextView
+            android:id="@+id/tvLanguage"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="20dp"
+            android:gravity="center"
+            android:minWidth="48dp"
+            android:minHeight="48dp"
+            android:text="Language"
+            android:textColor="@android:color/black"
+            android:textSize="18sp"
+            app:layout_constraintBottom_toTopOf="@id/tvSync"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/tvDarkMode" />
+
+        <!-- Language EditText -->
+        <Spinner
+            android:id="@+id/textViewLanguage"
+            android:layout_width="wrap_content"
+            android:layout_height="48dp"
+            android:layout_marginTop="20dp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/switchDarkMode" />
+        <!-- Synchronize Label -->
+        <TextView
+            android:id="@+id/tvSync"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="20dp"
+            android:gravity="center"
+            android:minWidth="48dp"
+            android:minHeight="48dp"
+            android:text="Synchronize"
+            android:textColor="@android:color/black"
+            android:textSize="18sp"
+            app:layout_constraintBottom_toTopOf="@id/btnChangePin"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/tvLanguage" />
+
+        <!-- Synchronize Switch -->
+        <Switch
+            android:id="@+id/switchCloudSync"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:minWidth="48dp"
+            android:minHeight="48dp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="@id/tvSync" />
+
+        <!-- Change PIN Button -->
+        <Button
+            android:id="@+id/btnChangePin"
+            android:layout_width="0dp"
+            android:layout_height="48dp"
+            android:layout_marginTop="60dp"
+            android:background="@drawable/rounded_button"
+            android:backgroundTint="@color/md_theme_error"
+            android:fontFamily="sans-serif-medium"
+            android:text="Change PIN"
+            android:textColor="@android:color/white"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/tvSync" />
+
+        <!-- Reset System Button -->
+        <Button
+            android:id="@+id/btnResetSystem"
+            android:layout_width="0dp"
+            android:layout_height="48dp"
+            android:layout_marginTop="20dp"
+            android:background="@drawable/rounded_button"
+            android:backgroundTint="@color/md_theme_error"
+            android:text="Reset System"
+            android:textColor="@android:color/white"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="0.0"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/btnChangePin" />
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+
+</LinearLayout>
