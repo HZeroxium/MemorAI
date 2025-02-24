@@ -16,4 +16,5 @@
     <string name="photos">Photos</string>
     <string name="albums">Albums</string>
     <string name="root_album_id">1</string>
+    <string name="hi">Hi, you\nhave a nice day!</string>
 </resources>
