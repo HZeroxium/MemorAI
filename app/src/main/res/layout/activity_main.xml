@@ -4,6 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    style="@style/SCREEN"
     tools:context=".presentation.ui.activity.MainActivity">
 
     <androidx.constraintlayout.widget.ConstraintLayout
@@ -14,11 +15,13 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHeight_percent="0.14"
+        style="@style/SCREEN"
         tools:ignore="ExtraText">
 
         <ImageView
             android:id="@+id/profileIcon"
             android:layout_width="0dp"
+            style="@style/content"
             android:layout_height="0dp"
             android:src="@drawable/ic_profile"
             app:layout_constraintBottom_toBottomOf="parent"
@@ -31,12 +34,12 @@
         <TextView
             android:id="@+id/headerText"
             android:layout_width="0dp"
+            style="@style/content"
             android:layout_height="wrap_content"
             android:layout_marginHorizontal="16dp"
             android:gravity="start"
             android:text="@string/hi"
             android:textSize="20sp"
-            android:textStyle="bold"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toStartOf="@id/addIcon"
             app:layout_constraintStart_toEndOf="@id/profileIcon"
@@ -46,6 +49,7 @@
             android:id="@+id/addIcon"
             android:layout_width="40dp"
             android:layout_height="40dp"
+            style="@style/content"
             android:src="@drawable/ic_add"
             android:layout_margin="10dp"
             app:layout_constraintBottom_toBottomOf="parent"
@@ -57,6 +61,7 @@
             android:id="@+id/notificationIcon"
             android:layout_width="40dp"
             android:layout_height="40dp"
+            style="@style/content"
             android:src="@drawable/ic_notification"
             android:layout_margin="10dp"
             app:layout_constraintBottom_toBottomOf="parent"
@@ -70,8 +75,8 @@
         android:id="@+id/searchBar"
         android:layout_width="0dp"
         android:layout_height="48dp"
+        style="@style/search"
         android:layout_marginHorizontal="16dp"
-        android:background="@drawable/search_view_border"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="@id/header"
         app:layout_constraintTop_toBottomOf="@id/header"
@@ -82,7 +87,7 @@
         android:name="androidx.navigation.fragment.NavHostFragment"
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:layout_marginTop="25dp"
+        android:layout_marginTop="0dp"
         app:defaultNavHost="true"
         app:layout_constraintBottom_toTopOf="@id/bottomNavigation"
         app:layout_constraintTop_toBottomOf="@id/searchBar"
@@ -91,11 +96,13 @@
     <!-- Bottom Navigation View -->
     <com.google.android.material.bottomnavigation.BottomNavigationView
         android:id="@+id/bottomNavigation"
+        style="@style/bottom_menu"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
+        app:itemTextColor="@color/md_theme_onPrimaryContainer"
         app:menu="@menu/bottom_navigation_menu" />
 
     <androidx.constraintlayout.widget.Guideline

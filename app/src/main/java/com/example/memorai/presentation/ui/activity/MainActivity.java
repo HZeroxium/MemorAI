@@ -1,9 +1,15 @@
 package com.example.memorai.presentation.ui.activity;
 
+import android.content.Context;
+import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.text.SpannableString;
+import android.text.style.ForegroundColorSpan;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.PopupMenu;
+
+import androidx.appcompat.app.AppCompatDelegate;
 import androidx.lifecycle.ViewModelProvider;
 
 import androidx.annotation.NonNull;
@@ -25,6 +31,16 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        SharedPreferences sharedPreferences = getSharedPreferences("Mode", Context.MODE_PRIVATE);
+        boolean darkMode = sharedPreferences.getBoolean("night", false);
+
+        // Áp dụng chế độ dựa trên cài đặt
+        if (darkMode) {
+            AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES);
+        } else {
+            AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO);
+        }
+
         super.onCreate(savedInstanceState);
         binding = ActivityMainBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
@@ -35,6 +51,7 @@ public class MainActivity extends AppCompatActivity {
         setupNavigation();
         setupProfileIcon();
     }
+
 
     private void setupNavigation() {
         try {
@@ -47,7 +64,7 @@ public class MainActivity extends AppCompatActivity {
             NavigationUI.setupWithNavController(binding.bottomNavigation, navController);
 
             navController.addOnDestinationChangedListener((controller, destination, arguments) -> {
-                if (destination.getId() == R.id.photoDetailFragment) {
+                if (destination.getId() == R.id.photoDetailFragment || destination.getId() == R.id.addPhotoFragment || destination.getId() == R.id.settingsFragment) {
                     binding.bottomNavigation.setVisibility(View.GONE);
                     binding.header.setVisibility(View.GONE);
                     binding.searchBar.setVisibility(View.GONE);
@@ -67,7 +84,15 @@ public class MainActivity extends AppCompatActivity {
             // Create a PopupMenu
             PopupMenu popupMenu = new PopupMenu(this, v);
             popupMenu.getMenuInflater().inflate(R.menu.profile_menu, popupMenu.getMenu());
-
+            for (int i = 0; i < popupMenu.getMenu().size(); i++) {
+                MenuItem menuItem = popupMenu.getMenu().getItem(i);
+                SpannableString s = new SpannableString(menuItem.getTitle());
+                s.setSpan(
+                        new ForegroundColorSpan(getResources().getColor(R.color.md_theme_onBackground)),
+                        0, s.length(), 0
+                );
+                menuItem.setTitle(s);
+            }
             // Set click listener for menu items
             popupMenu.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
                 @Override

@@ -5,13 +5,16 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    android:padding="20dp">
+    style="@style/SCREEN"
+    android:id="@+id/settingsLayout"
+    android:padding="10dp">
 
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginBottom="15dp">
+        android:layout_marginBottom="15dp"
+        android:layout_marginTop="20dp">
 
         <!-- Icon Exit -->
         <ImageButton
@@ -35,6 +38,7 @@
             android:drawablePadding="5dp"
             android:gravity="center"
             android:text="Settings"
+            style="@style/content"
             android:textSize="30sp"
             android:textStyle="bold"
             app:layout_constraintBottom_toBottomOf="parent"
@@ -48,17 +52,13 @@
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
-        android:layout_height="440dp"
+        android:layout_height="480dp"
         android:layout_margin="16dp"
         android:background="@drawable/rounded_corner_bg"
         android:elevation="4dp"
-        android:padding="16dp">
+        android:padding="35dp">
 
-        <!-- Dark Mode Label -->
 
-        <!-- Dark Mode Switch -->
-
-        <!-- Language Label -->
         <TextView
             android:id="@+id/tvDarkMode"
             android:layout_width="wrap_content"
@@ -76,7 +76,8 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"
             app:layout_constraintVertical_bias="0.5"
-            app:layout_constraintVertical_chainStyle="packed" />
+            app:layout_constraintVertical_chainStyle="packed"
+            tools:ignore="HardcodedText" />
 
         <Switch
             android:id="@+id/switchDarkMode"
@@ -85,7 +86,8 @@
             android:minWidth="48dp"
             android:minHeight="48dp"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintTop_toTopOf="@id/tvDarkMode" />
+            app:layout_constraintTop_toTopOf="@id/tvDarkMode"
+            tools:ignore="DuplicateSpeakableTextCheck,UseSwitchCompatOrMaterialXml" />
 
         <TextView
             android:id="@+id/tvLanguage"
@@ -100,7 +102,8 @@
             android:textSize="18sp"
             app:layout_constraintBottom_toTopOf="@id/tvSync"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/tvDarkMode" />
+            app:layout_constraintTop_toBottomOf="@id/tvDarkMode"
+            tools:ignore="HardcodedText" />
 
         <!-- Language EditText -->
         <Spinner
@@ -124,7 +127,8 @@
             android:textSize="18sp"
             app:layout_constraintBottom_toTopOf="@id/btnChangePin"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/tvLanguage" />
+            app:layout_constraintTop_toBottomOf="@id/tvLanguage"
+            tools:ignore="HardcodedText" />
 
         <!-- Synchronize Switch -->
         <Switch
@@ -134,7 +138,8 @@
             android:minWidth="48dp"
             android:minHeight="48dp"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintTop_toTopOf="@id/tvSync" />
+            app:layout_constraintTop_toTopOf="@id/tvSync"
+            tools:ignore="UseSwitchCompatOrMaterialXml" />
 
         <!-- Change PIN Button -->
         <Button
@@ -149,7 +154,8 @@
             android:textColor="@android:color/white"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/tvSync" />
+            app:layout_constraintTop_toBottomOf="@id/tvSync"
+            tools:ignore="HardcodedText,VisualLintButtonSize" />
 
         <!-- Reset System Button -->
         <Button
@@ -164,7 +170,8 @@
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintHorizontal_bias="0.0"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/btnChangePin" />
+            app:layout_constraintTop_toBottomOf="@id/btnChangePin"
+            tools:ignore="HardcodedText,VisualLintButtonSize" />
     </androidx.constraintlayout.widget.ConstraintLayout>
 
 
