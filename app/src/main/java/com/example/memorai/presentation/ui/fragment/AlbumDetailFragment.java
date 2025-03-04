@@ -11,15 +11,13 @@ import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.navigation.Navigation;
+import androidx.recyclerview.widget.GridLayoutManager;
 
 import com.example.memorai.R;
 import com.example.memorai.databinding.FragmentAlbumDetailBinding;
-import com.example.memorai.domain.model.Photo;
 import com.example.memorai.presentation.ui.adapter.PhotoAdapter;
 import com.example.memorai.presentation.viewmodel.AlbumViewModel;
 import com.example.memorai.presentation.viewmodel.PhotoViewModel;
-
-import java.util.List;
 
 import dagger.hilt.android.AndroidEntryPoint;
 
@@ -90,23 +88,34 @@ public class AlbumDetailFragment extends Fragment {
     }
 
     private void loadAlbumInfo() {
-        // If your ViewModel has a method to get a single album:
-        // e.g. Album album = albumViewModel.getAlbumById(albumId);
-        // Then display:
-        // binding.textViewAlbumInfo.setText("Created: ...\nName: ...");
-        // For now, a placeholder:
-        binding.textViewAlbumInfo.setText("Album ID: " + albumId + "\n<created date>\n<album name>");
+        albumViewModel.getAlbumById(albumId).observe(getViewLifecycleOwner(), album -> {
+            if (album != null) {
+                String info = "Album ID: " + album.getId() + "\n" +
+                        "Created: " + album.getCreatedAt() + "\n" +
+                        "Name: " + album.getName();
+                binding.textViewAlbumInfo.setText(info);
+            }
+        });
     }
 
+
     private void loadAlbumPhotos() {
-        // Use your PhotoViewModel to get photos by album
-        photoViewModel.observeAllPhotos().observe(getViewLifecycleOwner(), photos -> {
-            // Filter by albumId if needed
-            List<Photo> albumPhotos = photoViewModel.getPhotosByAlbum(albumId);
-            photoAdapter.submitList(albumPhotos);
+        // Ensure LayoutManager is set
+        binding.recyclerViewAlbumPhotos.setLayoutManager(new GridLayoutManager(requireContext(), 3));
+
+        photoViewModel.observePhotosByAlbum().observe(getViewLifecycleOwner(), albumPhotos -> {
+            if (albumPhotos != null && !albumPhotos.isEmpty()) {
+                photoAdapter.submitList(albumPhotos);
+                binding.textViewNoPhotos.setVisibility(View.GONE);
+            } else {
+                binding.textViewNoPhotos.setVisibility(View.VISIBLE);
+            }
         });
+
+        // Ensure data is loaded properly
         photoViewModel.loadPhotosByAlbum(albumId);
     }
+
 
     @Override
     public void onDestroyView() {

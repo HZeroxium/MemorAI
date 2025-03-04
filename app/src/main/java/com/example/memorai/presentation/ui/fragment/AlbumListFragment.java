@@ -1,13 +1,10 @@
 // presentation/ui/fragment/AlbumListFragment.java
 package com.example.memorai.presentation.ui.fragment;
 
-import android.app.AlertDialog;
 import android.os.Bundle;
-import android.text.InputType;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.EditText;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -51,12 +48,12 @@ public class AlbumListFragment extends Fragment {
         // Handle album click
         albumAdapter.setOnAlbumClickListener(album -> {
             Bundle args = new Bundle();
-            args.putInt("album_id", Integer.parseInt(album.getId()));
-            Navigation.findNavController(view).navigate(R.id.photoListFragment, args);
+            args.putString("album_id", album.getId());
+            Navigation.findNavController(view).navigate(R.id.albumDetailFragment, args);
         });
 
         // Handle Add Album Button
-        binding.fabAddAlbum.setOnClickListener(v -> showAddAlbumDialog());
+        binding.fabAddAlbum.setOnClickListener(v -> Navigation.findNavController(view).navigate(R.id.albumCreateFragment));
 
         // ViewModel to observe albums
         albumViewModel = new ViewModelProvider(this).get(AlbumViewModel.class);
@@ -64,23 +61,6 @@ public class AlbumListFragment extends Fragment {
                 albumAdapter.submitList(albums)
         );
         albumViewModel.loadAllAlbums();
-    }
-
-    private void showAddAlbumDialog() {
-        EditText editText = new EditText(requireContext());
-        editText.setInputType(InputType.TYPE_CLASS_TEXT);
-
-        new AlertDialog.Builder(requireContext())
-                .setTitle("Create Album")
-                .setView(editText)
-                .setPositiveButton("OK", (dialog, which) -> {
-                    String albumName = editText.getText().toString().trim();
-                    if (!albumName.isEmpty()) {
-                        albumViewModel.addAlbum(albumName);
-                    }
-                })
-                .setNegativeButton("Cancel", null)
-                .show();
     }
 
     @Override

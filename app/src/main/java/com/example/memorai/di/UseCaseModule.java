@@ -8,6 +8,7 @@ import com.example.memorai.domain.repository.PhotoRepository;
 import com.example.memorai.domain.repository.SettingsRepository;
 import com.example.memorai.domain.repository.UserRepository;
 import com.example.memorai.domain.usecase.album.CreateAlbumUseCase;
+import com.example.memorai.domain.usecase.album.CreateAlbumWithPhotosUseCase;
 import com.example.memorai.domain.usecase.album.GetAlbumByIdUseCase;
 import com.example.memorai.domain.usecase.album.GetAlbumsUseCase;
 import com.example.memorai.domain.usecase.album.SearchAlbumsUseCase;
@@ -157,5 +158,11 @@ public class UseCaseModule {
     @Singleton
     public UpdateUserUseCase provideUpdateUserUseCase(UserRepository userRepository) {
         return new UpdateUserUseCase(userRepository);
+    }
+
+    @Provides
+    @Singleton
+    public CreateAlbumWithPhotosUseCase provideCreateAlbumWithPhotosUseCase(AlbumRepository albumRepository) {
+        return new CreateAlbumWithPhotosUseCase(albumRepository);
     }
 }

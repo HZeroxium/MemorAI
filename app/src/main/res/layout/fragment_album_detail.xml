@@ -26,6 +26,18 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/toolbarAlbumDetail" />
 
+    <!-- Text no photos in this album -->
+    <TextView
+        android:id="@+id/textViewNoPhotos"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="16dp"
+        android:text="@string/no_photos_in_this_album"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/textViewAlbumInfo" />
+
+
     <!-- RecyclerView for photos in this album -->
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/recyclerViewAlbumPhotos"

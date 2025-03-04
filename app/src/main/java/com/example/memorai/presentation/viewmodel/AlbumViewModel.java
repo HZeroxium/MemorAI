@@ -6,14 +6,15 @@ import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.ViewModel;
 
 import com.example.memorai.domain.model.Album;
+import com.example.memorai.domain.model.Photo;
 import com.example.memorai.domain.usecase.album.CreateAlbumUseCase;
+import com.example.memorai.domain.usecase.album.CreateAlbumWithPhotosUseCase;
 import com.example.memorai.domain.usecase.album.DeleteAlbumUseCase;
 import com.example.memorai.domain.usecase.album.GetAlbumByIdUseCase;
 import com.example.memorai.domain.usecase.album.GetAlbumsUseCase;
 import com.example.memorai.domain.usecase.album.UpdateAlbumUseCase;
 
 import java.util.List;
-import java.util.UUID;
 
 import javax.inject.Inject;
 
@@ -26,6 +27,7 @@ public class AlbumViewModel extends ViewModel {
     private final UpdateAlbumUseCase updateAlbumUseCase;
     private final DeleteAlbumUseCase deleteAlbumUseCase;
     private final GetAlbumByIdUseCase getAlbumByIdUseCase;
+    private final CreateAlbumWithPhotosUseCase createAlbumWithPhotosUseCase;
 
     private final MutableLiveData<List<Album>> allAlbums = new MutableLiveData<>();
 
@@ -34,12 +36,15 @@ public class AlbumViewModel extends ViewModel {
                           GetAlbumsUseCase getAlbumsUseCase,
                           UpdateAlbumUseCase updateAlbumUseCase,
                           DeleteAlbumUseCase deleteAlbumUseCase,
-                          GetAlbumByIdUseCase getAlbumByIdUseCase) {
+                          GetAlbumByIdUseCase getAlbumByIdUseCase,
+                          CreateAlbumWithPhotosUseCase createAlbumWithPhotosUseCase) {
         this.createAlbumUseCase = createAlbumUseCase;
         this.getAlbumsUseCase = getAlbumsUseCase;
         this.updateAlbumUseCase = updateAlbumUseCase;
         this.deleteAlbumUseCase = deleteAlbumUseCase;
         this.getAlbumByIdUseCase = getAlbumByIdUseCase;
+        this.createAlbumWithPhotosUseCase = createAlbumWithPhotosUseCase;
+
     }
 
     public LiveData<List<Album>> observeAllAlbums() {
@@ -53,8 +58,7 @@ public class AlbumViewModel extends ViewModel {
         }).start();
     }
 
-    public void addAlbum(String albumName) {
-        Album album = new Album(UUID.randomUUID().toString(), albumName, "", "", System.currentTimeMillis(), System.currentTimeMillis());
+    public void addAlbum(Album album) {
         new Thread(() -> createAlbumUseCase.execute(album)).start();
     }
 
@@ -87,6 +91,14 @@ public class AlbumViewModel extends ViewModel {
             result.postValue(album);
         }).start();
         return result;
+    }
+
+    public LiveData<Album> getAlbumById(String albumId) {
+        return observeAlbumById(albumId);
+    }
+
+    public void createAlbumWithPhotos(Album album, List<Photo> photos) {
+        new Thread(() -> createAlbumWithPhotosUseCase.execute(album, photos)).start();
     }
 
 

@@ -11,6 +11,7 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.DiffUtil;
 import androidx.recyclerview.widget.ListAdapter;
 
+import com.bumptech.glide.Glide;
 import com.example.memorai.R;
 import com.example.memorai.domain.model.Album;
 
@@ -45,7 +46,7 @@ public class AlbumAdapter extends ListAdapter<Album, AlbumAdapter.AlbumViewHolde
         Album album = getItem(position);
         holder.textViewAlbumName.setText(album.getName());
         // If you want a cover photo:
-        // Glide.with(holder.itemView.getContext()).load(album.getCoverPhotoUrl()).into(holder.imageViewCover);
+        Glide.with(holder.itemView.getContext()).load(album.getCoverPhotoUrl()).into(holder.imageViewCover);
         holder.itemView.setOnClickListener(v -> {
             if (onAlbumClickListener != null) {
                 onAlbumClickListener.onAlbumClick(album);

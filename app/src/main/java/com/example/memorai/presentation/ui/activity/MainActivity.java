@@ -69,12 +69,9 @@ public class MainActivity extends AppCompatActivity {
             NavigationUI.setupWithNavController(binding.bottomNavigation, navController);
 
             navController.addOnDestinationChangedListener((controller, destination, arguments) -> {
-                boolean isHiddenScreen = destination.getId() == R.id.photoDetailFragment
-                        || destination.getId() == R.id.addPhotoFragment
-//                        || destination.getId() == R.id.photoListFragment
-                        || destination.getId() == R.id.settingsFragment;
+                boolean isHiddenScreen = destination.getId() == R.id.photoListFragment;
 
-                toggleUIVisibility(!isHiddenScreen);
+                toggleUIVisibility(isHiddenScreen);
             });
 
         } catch (IllegalStateException e) {
