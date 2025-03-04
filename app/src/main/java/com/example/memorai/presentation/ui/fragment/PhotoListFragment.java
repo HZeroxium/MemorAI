@@ -2,6 +2,8 @@
 package com.example.memorai.presentation.ui.fragment;
 
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
@@ -56,7 +58,7 @@ public class PhotoListFragment extends Fragment {
 
         // Initial toolbar setup
         binding.toolbarPhotoList.setTitle("MemorAI");
-        binding.toolbarPhotoList.inflateMenu(R.menu.menu_photo_list);
+//        binding.toolbarPhotoList.inflateMenu(R.menu.menu_photo_list);
         binding.toolbarPhotoList.setOnMenuItemClickListener(this::onToolbarMenuItemClick);
 
         // Navigation icon will be used to open the popup for layout modes
@@ -68,12 +70,13 @@ public class PhotoListFragment extends Fragment {
         binding.checkBoxSelectAll.setOnCheckedChangeListener((buttonView, isChecked) -> {
             if (!isSelectionMode) return;
             // If you want a global "Select All" for the entire library, do:
-            if (isChecked) {
-                adapter.selectAllInSection( /* or entire sections... */ 0);
-                // Or loop over all sections
-            } else {
-                adapter.setSelectionMode(true); // keep selection mode
-            }
+            new Handler(Looper.getMainLooper()).post(() -> {
+                if (isChecked) {
+                    adapter.selectAllInSection(0); //
+                } else {
+                    adapter.clearSectionSelection(0);
+                }
+            });
         });
 
         // Setup RecyclerView
@@ -232,10 +235,14 @@ public class PhotoListFragment extends Fragment {
             // Switch the toolbar to "Close" style
             binding.toolbarPhotoList.setNavigationIcon(R.drawable.ic_close);
             binding.toolbarPhotoList.setTitle("Select photos");
-            binding.checkBoxSelectAll.setVisibility(View.GONE); // or VISIBLE if you want a global "Select All"
+
+            binding.toolbarPhotoList.setNavigationOnClickListener(v -> toggleSelectionMode(false));
+
+            binding.checkBoxSelectAll.setVisibility(View.GONE);
         } else {
             // Restore normal toolbar
             binding.toolbarPhotoList.setNavigationIcon(R.drawable.ic_more_vert);
+            binding.toolbarPhotoList.setNavigationOnClickListener(this::showViewModePopup);
             binding.toolbarPhotoList.setTitle("MemorAI");
             binding.checkBoxSelectAll.setVisibility(View.GONE);
         }

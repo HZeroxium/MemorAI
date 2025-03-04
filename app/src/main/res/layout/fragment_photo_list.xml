@@ -5,31 +5,40 @@
     android:layout_height="match_parent"
     android:padding="8dp">
 
-    <!-- Toolbar -->
-    <com.google.android.material.appbar.MaterialToolbar
-        android:id="@+id/toolbarPhotoList"
+    <!-- Toolbar Container -->
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/toolbarContainer"
         android:layout_width="match_parent"
         android:layout_height="?attr/actionBarSize"
-        android:background="?attr/colorSurface"
-        android:theme="@style/ThemeOverlay.MaterialComponents.Toolbar.Primary"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:navigationIcon="@drawable/ic_more_vert"
-        app:title="@string/photos" />
-
-    <!-- Checkbox Select All -->
-    <CheckBox
-        android:id="@+id/checkBoxSelectAll"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginEnd="16dp"
-        android:text="Select All"
-        android:textSize="14sp"
-        android:visibility="gone"
-        app:layout_constraintBottom_toBottomOf="@id/toolbarPhotoList"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toTopOf="@id/toolbarPhotoList" />
+        app:layout_constraintStart_toStartOf="parent">
+
+        <!-- Checkbox Select All -->
+        <CheckBox
+            android:id="@+id/checkBoxSelectAll"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="16dp"
+            android:text="@string/select_all"
+            android:textSize="14sp"
+            android:visibility="gone"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <!-- Toolbar -->
+        <com.google.android.material.appbar.MaterialToolbar
+            android:id="@+id/toolbarPhotoList"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:background="?attr/colorSurface"
+            android:theme="@style/ThemeOverlay.MaterialComponents.Toolbar.Primary"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toEndOf="@id/checkBoxSelectAll"
+            app:menu="@menu/menu_photo_list"
+            app:title="@string/photos" />
+    </androidx.constraintlayout.widget.ConstraintLayout>
 
     <!-- RecyclerView -->
     <androidx.recyclerview.widget.RecyclerView
@@ -41,7 +50,7 @@
         app:layout_constraintBottom_toTopOf="@id/fabAddPhoto"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/toolbarPhotoList" />
+        app:layout_constraintTop_toBottomOf="@id/toolbarContainer" />
 
     <!-- Floating Action Button -->
     <com.google.android.material.floatingactionbutton.FloatingActionButton
