@@ -8,6 +8,7 @@ import com.example.memorai.domain.repository.PhotoRepository;
 import com.example.memorai.domain.repository.SettingsRepository;
 import com.example.memorai.domain.repository.UserRepository;
 import com.example.memorai.domain.usecase.album.CreateAlbumUseCase;
+import com.example.memorai.domain.usecase.album.GetAlbumByIdUseCase;
 import com.example.memorai.domain.usecase.album.GetAlbumsUseCase;
 import com.example.memorai.domain.usecase.album.SearchAlbumsUseCase;
 import com.example.memorai.domain.usecase.album.SortAlbumsUseCase;
@@ -48,6 +49,12 @@ public class UseCaseModule {
     @Singleton
     public GetAlbumsUseCase provideGetAlbumsUseCase(AlbumRepository albumRepository) {
         return new GetAlbumsUseCase(albumRepository);
+    }
+
+    @Provides
+    @Singleton
+    public GetAlbumByIdUseCase provideGetAlbumByIdUseCase(AlbumRepository albumRepository) {
+        return new GetAlbumByIdUseCase(albumRepository);
     }
 
     @Provides

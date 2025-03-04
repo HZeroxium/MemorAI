@@ -8,4 +8,15 @@
         android:id="@+id/albumListFragment"
         android:icon="@drawable/ic_albums"
         android:title="@string/albums" />
+
+    <item
+        android:id="@+id/collectionsFragment"
+        android:icon="@drawable/ic_collections"
+        android:title="@string/collections" />
+
+    <item
+        android:id="@+id/albumCreateFragment"
+        android:icon="@drawable/ic_search"
+        android:title="@string/search" />
+
 </menu>

@@ -8,6 +8,7 @@ import androidx.lifecycle.ViewModel;
 import com.example.memorai.domain.model.Album;
 import com.example.memorai.domain.usecase.album.CreateAlbumUseCase;
 import com.example.memorai.domain.usecase.album.DeleteAlbumUseCase;
+import com.example.memorai.domain.usecase.album.GetAlbumByIdUseCase;
 import com.example.memorai.domain.usecase.album.GetAlbumsUseCase;
 import com.example.memorai.domain.usecase.album.UpdateAlbumUseCase;
 
@@ -24,6 +25,7 @@ public class AlbumViewModel extends ViewModel {
     private final GetAlbumsUseCase getAlbumsUseCase;
     private final UpdateAlbumUseCase updateAlbumUseCase;
     private final DeleteAlbumUseCase deleteAlbumUseCase;
+    private final GetAlbumByIdUseCase getAlbumByIdUseCase;
 
     private final MutableLiveData<List<Album>> allAlbums = new MutableLiveData<>();
 
@@ -31,11 +33,13 @@ public class AlbumViewModel extends ViewModel {
     public AlbumViewModel(CreateAlbumUseCase createAlbumUseCase,
                           GetAlbumsUseCase getAlbumsUseCase,
                           UpdateAlbumUseCase updateAlbumUseCase,
-                          DeleteAlbumUseCase deleteAlbumUseCase) {
+                          DeleteAlbumUseCase deleteAlbumUseCase,
+                          GetAlbumByIdUseCase getAlbumByIdUseCase) {
         this.createAlbumUseCase = createAlbumUseCase;
         this.getAlbumsUseCase = getAlbumsUseCase;
         this.updateAlbumUseCase = updateAlbumUseCase;
         this.deleteAlbumUseCase = deleteAlbumUseCase;
+        this.getAlbumByIdUseCase = getAlbumByIdUseCase;
     }
 
     public LiveData<List<Album>> observeAllAlbums() {
@@ -75,6 +79,16 @@ public class AlbumViewModel extends ViewModel {
             }
         }).start();
     }
+
+    public LiveData<Album> observeAlbumById(String albumId) {
+        MutableLiveData<Album> result = new MutableLiveData<>();
+        new Thread(() -> {
+            Album album = getAlbumByIdUseCase.execute(albumId);
+            result.postValue(album);
+        }).start();
+        return result;
+    }
+
 
 }
 

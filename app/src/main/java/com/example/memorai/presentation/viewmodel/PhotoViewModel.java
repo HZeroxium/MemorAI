@@ -90,4 +90,8 @@ public class PhotoViewModel extends ViewModel {
             albumPhotos.postValue(photos);
         }).start();
     }
+
+    public List<Photo> getPhotosByAlbum(String albumId) {
+        return getPhotosByAlbumUseCase.execute(albumId);
+    }
 }

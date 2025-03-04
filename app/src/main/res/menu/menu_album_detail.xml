@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?><!-- res/menu/menu_album_detail.xml -->
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item
+        android:id="@+id/action_edit_album"
+        android:icon="@drawable/ic_edit"
+        android:showAsAction="never"
+        android:title="@string/edit_album" />
+    <item
+        android:id="@+id/action_album_options"
+        android:icon="@drawable/ic_settings"
+        android:showAsAction="never"
+        android:title="@string/options" />
+    <item
+        android:id="@+id/action_delete_album"
+        android:icon="@drawable/ic_delete"
+        android:showAsAction="never"
+        android:title="@string/delete_album" />
+</menu>
