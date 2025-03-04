@@ -17,4 +17,7 @@
     <string name="albums">Albums</string>
     <string name="root_album_id">1</string>
     <string name="hi">Hi, you\nhave a nice day!</string>
+    <string name="comfortable">Comfortable</string>
+    <string name="day">Day</string>
+    <string name="month">Month</string>
 </resources>

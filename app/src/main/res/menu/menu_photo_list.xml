@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?><!--res/menu/menu_photo_list.xml-->
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item
+        android:id="@+id/action_view_mode_comfortable"
+        android:title="@string/comfortable" />
+    <item
+        android:id="@+id/action_view_mode_day"
+        android:title="@string/day" />
+    <item
+        android:id="@+id/action_view_mode_month"
+        android:title="@string/month" />
+</menu>
