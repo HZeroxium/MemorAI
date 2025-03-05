@@ -39,4 +39,7 @@
     <string name="add_new_album">Add new album</string>
     <string name="import_photo_from_gallery">Import photo from gallery</string>
     <string name="take_photo">Take photo</string>
+    <string name="delete">Delete</string>
+    <string name="edit">Edit</string>
+    <string name="delete_selected">Delete Selected</string>
 </resources>

@@ -36,9 +36,19 @@
             android:theme="@style/ThemeOverlay.MaterialComponents.Toolbar.Primary"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toEndOf="@id/checkBoxSelectAll"
-            app:menu="@menu/menu_photo_list"
             app:title="@string/photos" />
     </androidx.constraintlayout.widget.ConstraintLayout>
+
+    <Button
+        android:id="@+id/buttonDeleteSelected"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_margin="8dp"
+        android:text="@string/delete_selected"
+        android:visibility="gone"
+        app:layout_constraintBottom_toTopOf="@id/recyclerViewPhotos"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent" />
 
     <!-- RecyclerView -->
     <androidx.recyclerview.widget.RecyclerView

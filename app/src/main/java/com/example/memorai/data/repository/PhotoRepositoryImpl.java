@@ -51,6 +51,9 @@ public class PhotoRepositoryImpl implements PhotoRepository {
         if (entity != null) {
             photoDao.deletePhoto(entity);
         }
+
+        // Also delete cross-ref
+        crossRefDao.deleteCrossRefsForPhoto(photoId);
     }
 
     @Override

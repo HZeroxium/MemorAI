@@ -11,10 +11,12 @@
         android:layout_height="wrap_content"
         android:background="?attr/colorSurface"
         android:theme="@style/ThemeOverlay.MaterialComponents.Toolbar.Primary"
+        app:menu="@menu/menu_photo_detail"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
         app:navigationIcon="@drawable/ic_back" />
+
 
     <!-- Image -->
     <ImageView
@@ -39,6 +41,7 @@
         android:src="@drawable/ic_share"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
+        android:visibility="gone"
         app:layout_marginBaseline="16dp" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
