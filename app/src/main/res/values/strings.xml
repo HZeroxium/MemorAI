@@ -36,4 +36,7 @@
     <string name="search">Search</string>
     <string name="no_photos_in_this_album">No photos in this album</string>
     <string name="update_album">Update Album</string>
+    <string name="add_new_album">Add new album</string>
+    <string name="import_photo_from_gallery">Import photo from gallery</string>
+    <string name="take_photo">Take photo</string>
 </resources>

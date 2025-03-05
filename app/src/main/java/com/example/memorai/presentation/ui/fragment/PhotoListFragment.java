@@ -99,11 +99,6 @@ public class PhotoListFragment extends Fragment {
         binding.recyclerViewPhotos.setAdapter(adapter);
         applyLayoutManager();
 
-        // FAB for adding new photos
-        binding.fabAddPhoto.setOnClickListener(v ->
-                Navigation.findNavController(v).navigate(R.id.addPhotoFragment)
-        );
-
         // ViewModel
         photoViewModel = new ViewModelProvider(this).get(PhotoViewModel.class);
         photoViewModel.observeAllPhotos().observe(getViewLifecycleOwner(), this::handlePhotoList);

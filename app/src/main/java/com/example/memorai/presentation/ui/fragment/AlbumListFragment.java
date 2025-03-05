@@ -52,8 +52,6 @@ public class AlbumListFragment extends Fragment {
             Navigation.findNavController(view).navigate(R.id.albumDetailFragment, args);
         });
 
-        // Handle Add Album Button
-        binding.fabAddAlbum.setOnClickListener(v -> Navigation.findNavController(view).navigate(R.id.albumCreateFragment));
 
         // ViewModel to observe albums
         albumViewModel = new ViewModelProvider(this).get(AlbumViewModel.class);

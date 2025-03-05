@@ -19,6 +19,7 @@ import androidx.navigation.ui.NavigationUI;
 
 import com.example.memorai.R;
 import com.example.memorai.databinding.ActivityMainBinding;
+import com.example.memorai.presentation.ui.dialog.ModalBottomSheetAddMenu;
 import com.example.memorai.presentation.viewmodel.AlbumViewModel;
 
 import dagger.hilt.android.AndroidEntryPoint;
@@ -42,6 +43,7 @@ public class MainActivity extends AppCompatActivity {
 
         setupNavigation();
         setupProfileIcon();
+        setupAddButton();
     }
 
     /**
@@ -136,6 +138,35 @@ public class MainActivity extends AppCompatActivity {
             return false;
         }
         return true;
+    }
+
+
+    /**
+     * Show BottomSheet when clicking Add Button.
+     */
+    private void setupAddButton() {
+        binding.buttonAdd.setOnClickListener(v -> showAddMenuBottomSheet());
+    }
+
+    private void showAddMenuBottomSheet() {
+        ModalBottomSheetAddMenu bottomSheet = new ModalBottomSheetAddMenu(new ModalBottomSheetAddMenu.BottomSheetListener() {
+            @Override
+            public void onAddAlbum() {
+                navController.navigate(R.id.albumCreateFragment);
+            }
+
+            @Override
+            public void onImportPhoto() {
+                navController.navigate(R.id.importPhotoFragment);
+            }
+
+            @Override
+            public void onTakePhoto() {
+                navController.navigate(R.id.takePhotoFragment);
+            }
+        });
+
+        bottomSheet.show(getSupportFragmentManager(), "ModalBottomSheetAddMenu");
     }
 
     @Override

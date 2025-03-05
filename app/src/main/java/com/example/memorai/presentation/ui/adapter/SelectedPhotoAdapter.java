@@ -37,7 +37,9 @@ public class SelectedPhotoAdapter extends ListAdapter<Photo, SelectedPhotoAdapte
 
     public void setOnRemoveClickListener(OnRemoveClickListener listener) {
         this.removeClickListener = listener;
+        notifyDataSetChanged(); // Ensure UI refresh
     }
+
 
     @NonNull
     @Override

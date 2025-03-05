@@ -120,4 +120,17 @@
             android:id="@+id/action_albumUpdateFragment_to_albumDetailFragment"
             app:destination="@id/albumDetailFragment" />
     </fragment>
+
+    <fragment
+        android:id="@+id/takePhotoFragment"
+        android:name="com.example.memorai.presentation.ui.fragment.TakePhotoFragment"
+        android:label="Take Photo"
+        tools:layout="@layout/fragment_take_photo" />
+
+    <fragment
+        android:id="@+id/importPhotoFragment"
+        android:name="com.example.memorai.presentation.ui.fragment.ImportPhotoFragment"
+        android:label="Import Photo"
+        tools:layout="@layout/fragment_import_photo" />
+
 </navigation>
