@@ -190,6 +190,7 @@ public class PhotoListFragment extends Fragment {
                         .show();
             }
         });
+
     }
 
     private void applyLayoutManager() {
@@ -267,21 +268,26 @@ public class PhotoListFragment extends Fragment {
         isSelectionMode = enable;
         adapter.setSelectionMode(enable);
 
-        // Force the MenuProvider to re-inflate the correct menu
-        requireActivity().invalidateOptionsMenu();
+        requireActivity().invalidateOptionsMenu(); // Refresh menu options
 
         if (enable) {
             binding.toolbarPhotoList.setNavigationIcon(R.drawable.ic_close);
             binding.toolbarPhotoList.setTitle("Select photos");
             binding.toolbarPhotoList.setNavigationOnClickListener(v -> toggleSelectionMode(false));
+
             binding.checkBoxSelectAll.setVisibility(View.GONE);
+            binding.buttonDeleteSelected.setVisibility(View.VISIBLE); // Show delete button
+
         } else {
             binding.toolbarPhotoList.setNavigationIcon(R.drawable.ic_more_vert);
             binding.toolbarPhotoList.setTitle("MemorAI");
             binding.toolbarPhotoList.setNavigationOnClickListener(this::showViewModePopup);
+
             binding.checkBoxSelectAll.setVisibility(View.GONE);
+            binding.buttonDeleteSelected.setVisibility(View.GONE); // Hide delete button
         }
     }
+
 
     private void showViewModePopup(View anchor) {
         if (isSelectionMode) return; // ignore if in selection mode
