@@ -23,5 +23,7 @@ public interface AlbumRepository {
     List<Album> getAlbumsSorted(String sortBy);
 
     void createAlbumWithPhotos(Album album, List<Photo> photos);
+
+    void updateAlbumWithPhotos(Album album, List<Photo> photos);
 }
 

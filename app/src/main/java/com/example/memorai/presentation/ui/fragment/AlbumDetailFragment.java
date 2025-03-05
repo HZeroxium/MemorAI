@@ -1,9 +1,12 @@
 // presentation/ui/fragment/AlbumDetailFragment.java
 package com.example.memorai.presentation.ui.fragment;
 
+import android.app.AlertDialog;
 import android.os.Bundle;
+import android.text.InputType;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.EditText;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
@@ -70,22 +73,20 @@ public class AlbumDetailFragment extends Fragment {
     private boolean onMenuItemClick(MenuItem item) {
         int id = item.getItemId();
         if (id == R.id.action_edit_album) {
-            // Navigate to an edit screen
             Bundle args = new Bundle();
             args.putString("album_id", albumId);
-            Navigation.findNavController(requireView()).navigate(R.id.albumCreateFragment, args);
+            Navigation.findNavController(requireView()).navigate(R.id.albumUpdateFragment, args);
             return true;
         } else if (id == R.id.action_album_options) {
             Toast.makeText(requireContext(), "Album options clicked", Toast.LENGTH_SHORT).show();
             return true;
         } else if (id == R.id.action_delete_album) {
-            albumViewModel.deleteAlbum(albumId);
-            Toast.makeText(requireContext(), "Album deleted", Toast.LENGTH_SHORT).show();
-            Navigation.findNavController(requireView()).popBackStack();
+            showDeleteConfirmationDialog();
             return true;
         }
         return false;
     }
+
 
     private void loadAlbumInfo() {
         albumViewModel.getAlbumById(albumId).observe(getViewLifecycleOwner(), album -> {
@@ -122,4 +123,38 @@ public class AlbumDetailFragment extends Fragment {
         super.onDestroyView();
         binding = null;
     }
+
+    private void showDeleteConfirmationDialog() {
+        albumViewModel.getAlbumById(albumId).observe(getViewLifecycleOwner(), album -> {
+            if (album == null) return; // Ensure album exists
+
+            AlertDialog.Builder builder = new AlertDialog.Builder(requireContext());
+            builder.setTitle("Delete Album");
+            builder.setMessage("Enter the album name to confirm deletion:");
+
+            // Input field for confirmation
+            final EditText input = new EditText(requireContext());
+            input.setInputType(InputType.TYPE_CLASS_TEXT);
+            input.setHint("Album Name");
+            builder.setView(input);
+
+            // Confirm button
+            builder.setPositiveButton("Delete", (dialog, which) -> {
+                String enteredName = input.getText().toString().trim();
+                if (enteredName.equals(album.getName())) {
+                    albumViewModel.deleteAlbum(albumId);
+                    Toast.makeText(requireContext(), "Album deleted", Toast.LENGTH_SHORT).show();
+                    Navigation.findNavController(requireView()).popBackStack();
+                } else {
+                    Toast.makeText(requireContext(), "Album name incorrect", Toast.LENGTH_SHORT).show();
+                }
+            });
+
+            // Cancel button
+            builder.setNegativeButton("Cancel", (dialog, which) -> dialog.dismiss());
+
+            builder.show();
+        });
+    }
+
 }

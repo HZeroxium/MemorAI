@@ -110,4 +110,14 @@
         tools:layout="@layout/fragment_collections">
         <!-- navigate to album list or detail if needed -->
     </fragment>
+
+    <fragment
+        android:id="@+id/albumUpdateFragment"
+        android:name="com.example.memorai.presentation.ui.fragment.AlbumUpdateFragment"
+        android:label="Update Album"
+        tools:layout="@layout/fragment_album_update">
+        <action
+            android:id="@+id/action_albumUpdateFragment_to_albumDetailFragment"
+            app:destination="@id/albumDetailFragment" />
+    </fragment>
 </navigation>

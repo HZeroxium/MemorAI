@@ -13,6 +13,7 @@ import com.example.memorai.domain.usecase.album.DeleteAlbumUseCase;
 import com.example.memorai.domain.usecase.album.GetAlbumByIdUseCase;
 import com.example.memorai.domain.usecase.album.GetAlbumsUseCase;
 import com.example.memorai.domain.usecase.album.UpdateAlbumUseCase;
+import com.example.memorai.domain.usecase.album.UpdateAlbumWithPhotosUseCase;
 
 import java.util.List;
 
@@ -28,6 +29,7 @@ public class AlbumViewModel extends ViewModel {
     private final DeleteAlbumUseCase deleteAlbumUseCase;
     private final GetAlbumByIdUseCase getAlbumByIdUseCase;
     private final CreateAlbumWithPhotosUseCase createAlbumWithPhotosUseCase;
+    private final UpdateAlbumWithPhotosUseCase updateAlbumWithPhotosUseCase;
 
     private final MutableLiveData<List<Album>> allAlbums = new MutableLiveData<>();
 
@@ -37,13 +39,15 @@ public class AlbumViewModel extends ViewModel {
                           UpdateAlbumUseCase updateAlbumUseCase,
                           DeleteAlbumUseCase deleteAlbumUseCase,
                           GetAlbumByIdUseCase getAlbumByIdUseCase,
-                          CreateAlbumWithPhotosUseCase createAlbumWithPhotosUseCase) {
+                          CreateAlbumWithPhotosUseCase createAlbumWithPhotosUseCase,
+                          UpdateAlbumWithPhotosUseCase updateAlbumWithPhotosUseCase) {
         this.createAlbumUseCase = createAlbumUseCase;
         this.getAlbumsUseCase = getAlbumsUseCase;
         this.updateAlbumUseCase = updateAlbumUseCase;
         this.deleteAlbumUseCase = deleteAlbumUseCase;
         this.getAlbumByIdUseCase = getAlbumByIdUseCase;
         this.createAlbumWithPhotosUseCase = createAlbumWithPhotosUseCase;
+        this.updateAlbumWithPhotosUseCase = updateAlbumWithPhotosUseCase;
 
     }
 
@@ -101,6 +105,9 @@ public class AlbumViewModel extends ViewModel {
         new Thread(() -> createAlbumWithPhotosUseCase.execute(album, photos)).start();
     }
 
+    public void updateAlbumWithPhotos(Album album, List<Photo> photos) {
+        new Thread(() -> updateAlbumWithPhotosUseCase.execute(album, photos)).start();
+    }
 
 }
 

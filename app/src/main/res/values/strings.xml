@@ -35,4 +35,5 @@
     <string name="delete_album">Delete Album</string>
     <string name="search">Search</string>
     <string name="no_photos_in_this_album">No photos in this album</string>
+    <string name="update_album">Update Album</string>
 </resources>

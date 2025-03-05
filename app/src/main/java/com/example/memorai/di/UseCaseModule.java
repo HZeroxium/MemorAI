@@ -13,6 +13,7 @@ import com.example.memorai.domain.usecase.album.GetAlbumByIdUseCase;
 import com.example.memorai.domain.usecase.album.GetAlbumsUseCase;
 import com.example.memorai.domain.usecase.album.SearchAlbumsUseCase;
 import com.example.memorai.domain.usecase.album.SortAlbumsUseCase;
+import com.example.memorai.domain.usecase.album.UpdateAlbumWithPhotosUseCase;
 import com.example.memorai.domain.usecase.cloud.SyncAlbumsUseCase;
 import com.example.memorai.domain.usecase.cloud.SyncPhotosUseCase;
 import com.example.memorai.domain.usecase.cloud.UploadPhotoToCloudUseCase;
@@ -164,5 +165,11 @@ public class UseCaseModule {
     @Singleton
     public CreateAlbumWithPhotosUseCase provideCreateAlbumWithPhotosUseCase(AlbumRepository albumRepository) {
         return new CreateAlbumWithPhotosUseCase(albumRepository);
+    }
+
+    @Provides
+    @Singleton
+    public UpdateAlbumWithPhotosUseCase provideUpdateAlbumWithPhotosUseCase(AlbumRepository albumRepository) {
+        return new UpdateAlbumWithPhotosUseCase(albumRepository);
     }
 }

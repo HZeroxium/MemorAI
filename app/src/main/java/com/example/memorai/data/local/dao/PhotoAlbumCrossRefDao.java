@@ -25,4 +25,8 @@ public interface PhotoAlbumCrossRefDao {
 
     @Query("SELECT * FROM photo_album_cross_ref WHERE photoId = :photoId")
     List<PhotoAlbumCrossRef> getCrossRefsForPhoto(String photoId);
+
+    @Query("DELETE FROM photo_album_cross_ref WHERE albumId = :albumId")
+    void deleteCrossRefsForAlbum(String albumId);
+
 }
