@@ -12,6 +12,7 @@
     <color name="md_theme_tertiaryContainer">#FAD8FD</color>
     <color name="md_theme_onTertiaryContainer">#573E5C</color>
     <color name="md_theme_error">#BA1A1A</color>
+    <color name="light_blue">#D3E2EC</color>
     <color name="md_theme_onError">#FFFFFF</color>
     <color name="md_theme_errorContainer">#FFDAD6</color>
     <color name="md_theme_onErrorContainer">#93000A</color>
@@ -140,4 +141,5 @@
     <color name="md_theme_surfaceContainer_highContrast">#E2E2E9</color>
     <color name="md_theme_surfaceContainerHigh_highContrast">#D3D4DB</color>
     <color name="md_theme_surfaceContainerHighest_highContrast">#C5C6CD</color>
+    <color name="theme_night_theme">#6EACDA</color>
 </resources>

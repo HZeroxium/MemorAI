@@ -46,7 +46,7 @@ public class EditPhotoFragment extends Fragment {
         if (getArguments() != null) {
             String photoUrl = getArguments().getString("photo_url", "");
             // In a real scenario, you might retrieve the full Photo object
-            currentPhoto = new Photo("id", "albumId", photoUrl, null, System.currentTimeMillis(), System.currentTimeMillis());
+            currentPhoto = new Photo("id", photoUrl, null, System.currentTimeMillis(), System.currentTimeMillis());
             Glide.with(this)
                     .load(currentPhoto.getFilePath())
                     .placeholder(R.drawable.placeholder_image)
@@ -56,7 +56,7 @@ public class EditPhotoFragment extends Fragment {
 
         binding.btnSaveEdit.setOnClickListener(v -> {
             // Perform edit operations; here we simulate by simply updating the photo timestamp
-            currentPhoto = new Photo(currentPhoto.getId(), currentPhoto.getAlbumId(),
+            currentPhoto = new Photo(currentPhoto.getId(),
                     currentPhoto.getFilePath(), currentPhoto.getTags(),
                     currentPhoto.getCreatedAt(), System.currentTimeMillis());
             editPhotoViewModel.updatePhoto(currentPhoto);
