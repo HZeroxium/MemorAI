@@ -2,6 +2,7 @@
 <androidx.coordinatorlayout.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:background="@android:color/transparent">
 
     <LinearLayout
@@ -10,25 +11,28 @@
         android:orientation="vertical"
         android:padding="16dp">
 
-        <com.google.android.material.button.MaterialButton
+        <Button
             android:id="@+id/buttonAddAlbum"
+            style="@style/Widget.Material3.Button.TextButton"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:icon="@drawable/ic_collections"
+            app:icon="@drawable/ic_collections"
             android:text="@string/add_new_album" />
 
-        <com.google.android.material.button.MaterialButton
+        <Button
             android:id="@+id/buttonImportPhoto"
+            style="@style/Widget.Material3.Button.TextButton"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:icon="@drawable/ic_collections"
+            app:icon="@drawable/ic_gallery"
             android:text="@string/import_photo_from_gallery" />
 
-        <com.google.android.material.button.MaterialButton
+        <Button
             android:id="@+id/buttonTakePhoto"
+            style="@style/Widget.Material3.Button.TextButton"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:icon="@drawable/ic_camera"
+            app:icon="@drawable/ic_camera"
             android:text="@string/take_photo" />
 
     </LinearLayout>
