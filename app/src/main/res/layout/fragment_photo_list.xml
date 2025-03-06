@@ -39,17 +39,18 @@
             app:title="@string/photos" />
     </androidx.constraintlayout.widget.ConstraintLayout>
 
-    <Button
+    <!-- Extended FAB for Delete Selected -->
+    <com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton
         android:id="@+id/buttonDeleteSelected"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_margin="12dp"
         android:text="@string/delete_selected"
         app:icon="@drawable/ic_delete"
         android:visibility="gone"
-        app:layout_constraintBottom_toTopOf="@id/recyclerViewPhotos"
+        android:layout_margin="16dp"
+        app:layout_anchorGravity="bottom|end"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent" />
+        app:layout_constraintBottom_toBottomOf="parent" />
 
 
     <!-- RecyclerView -->

@@ -26,7 +26,7 @@ import java.util.Set;
  */
 public class PhotoSectionAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
 
-    private static final int TYPE_HEADER = 0;
+    public static final int TYPE_HEADER = 0;
     private static final int TYPE_PHOTO = 1;
 
     private final List<PhotoSection> sectionList = new ArrayList<>();

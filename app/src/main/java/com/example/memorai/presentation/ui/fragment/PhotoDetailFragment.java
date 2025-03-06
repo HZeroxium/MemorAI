@@ -56,7 +56,7 @@ public class PhotoDetailFragment extends Fragment {
         // ViewModel
         photoViewModel = new ViewModelProvider(requireActivity()).get(PhotoViewModel.class);
 
-        binding.toolbar.setNavigationOnClickListener(v -> Navigation.findNavController(view).navigate(R.id.photoListFragment));
+        binding.toolbar.setNavigationOnClickListener(v -> Navigation.findNavController(view).popBackStack());
 
         setSharedElementTransition();
 

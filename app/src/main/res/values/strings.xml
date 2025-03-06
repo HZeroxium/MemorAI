@@ -46,4 +46,6 @@
     <string name="profile">Profile</string>
     <string name="notification">Notification</string>
     <string name="album_cover">Album cover</string>
+    <string name="enter_tag_to_search">Enter tag to search</string>
+    <string name="no_search_results">No search results</string>
 </resources>

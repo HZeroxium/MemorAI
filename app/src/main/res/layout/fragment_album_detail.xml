@@ -1,53 +1,101 @@
 <?xml version="1.0" encoding="utf-8"?><!-- res/layout/fragment_album_detail.xml -->
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.coordinatorlayout.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-    <com.google.android.material.appbar.MaterialToolbar
-        android:id="@+id/toolbarAlbumDetail"
-        android:layout_width="0dp"
-        android:layout_height="?attr/actionBarSize"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:menu="@menu/menu_album_detail"
-        app:navigationIcon="@drawable/ic_back"
-        app:title="Album Detail"
-        app:titleCentered="true" />
-
-    <!-- Show album date created, name, or any detail text -->
-    <TextView
-        android:id="@+id/textViewAlbumInfo"
-        android:layout_width="wrap_content"
+    <!-- Collapsing Toolbar with Large Title -->
+    <com.google.android.material.appbar.AppBarLayout
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginStart="16dp"
-        android:layout_marginTop="16dp"
-        android:text="@string/created_date_nalbum_name"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/toolbarAlbumDetail" />
+        android:theme="@style/ThemeOverlay.Material3.Toolbar.Surface">
 
-    <!-- Text no photos in this album -->
-    <TextView
-        android:id="@+id/textViewNoPhotos"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="16dp"
-        android:layout_marginTop="16dp"
-        android:text="@string/no_photos_in_this_album"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/textViewAlbumInfo" />
+        <com.google.android.material.appbar.CollapsingToolbarLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:collapsedTitleTextAppearance="@style/TextAppearance.Material3.TitleMedium"
+            app:expandedTitleTextAppearance="@style/TextAppearance.Material3.TitleLarge"
+            app:layout_scrollFlags="scroll|exitUntilCollapsed"
+            app:title="Album Detail"
+            app:titleEnabled="true">
 
+            <com.google.android.material.appbar.MaterialToolbar
+                android:id="@+id/toolbarAlbumDetail"
+                android:layout_width="match_parent"
+                android:layout_height="?attr/actionBarSize"
+                app:menu="@menu/menu_album_detail"
+                app:navigationIcon="@drawable/ic_back"
+                app:popupTheme="@style/ThemeOverlay.Material3.Toolbar.Surface"
+                app:title="Album Detail"
+                app:titleCentered="true" />
 
-    <!-- RecyclerView for photos in this album -->
-    <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/recyclerViewAlbumPhotos"
-        android:layout_width="0dp"
-        android:layout_height="0dp"
-        android:layout_marginTop="8dp"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/textViewAlbumInfo" />
+        </com.google.android.material.appbar.CollapsingToolbarLayout>
+    </com.google.android.material.appbar.AppBarLayout>
 
-</androidx.constraintlayout.widget.ConstraintLayout>
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/constraintLayoutContent"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:padding="16dp"
+        app:layout_behavior="@string/appbar_scrolling_view_behavior">
+
+        <!-- Card: Album Information -->
+        <com.google.android.material.card.MaterialCardView
+            android:id="@+id/cardAlbumInfo"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="16dp"
+            android:padding="16dp"
+            app:cardCornerRadius="12dp"
+            app:cardElevation="4dp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:strokeColor="@color/md_theme_outline">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="8dp">
+
+                <TextView
+                    android:id="@+id/textViewAlbumInfo"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Album Info Here"
+                    android:textColor="?attr/colorOnSurface"
+                    android:textSize="14sp" />
+            </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
+
+        <!-- "No Photos" Text -->
+        <TextView
+            android:id="@+id/textViewNoPhotos"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:text="@string/no_photos_in_this_album"
+            android:textColor="?android:attr/textColorSecondary"
+            android:textSize="16sp"
+            android:visibility="gone"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/cardAlbumInfo"
+            app:layout_constraintVertical_bias="0.3" />
+
+        <!-- Photos Grid -->
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/recyclerViewAlbumPhotos"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:clipToPadding="false"
+            android:padding="8dp"
+            android:scrollbars="vertical"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/cardAlbumInfo" />
+    </androidx.constraintlayout.widget.ConstraintLayout>
+</androidx.coordinatorlayout.widget.CoordinatorLayout>

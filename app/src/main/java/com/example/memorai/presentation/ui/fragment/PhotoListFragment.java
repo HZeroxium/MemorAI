@@ -29,6 +29,7 @@ import com.example.memorai.domain.model.Photo;
 import com.example.memorai.presentation.ui.adapter.PhotoSection;
 import com.example.memorai.presentation.ui.adapter.PhotoSectionAdapter;
 import com.example.memorai.presentation.viewmodel.PhotoViewModel;
+import com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
@@ -190,19 +191,25 @@ public class PhotoListFragment extends Fragment {
     }
 
     private void applyLayoutManager() {
-        switch (currentViewMode) {
-            case VIEW_MODE_DAY:
-                binding.recyclerViewPhotos.setLayoutManager(new GridLayoutManager(requireContext(), 2));
-                break;
-            case VIEW_MODE_MONTH:
-                binding.recyclerViewPhotos.setLayoutManager(new GridLayoutManager(requireContext(), 3));
-                break;
-            case VIEW_MODE_COMFORTABLE:
-            default:
-                binding.recyclerViewPhotos.setLayoutManager(new GridLayoutManager(requireContext(), 1));
-                break;
-        }
-        // Re-group photos with new layout mode
+        // We'll default to 3 columns for a Google Photos style (or 2 if you prefer)
+        final int spanCount = 3;
+
+        GridLayoutManager layoutManager = new GridLayoutManager(requireContext(), spanCount);
+        layoutManager.setSpanSizeLookup(new GridLayoutManager.SpanSizeLookup() {
+            @Override
+            public int getSpanSize(int position) {
+                // If item is a section header, take the full row
+                int viewType = adapter.getItemViewType(position);
+                if (viewType == PhotoSectionAdapter.TYPE_HEADER) {
+                    return spanCount; // header spans all columns
+                } else {
+                    return 1; // photo items occupy 1 column each
+                }
+            }
+        });
+        binding.recyclerViewPhotos.setLayoutManager(layoutManager);
+
+        // Hide selection mode if user changed layout
         if (adapter.isSelectionMode()) {
             toggleSelectionMode(false);
         }
@@ -210,6 +217,7 @@ public class PhotoListFragment extends Fragment {
             handlePhotoList(photoViewModel.observeAllPhotos().getValue());
         }
     }
+
 
     private void handlePhotoList(List<Photo> photos) {
         List<PhotoSection> sections = groupPhotos(photos, currentViewMode);
@@ -266,21 +274,43 @@ public class PhotoListFragment extends Fragment {
 
         requireActivity().invalidateOptionsMenu(); // Refresh menu options
 
+        ExtendedFloatingActionButton fab = binding.buttonDeleteSelected; // from your new layout
+
         if (enable) {
+            // Switch toolbar to selection mode
             binding.toolbarPhotoList.setNavigationIcon(R.drawable.ic_close);
             binding.toolbarPhotoList.setTitle("Select photos");
             binding.toolbarPhotoList.setNavigationOnClickListener(v -> toggleSelectionMode(false));
 
-            binding.checkBoxSelectAll.setVisibility(View.GONE);
-            binding.buttonDeleteSelected.setVisibility(View.VISIBLE); // Show delete button
+            // Show the Extended FAB
+            fab.setVisibility(View.VISIBLE);
+            fab.setOnClickListener(v -> {
+                if (adapter.getSelectedPhotoIds().isEmpty()) {
+                    Toast.makeText(requireContext(), "No photos selected", Toast.LENGTH_SHORT).show();
+                } else {
+                    new AlertDialog.Builder(requireContext())
+                            .setTitle("Delete Photos")
+                            .setMessage("Are you sure you want to delete " + adapter.getSelectedPhotoIds().size() + " selected photos?")
+                            .setPositiveButton("Yes", (dialog, which) -> {
+                                for (String photoId : adapter.getSelectedPhotoIds()) {
+                                    photoViewModel.deletePhoto(photoId);
+                                }
+                                adapter.clearSelection();
+                                toggleSelectionMode(false);
+                                Toast.makeText(requireContext(), "Photos deleted", Toast.LENGTH_SHORT).show();
+                            })
+                            .setNegativeButton("No", null)
+                            .show();
+                }
+            });
 
         } else {
+            // Normal mode
             binding.toolbarPhotoList.setNavigationIcon(R.drawable.ic_more_vert);
             binding.toolbarPhotoList.setTitle("Photos");
             binding.toolbarPhotoList.setNavigationOnClickListener(this::showViewModePopup);
 
-            binding.checkBoxSelectAll.setVisibility(View.GONE);
-            binding.buttonDeleteSelected.setVisibility(View.GONE); // Hide delete button
+            fab.setVisibility(View.GONE);
         }
     }
 

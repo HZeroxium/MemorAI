@@ -73,7 +73,8 @@ public class MainActivity extends AppCompatActivity {
 
             navController.addOnDestinationChangedListener((controller, destination, arguments) -> {
                 boolean isHiddenScreen = destination.getId() == R.id.photoListFragment ||
-                        destination.getId() == R.id.albumListFragment;
+                        destination.getId() == R.id.albumListFragment ||
+                        destination.getId() == R.id.searchFragment;
 
                 toggleUIVisibility(isHiddenScreen);
             });

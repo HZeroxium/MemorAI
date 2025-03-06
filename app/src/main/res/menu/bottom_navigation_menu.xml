@@ -10,7 +10,7 @@
         android:title="@string/albums" />
 
     <item
-        android:id="@+id/albumCreateFragment"
+        android:id="@+id/searchFragment"
         android:icon="@drawable/ic_search"
         android:title="@string/search" />
 

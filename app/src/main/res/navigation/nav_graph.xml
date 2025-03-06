@@ -103,13 +103,6 @@
             app:destination="@id/albumDetailFragment" />
     </fragment>
 
-    <fragment
-        android:id="@+id/collectionsFragment"
-        android:name="com.example.memorai.presentation.ui.fragment.CollectionsFragment"
-        android:label="Collections"
-        tools:layout="@layout/fragment_collections">
-        <!-- navigate to album list or detail if needed -->
-    </fragment>
 
     <fragment
         android:id="@+id/albumUpdateFragment"
@@ -132,5 +125,14 @@
         android:name="com.example.memorai.presentation.ui.fragment.ImportPhotoFragment"
         android:label="Import Photo"
         tools:layout="@layout/fragment_import_photo" />
+
+    <fragment
+        android:id="@+id/searchFragment"
+        android:name="com.example.memorai.presentation.ui.fragment.SearchFragment"
+        android:label="Search">
+        <action
+            android:id="@+id/action_searchFragment_to_photoDetailFragment"
+            app:destination="@id/photoDetailFragment" />
+    </fragment>
 
 </navigation>

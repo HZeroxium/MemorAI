@@ -22,6 +22,10 @@ import com.example.memorai.presentation.ui.adapter.PhotoAdapter;
 import com.example.memorai.presentation.viewmodel.AlbumViewModel;
 import com.example.memorai.presentation.viewmodel.PhotoViewModel;
 
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.Locale;
+
 import dagger.hilt.android.AndroidEntryPoint;
 
 @AndroidEntryPoint
@@ -56,19 +60,26 @@ public class AlbumDetailFragment extends Fragment {
         binding.toolbarAlbumDetail.setNavigationOnClickListener(v -> {
             Navigation.findNavController(view).popBackStack();
         });
+
         binding.toolbarAlbumDetail.setOnMenuItemClickListener(this::onMenuItemClick);
 
         // Setup RecyclerView
         photoAdapter = new PhotoAdapter();
+        binding.recyclerViewAlbumPhotos.setLayoutManager(new GridLayoutManager(requireContext(), 3));
         binding.recyclerViewAlbumPhotos.setAdapter(photoAdapter);
 
-        // Observe album info or load album details
-        // For example, if you have a method to get a single album:
-        // albumViewModel.observeAlbumById(albumId).observe(getViewLifecycleOwner(), album -> {...});
-        // Or you just load photos from the album
+        // Handle photo click event to navigate to PhotoDetailFragment
+        photoAdapter.setOnPhotoClickListener((sharedView, photo) -> {
+            Bundle args = new Bundle();
+            args.putString("photo_id", photo.getId());
+            args.putString("photo_url", photo.getFilePath());
+            Navigation.findNavController(view).navigate(R.id.photoDetailFragment, args);
+        });
+
         loadAlbumInfo();
         loadAlbumPhotos();
     }
+
 
     private boolean onMenuItemClick(MenuItem item) {
         int id = item.getItemId();
@@ -91,29 +102,35 @@ public class AlbumDetailFragment extends Fragment {
     private void loadAlbumInfo() {
         albumViewModel.getAlbumById(albumId).observe(getViewLifecycleOwner(), album -> {
             if (album != null) {
+                // Format creation date as dd-MM-yyyy
+                long createdMillis = album.getCreatedAt();
+                Date date = new Date(createdMillis);
+                SimpleDateFormat sdf = new SimpleDateFormat("dd-MM-yyyy", Locale.getDefault());
+                String formattedDate = sdf.format(date);
+
+                // Display album info
                 String info = "Album ID: " + album.getId() + "\n" +
-                        "Created: " + album.getCreatedAt() + "\n" +
+                        "Created: " + formattedDate + "\n" +
                         "Name: " + album.getName();
                 binding.textViewAlbumInfo.setText(info);
             }
         });
     }
 
-
     private void loadAlbumPhotos() {
-        // Ensure LayoutManager is set
-        binding.recyclerViewAlbumPhotos.setLayoutManager(new GridLayoutManager(requireContext(), 3));
-
+        // Already setting GridLayoutManager(3) in onViewCreated
         photoViewModel.observePhotosByAlbum().observe(getViewLifecycleOwner(), albumPhotos -> {
             if (albumPhotos != null && !albumPhotos.isEmpty()) {
+                // Show photos
                 photoAdapter.submitList(albumPhotos);
+                binding.recyclerViewAlbumPhotos.setVisibility(View.VISIBLE);
                 binding.textViewNoPhotos.setVisibility(View.GONE);
             } else {
+                // No photos
+                binding.recyclerViewAlbumPhotos.setVisibility(View.GONE);
                 binding.textViewNoPhotos.setVisibility(View.VISIBLE);
             }
         });
-
-        // Ensure data is loaded properly
         photoViewModel.loadPhotosByAlbum(albumId);
     }
 
