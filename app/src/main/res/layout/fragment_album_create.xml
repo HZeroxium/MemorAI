@@ -3,64 +3,70 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="?attr/colorSurface"
     android:padding="16dp">
 
-    <!-- Toolbar or top bar with "Back" and menu -->
+    <!-- Top App Bar -->
     <com.google.android.material.appbar.MaterialToolbar
         android:id="@+id/toolbarAlbumCreate"
-        android:layout_width="0dp"
+        style="@style/ThemeOverlay.Material3.Toolbar.Surface"
         android:layout_height="?attr/actionBarSize"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
         app:navigationIcon="@drawable/ic_back"
+        android:layout_width="match_parent"
+        android:background="?attr/colorSurface"
+        app:layout_constraintTop_toTopOf="parent"
         app:title="@string/create_album" />
 
-    <!-- EditText for album title -->
+    <!-- Album Title Input -->
     <com.google.android.material.textfield.TextInputLayout
         android:id="@+id/textInputLayoutAlbumTitle"
-        android:layout_width="0dp"
+        style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
         android:layout_height="wrap_content"
         android:layout_marginTop="16dp"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
+        android:layout_width="match_parent"
+        android:hint="@string/enter_album_title"
         app:layout_constraintTop_toBottomOf="@id/toolbarAlbumCreate">
 
         <com.google.android.material.textfield.TextInputEditText
             android:id="@+id/editTextAlbumTitle"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:hint="@string/enter_album_title" />
+            android:inputType="textCapSentences" />
     </com.google.android.material.textfield.TextInputLayout>
 
-    <!-- Button to select photos -->
-    <Button
+    <!-- Select Photos Button -->
+    <com.google.android.material.button.MaterialButton
         android:id="@+id/buttonSelectPhotos"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="24dp"
+        style="@style/Widget.Material3.Button.TonalButton.Icon"
         android:text="@string/select_photos"
+        android:layout_marginTop="12dp"
+        app:icon="@drawable/ic_photos"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/textInputLayoutAlbumTitle" />
 
-    <!-- Recyclerview or preview of selected photos (optional) -->
+    <!-- Selected Photos Preview (RecyclerView) -->
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/recyclerViewSelectedPhotos"
-        android:layout_width="0dp"
+        android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_marginTop="12dp"
+        app:layoutManager="androidx.recyclerview.widget.GridLayoutManager"
         app:layout_constraintBottom_toTopOf="@id/buttonAddAlbum"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/buttonSelectPhotos" />
+        app:layout_constraintTop_toBottomOf="@id/buttonSelectPhotos"
+        app:spanCount="3" />
 
-    <!-- "Add" or "Save" album button -->
-    <Button
+    <!-- Add Album Button -->
+    <com.google.android.material.button.MaterialButton
         android:id="@+id/buttonAddAlbum"
-        android:layout_width="wrap_content"
+        style="@style/Widget.Material3.Button.TonalButton"
         android:layout_height="wrap_content"
-        android:layout_margin="16dp"
+        android:layout_width="match_parent"
         android:text="@string/add_album"
+        android:layout_marginTop="16dp"
+        android:enabled="false"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent" />
+        app:tooltipText="Enter album title and select photos" />
+
 </androidx.constraintlayout.widget.ConstraintLayout>

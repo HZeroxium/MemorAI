@@ -48,4 +48,7 @@
     <string name="album_cover">Album cover</string>
     <string name="enter_tag_to_search">Enter tag to search</string>
     <string name="no_search_results">No search results</string>
+    <string name="clear_search">Clear search</string>
+    <string name="add_selected_photos">Add Selected Photos</string>
+    <string name="no_photos_selected">No photos selected</string>
 </resources>

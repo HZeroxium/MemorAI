@@ -1,12 +1,9 @@
 // presentation/ui/fragment/AlbumCreateFragment.java
-// presentation/ui/fragment/AlbumCreateFragment.java
 package com.example.memorai.presentation.ui.fragment;
 
 import android.os.Bundle;
 import android.text.TextUtils;
-import android.view.LayoutInflater;
 import android.view.View;
-import android.view.ViewGroup;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
@@ -23,12 +20,16 @@ import com.example.memorai.domain.model.Photo;
 import com.example.memorai.presentation.ui.adapter.SelectedPhotoAdapter;
 import com.example.memorai.presentation.viewmodel.AlbumCreationViewModel;
 import com.example.memorai.presentation.viewmodel.AlbumViewModel;
+import com.google.android.material.snackbar.Snackbar;
 
 import java.util.List;
 import java.util.UUID;
 
 import dagger.hilt.android.AndroidEntryPoint;
 
+/**
+ * Fragment to create a new album.
+ */
 @AndroidEntryPoint
 public class AlbumCreateFragment extends Fragment {
 
@@ -39,8 +40,8 @@ public class AlbumCreateFragment extends Fragment {
 
     @Nullable
     @Override
-    public View onCreateView(@NonNull LayoutInflater inflater,
-                             @Nullable ViewGroup container,
+    public View onCreateView(@NonNull android.view.LayoutInflater inflater,
+                             @Nullable android.view.ViewGroup container,
                              @Nullable Bundle savedInstanceState) {
         binding = FragmentAlbumCreateBinding.inflate(inflater, container, false);
         return binding.getRoot();
@@ -61,13 +62,6 @@ public class AlbumCreateFragment extends Fragment {
         setupRecyclerView();
         observeSelectedPhotos();
         setupButtons(view);
-        setupToolbar(view);
-    }
-
-    private void setupToolbar(View view) {
-        binding.toolbarAlbumCreate.setNavigationOnClickListener(v -> {
-            Navigation.findNavController(view).popBackStack();
-        });
     }
 
     private void setupRecyclerView() {
@@ -75,23 +69,49 @@ public class AlbumCreateFragment extends Fragment {
         binding.recyclerViewSelectedPhotos.setLayoutManager(new GridLayoutManager(requireContext(), 3));
         binding.recyclerViewSelectedPhotos.setAdapter(selectedPhotoAdapter);
 
-        // If user wants to remove a photo from the selection
         selectedPhotoAdapter.setOnRemoveClickListener(photo -> {
             albumCreationViewModel.removePhoto(photo);
+            showSnackbar("Photo removed from selection");
         });
     }
 
     private void observeSelectedPhotos() {
         albumCreationViewModel.getSelectedPhotos().observe(getViewLifecycleOwner(), photos -> {
             selectedPhotoAdapter.submitList(photos);
-            binding.buttonAddAlbum.setEnabled(!photos.isEmpty());
+            validateForm();
         });
+
+        binding.editTextAlbumTitle.addTextChangedListener(new android.text.TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+            }
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                validateForm();
+            }
+
+            @Override
+            public void afterTextChanged(android.text.Editable s) {
+            }
+        });
+    }
+
+    private void showSnackbar(String message) {
+        Snackbar.make(binding.getRoot(), message, Snackbar.LENGTH_SHORT).show();
+    }
+
+    private void validateForm() {
+        String title = binding.editTextAlbumTitle.getText().toString().trim();
+        List<Photo> selected = albumCreationViewModel.getSelectedPhotos().getValue();
+
+        boolean isValid = !TextUtils.isEmpty(title) && selected != null && !selected.isEmpty();
+        binding.buttonAddAlbum.setEnabled(isValid);
     }
 
     private void setupButtons(View view) {
         binding.buttonSelectPhotos.setOnClickListener(v ->
-                Navigation.findNavController(view).navigate(R.id.albumAddPhotosFragment)
-        );
+                Navigation.findNavController(view).navigate(R.id.albumAddPhotosFragment));
 
         binding.buttonAddAlbum.setOnClickListener(v -> {
             String title = binding.editTextAlbumTitle.getText().toString().trim();
@@ -106,27 +126,11 @@ public class AlbumCreateFragment extends Fragment {
                 return;
             }
 
-            // First photo is cover
-            String coverUrl = selected.get(0).getFilePath();
+            Album album = new Album(UUID.randomUUID().toString(), title, "", selected.get(0).getFilePath(), System.currentTimeMillis(), System.currentTimeMillis());
 
-            Album album = new Album(
-                    UUID.randomUUID().toString(),
-                    title,
-                    "", // or user-provided description
-                    coverUrl,
-                    System.currentTimeMillis(),
-                    System.currentTimeMillis()
-            );
+            new Thread(() -> albumViewModel.createAlbumWithPhotos(album, selected)).start();
 
-            // For now, just do a background thread to insert or update
-            new Thread(() -> {
-                albumViewModel.createAlbumWithPhotos(album, selected);
-                // Possibly also add each Photo with albumId if you store that relation
-            }).start();
-
-            Toast.makeText(requireContext(),
-                    "Album created with " + selected.size() + " photos!",
-                    Toast.LENGTH_SHORT).show();
+            Toast.makeText(requireContext(), "Album created!", Toast.LENGTH_SHORT).show();
 
             albumCreationViewModel.clear();
             Navigation.findNavController(view).popBackStack();
@@ -139,4 +143,3 @@ public class AlbumCreateFragment extends Fragment {
         binding = null;
     }
 }
-
