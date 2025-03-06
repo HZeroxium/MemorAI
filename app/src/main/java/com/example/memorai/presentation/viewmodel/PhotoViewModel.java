@@ -106,5 +106,9 @@ public class PhotoViewModel extends ViewModel {
         return albumPhotos;
     }
 
+    public void clearSearch() {
+        loadAllPhotos();
+    }
+
 
 }

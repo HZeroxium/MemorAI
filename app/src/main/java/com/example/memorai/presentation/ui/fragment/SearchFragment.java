@@ -2,12 +2,11 @@
 package com.example.memorai.presentation.ui.fragment;
 
 import android.os.Bundle;
-import android.text.TextUtils;
-import android.view.LayoutInflater;
+import android.view.MenuItem;
 import android.view.View;
-import android.view.ViewGroup;
 import android.widget.Toast;
 
+import androidx.activity.OnBackPressedCallback;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
@@ -20,15 +19,11 @@ import com.example.memorai.databinding.FragmentSearchBinding;
 import com.example.memorai.domain.model.Photo;
 import com.example.memorai.presentation.ui.adapter.PhotoAdapter;
 import com.example.memorai.presentation.viewmodel.PhotoViewModel;
-import com.google.android.material.textfield.TextInputEditText;
 
 import java.util.List;
 
 import dagger.hilt.android.AndroidEntryPoint;
 
-/**
- * A fragment that searches photos by keyword or tag.
- */
 @AndroidEntryPoint
 public class SearchFragment extends Fragment {
 
@@ -38,8 +33,8 @@ public class SearchFragment extends Fragment {
 
     @Nullable
     @Override
-    public View onCreateView(@NonNull LayoutInflater inflater,
-                             @Nullable ViewGroup container,
+    public View onCreateView(@NonNull android.view.LayoutInflater inflater,
+                             @Nullable android.view.ViewGroup container,
                              @Nullable Bundle savedInstanceState) {
         binding = FragmentSearchBinding.inflate(inflater, container, false);
         return binding.getRoot();
@@ -50,57 +45,86 @@ public class SearchFragment extends Fragment {
                               @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        // Setup toolbar with "Search" title, back arrow
-        binding.toolbarSearch.setTitle("Search");
-        binding.toolbarSearch.setNavigationIcon(R.drawable.ic_back);
-        binding.toolbarSearch.setNavigationOnClickListener(v -> {
-            // Or popBackStack
-            Navigation.findNavController(requireView()).popBackStack();
+        // Setup navigation/back logic (system Back)
+        requireActivity().getOnBackPressedDispatcher().addCallback(
+                getViewLifecycleOwner(),
+                new OnBackPressedCallback(true) {
+                    @Override
+                    public void handleOnBackPressed() {
+                        if (binding.searchView.isShowing()) {
+                            binding.searchView.hide();
+                        } else {
+                            setEnabled(false);
+                            requireActivity().onBackPressed();
+                        }
+                    }
+                }
+        );
+
+        // SearchBar
+        binding.searchBar.setNavigationIcon(R.drawable.ic_back);
+        binding.searchBar.setNavigationOnClickListener(v -> {
+            // If SearchView is showing, hide it. Otherwise pop back.
+            if (binding.searchView.isShowing()) {
+                binding.searchView.hide();
+            } else {
+                Navigation.findNavController(v).popBackStack();
+            }
         });
 
-        // Setup ViewModel
-        photoViewModel = new ViewModelProvider(requireActivity()).get(PhotoViewModel.class);
+        // Menu click on SearchBar
+        binding.searchBar.setOnMenuItemClickListener(this::onMenuItemClick);
 
-        // Setup RecyclerView
+        // Clicking search bar => show SearchView
+        binding.searchBar.setOnClickListener(v -> binding.searchView.show());
+
+        // Link searchView with searchBar
+        binding.searchView.setupWithSearchBar(binding.searchBar);
+
+        // When user presses "enter" or "search" on the keyboard
+        binding.searchView.getEditText().setOnEditorActionListener((v, actionId, event) -> {
+            performSearch();
+            return true;
+        });
+
+        // RecyclerView + adapter
         searchAdapter = new PhotoAdapter();
         searchAdapter.setOnPhotoClickListener((sharedView, photo) -> {
-            // Navigate to detail
+            // Navigate to Photo Detail
             Bundle args = new Bundle();
             args.putString("photo_id", photo.getId());
             args.putString("photo_url", photo.getFilePath());
             Navigation.findNavController(requireView()).navigate(R.id.photoDetailFragment, args);
         });
+
         binding.recyclerViewSearchResults.setLayoutManager(new GridLayoutManager(requireContext(), 2));
         binding.recyclerViewSearchResults.setAdapter(searchAdapter);
 
-        // Observe changes to the "all photos" or "search results"
+        // ViewModel
+        photoViewModel = new ViewModelProvider(requireActivity()).get(PhotoViewModel.class);
         photoViewModel.observeAllPhotos().observe(getViewLifecycleOwner(), this::handleSearchResults);
 
-        // Setup search button
-        binding.buttonSearch.setOnClickListener(v -> {
-            String query = getQueryText();
-            if (TextUtils.isEmpty(query)) {
-                Toast.makeText(requireContext(), "Enter a tag or keyword", Toast.LENGTH_SHORT).show();
-                return;
-            }
-            photoViewModel.searchPhotos(query);
-        });
-
-        // Optionally handle "Enter" key on the text field
-        binding.editTextSearch.setOnEditorActionListener((textView, actionId, event) -> {
-            binding.buttonSearch.performClick();
-            return true;
-        });
-
-        // Optionally load a default set of photos or show blank initially
+        // Optional: loadAllPhotos if you want initial data
         // photoViewModel.loadAllPhotos();
-
-        // If you want a "swipe to refresh" or something, do it here
     }
 
-    private String getQueryText() {
-        TextInputEditText edit = binding.editTextSearch;
-        return (edit != null && edit.getText() != null) ? edit.getText().toString().trim() : "";
+    private boolean onMenuItemClick(MenuItem item) {
+        if (item.getItemId() == R.id.action_clear_search) {
+            binding.searchView.setText("");
+            photoViewModel.clearSearch();
+            return true;
+        }
+        return false;
+    }
+
+    private void performSearch() {
+        String query = binding.searchView.getText().toString().trim();
+        if (query.isEmpty()) {
+            Toast.makeText(requireContext(), "Enter a tag or keyword", Toast.LENGTH_SHORT).show();
+            return;
+        }
+        photoViewModel.searchPhotos(query);
+        binding.searchView.hide();
     }
 
     private void handleSearchResults(List<Photo> photos) {
