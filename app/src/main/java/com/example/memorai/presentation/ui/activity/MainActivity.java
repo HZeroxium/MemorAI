@@ -44,6 +44,7 @@ public class MainActivity extends AppCompatActivity {
         setupNavigation();
         setupProfileIcon();
         setupAddButton();
+        setupNotificationButton();
     }
 
     /**
@@ -71,7 +72,8 @@ public class MainActivity extends AppCompatActivity {
             NavigationUI.setupWithNavController(binding.bottomNavigation, navController);
 
             navController.addOnDestinationChangedListener((controller, destination, arguments) -> {
-                boolean isHiddenScreen = destination.getId() == R.id.photoListFragment;
+                boolean isHiddenScreen = destination.getId() == R.id.photoListFragment ||
+                        destination.getId() == R.id.albumListFragment;
 
                 toggleUIVisibility(isHiddenScreen);
             });
@@ -87,15 +89,14 @@ public class MainActivity extends AppCompatActivity {
     private void toggleUIVisibility(boolean isVisible) {
         int visibility = isVisible ? View.VISIBLE : View.GONE;
         binding.bottomNavigation.setVisibility(visibility);
-        binding.header.setVisibility(visibility);
-        binding.searchBar.setVisibility(visibility);
+        binding.toolbar.setVisibility(visibility);
     }
 
     /**
      * Setup Profile Icon to show PopupMenu for navigation.
      */
     private void setupProfileIcon() {
-        binding.profileIcon.setOnClickListener(v -> showProfileMenu(v));
+        binding.profileIcon.setOnClickListener(this::showProfileMenu);
     }
 
     private void showProfileMenu(View anchor) {
@@ -148,6 +149,10 @@ public class MainActivity extends AppCompatActivity {
         binding.buttonAdd.setOnClickListener(v -> showAddMenuBottomSheet());
     }
 
+    private void setupNotificationButton() {
+        binding.buttonNotification.setOnClickListener(v -> navController.navigate(R.id.profileFragment));
+    }
+
     private void showAddMenuBottomSheet() {
         ModalBottomSheetAddMenu bottomSheet = new ModalBottomSheetAddMenu(new ModalBottomSheetAddMenu.BottomSheetListener() {
             @Override
@@ -174,4 +179,6 @@ public class MainActivity extends AppCompatActivity {
         super.onDestroy();
         binding = null;
     }
+
+
 }

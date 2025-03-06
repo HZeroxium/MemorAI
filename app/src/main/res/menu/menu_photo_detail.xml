@@ -4,16 +4,16 @@
     <item
         android:id="@+id/action_share_photo"
         android:icon="@drawable/ic_share"
-        app:showAsAction="never"
+        app:showAsAction="ifRoom"
         android:title="@string/share" />
     <item
         android:id="@+id/action_edit_photo"
         android:icon="@drawable/ic_edit"
-        app:showAsAction="never"
+        app:showAsAction="ifRoom"
         android:title="@string/edit" />
     <item
         android:id="@+id/action_delete_photo"
         android:icon="@drawable/ic_delete"
-        app:showAsAction="never"
+        app:showAsAction="ifRoom"
         android:title="@string/delete" />
 </menu>

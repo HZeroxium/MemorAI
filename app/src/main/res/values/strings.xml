@@ -43,4 +43,6 @@
     <string name="edit">Edit</string>
     <string name="delete_selected">Delete Selected</string>
     <string name="back">Back</string>
+    <string name="profile">Profile</string>
+    <string name="notification">Notification</string>
 </resources>

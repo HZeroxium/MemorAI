@@ -119,13 +119,7 @@ public class PhotoListFragment extends Fragment {
             @Override
             public void onCreateMenu(@NonNull Menu menu, @NonNull MenuInflater menuInflater) {
                 menu.clear();
-                if (isSelectionMode) {
-                    // Show "Delete Selected" only
-                    menuInflater.inflate(R.menu.menu_photo_list_select_mode, menu);
-                } else {
-                    // Show normal layout mode items
-                    menuInflater.inflate(R.menu.menu_photo_list_normal, menu);
-                }
+                menuInflater.inflate(R.menu.menu_photo_list, menu);
             }
 
             @Override
@@ -294,7 +288,7 @@ public class PhotoListFragment extends Fragment {
     private void showViewModePopup(View anchor) {
         if (isSelectionMode) return; // Ignore if in selection mode
         PopupMenu popup = new PopupMenu(requireContext(), anchor);
-        popup.getMenuInflater().inflate(R.menu.menu_photo_list_normal, popup.getMenu());
+        popup.getMenuInflater().inflate(R.menu.menu_photo_list, popup.getMenu());
 
         // Force icons to be visible in PopupMenu
         try {

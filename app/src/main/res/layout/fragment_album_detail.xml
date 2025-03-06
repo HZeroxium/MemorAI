@@ -13,7 +13,8 @@
         app:layout_constraintTop_toTopOf="parent"
         app:menu="@menu/menu_album_detail"
         app:navigationIcon="@drawable/ic_back"
-        app:title="Album Detail" />
+        app:title="Album Detail"
+        app:titleCentered="true" />
 
     <!-- Show album date created, name, or any detail text -->
     <TextView

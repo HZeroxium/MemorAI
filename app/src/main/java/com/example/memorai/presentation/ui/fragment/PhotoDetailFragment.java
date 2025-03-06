@@ -4,6 +4,7 @@ package com.example.memorai.presentation.ui.fragment;
 import android.app.AlertDialog;
 import android.content.Intent;
 import android.os.Bundle;
+import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -55,7 +56,7 @@ public class PhotoDetailFragment extends Fragment {
         // ViewModel
         photoViewModel = new ViewModelProvider(requireActivity()).get(PhotoViewModel.class);
 
-        binding.toolbar.setNavigationOnClickListener(this::showPopupMenu);
+        binding.toolbar.setNavigationOnClickListener(v -> Navigation.findNavController(view).navigate(R.id.photoListFragment));
 
         setSharedElementTransition();
 
@@ -113,7 +114,7 @@ public class PhotoDetailFragment extends Fragment {
     }
 
     private void showPopupMenu(View anchor) {
-        PopupMenu popup = new PopupMenu(requireContext(), anchor);
+        PopupMenu popup = new PopupMenu(requireContext(), anchor, Gravity.END);
         popup.getMenuInflater().inflate(R.menu.menu_photo_detail, popup.getMenu());
 
         // Force icons to be shown in the popup menu

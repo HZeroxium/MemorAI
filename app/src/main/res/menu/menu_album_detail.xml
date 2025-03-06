@@ -1,18 +1,19 @@
 <?xml version="1.0" encoding="utf-8"?><!-- res/menu/menu_album_detail.xml -->
-<menu xmlns:android="http://schemas.android.com/apk/res/android">
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
     <item
         android:id="@+id/action_edit_album"
         android:icon="@drawable/ic_edit"
-        android:showAsAction="never"
+        app:showAsAction="ifRoom"
         android:title="@string/edit_album" />
     <item
         android:id="@+id/action_album_options"
         android:icon="@drawable/ic_settings"
-        android:showAsAction="never"
+        app:showAsAction="ifRoom"
         android:title="@string/options" />
     <item
         android:id="@+id/action_delete_album"
         android:icon="@drawable/ic_delete"
-        android:showAsAction="never"
+        app:showAsAction="ifRoom"
         android:title="@string/delete_album" />
 </menu>
