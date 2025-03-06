@@ -69,7 +69,7 @@ public class PhotoListFragment extends Fragment {
         super.onViewCreated(view, savedInstanceState);
 
         // Initialize toolbar with no menu; we will handle menu via MenuHost
-        binding.toolbarPhotoList.setTitle("MemorAI");
+        binding.toolbarPhotoList.setTitle("Photos");
         binding.toolbarPhotoList.setNavigationIcon(R.drawable.ic_more_vert);
         binding.toolbarPhotoList.setNavigationOnClickListener(this::showViewModePopup);
 
@@ -276,7 +276,7 @@ public class PhotoListFragment extends Fragment {
 
         } else {
             binding.toolbarPhotoList.setNavigationIcon(R.drawable.ic_more_vert);
-            binding.toolbarPhotoList.setTitle("MemorAI");
+            binding.toolbarPhotoList.setTitle("Photos");
             binding.toolbarPhotoList.setNavigationOnClickListener(this::showViewModePopup);
 
             binding.checkBoxSelectAll.setVisibility(View.GONE);

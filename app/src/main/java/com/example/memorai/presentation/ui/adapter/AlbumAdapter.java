@@ -45,8 +45,13 @@ public class AlbumAdapter extends ListAdapter<Album, AlbumAdapter.AlbumViewHolde
     public void onBindViewHolder(@NonNull AlbumViewHolder holder, int position) {
         Album album = getItem(position);
         holder.textViewAlbumName.setText(album.getName());
-        // If you want a cover photo:
-        Glide.with(holder.itemView.getContext()).load(album.getCoverPhotoUrl()).into(holder.imageViewCover);
+
+        // Load album cover with Glide and add a placeholder
+        Glide.with(holder.itemView.getContext())
+                .load(album.getCoverPhotoUrl())
+                .placeholder(R.drawable.placeholder_image)
+                .into(holder.imageViewCover);
+
         holder.itemView.setOnClickListener(v -> {
             if (onAlbumClickListener != null) {
                 onAlbumClickListener.onAlbumClick(album);

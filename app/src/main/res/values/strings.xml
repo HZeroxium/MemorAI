@@ -45,4 +45,5 @@
     <string name="back">Back</string>
     <string name="profile">Profile</string>
     <string name="notification">Notification</string>
+    <string name="album_cover">Album cover</string>
 </resources>
