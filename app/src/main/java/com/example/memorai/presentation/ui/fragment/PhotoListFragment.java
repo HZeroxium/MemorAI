@@ -30,6 +30,8 @@ import com.example.memorai.presentation.ui.adapter.PhotoSection;
 import com.example.memorai.presentation.ui.adapter.PhotoSectionAdapter;
 import com.example.memorai.presentation.viewmodel.PhotoViewModel;
 
+import java.lang.reflect.Field;
+import java.lang.reflect.Method;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -151,7 +153,7 @@ public class PhotoListFragment extends Fragment {
                         } else {
                             new AlertDialog.Builder(requireContext())
                                     .setTitle("Delete Photos")
-                                    .setMessage("Are you sure you want to delete the selected photos?")
+                                    .setMessage("Are you sure you want to delete " + adapter.getSelectedPhotoIds().size() + " selected photos?")
                                     .setPositiveButton("Yes", (dialog, which) -> {
                                         for (String photoId : adapter.getSelectedPhotoIds()) {
                                             photoViewModel.deletePhoto(photoId);
@@ -290,9 +292,27 @@ public class PhotoListFragment extends Fragment {
 
 
     private void showViewModePopup(View anchor) {
-        if (isSelectionMode) return; // ignore if in selection mode
+        if (isSelectionMode) return; // Ignore if in selection mode
         PopupMenu popup = new PopupMenu(requireContext(), anchor);
         popup.getMenuInflater().inflate(R.menu.menu_photo_list_normal, popup.getMenu());
+
+        // Force icons to be visible in PopupMenu
+        try {
+            Field[] fields = popup.getClass().getDeclaredFields();
+            for (Field field : fields) {
+                if ("mPopup".equals(field.getName())) {
+                    field.setAccessible(true);
+                    Object menuPopupHelper = field.get(popup);
+                    Class<?> classPopupHelper = Class.forName(menuPopupHelper.getClass().getName());
+                    Method setForceShowIcon = classPopupHelper.getMethod("setForceShowIcon", boolean.class);
+                    setForceShowIcon.invoke(menuPopupHelper, true);
+                    break;
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
         popup.setOnMenuItemClickListener(menuItem -> {
             int itemId = menuItem.getItemId();
             if (itemId == R.id.action_view_mode_comfortable) {
@@ -305,8 +325,10 @@ public class PhotoListFragment extends Fragment {
             applyLayoutManager();
             return true;
         });
+
         popup.show();
     }
+
 
     @Override
     public void onDestroyView() {

@@ -45,6 +45,7 @@
         android:layout_height="wrap_content"
         android:layout_margin="12dp"
         android:text="@string/delete_selected"
+        app:icon="@drawable/ic_delete"
         android:visibility="gone"
         app:layout_constraintBottom_toTopOf="@id/recyclerViewPhotos"
         app:layout_constraintEnd_toEndOf="parent"

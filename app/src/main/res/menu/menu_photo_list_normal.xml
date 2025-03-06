@@ -2,11 +2,14 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
     <item
         android:id="@+id/action_view_mode_comfortable"
+        android:icon="@drawable/ic_comfortable"
         android:title="@string/comfortable" />
     <item
         android:id="@+id/action_view_mode_day"
+        android:icon="@drawable/ic_day"
         android:title="@string/day" />
     <item
         android:id="@+id/action_view_mode_month"
+        android:icon="@drawable/ic_month"
         android:title="@string/month" />
 </menu>
