@@ -135,12 +135,6 @@ public class AlbumDetailFragment extends Fragment {
     }
 
 
-    @Override
-    public void onDestroyView() {
-        super.onDestroyView();
-        binding = null;
-    }
-
     private void showDeleteConfirmationDialog() {
         albumViewModel.getAlbumById(albumId).observe(getViewLifecycleOwner(), album -> {
             if (album == null) return; // Ensure album exists
@@ -172,6 +166,12 @@ public class AlbumDetailFragment extends Fragment {
 
             builder.show();
         });
+    }
+
+    @Override
+    public void onDestroyView() {
+        super.onDestroyView();
+        binding = null;
     }
 
 }

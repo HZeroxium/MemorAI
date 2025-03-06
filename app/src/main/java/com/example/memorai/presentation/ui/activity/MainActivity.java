@@ -27,7 +27,6 @@ import dagger.hilt.android.AndroidEntryPoint;
 @AndroidEntryPoint
 public class MainActivity extends AppCompatActivity {
     private ActivityMainBinding binding;
-    private AlbumViewModel albumViewModel;
     private NavController navController;
 
     @Override
@@ -38,7 +37,7 @@ public class MainActivity extends AppCompatActivity {
         binding = ActivityMainBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
 
-        albumViewModel = new ViewModelProvider(this).get(AlbumViewModel.class);
+        AlbumViewModel albumViewModel = new ViewModelProvider(this).get(AlbumViewModel.class);
         albumViewModel.ensureDefaultAlbumExists();
 
         setupNavigation();

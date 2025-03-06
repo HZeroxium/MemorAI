@@ -51,4 +51,6 @@
     <string name="clear_search">Clear search</string>
     <string name="add_selected_photos">Add Selected Photos</string>
     <string name="no_photos_selected">No photos selected</string>
+    <string name="capture_photo">Capture Photo</string>
+    <string name="confirm">Confirm</string>
 </resources>
