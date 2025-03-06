@@ -6,6 +6,7 @@ import android.content.ContentValues;
 import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Environment;
 import android.provider.MediaStore;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -17,6 +18,7 @@ import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.core.content.ContextCompat;
+import androidx.core.content.FileProvider;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.GridLayoutManager;
@@ -26,6 +28,7 @@ import com.example.memorai.domain.model.Photo;
 import com.example.memorai.presentation.ui.adapter.SelectedPhotoAdapter;
 import com.example.memorai.presentation.viewmodel.PhotoViewModel;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -88,18 +91,22 @@ public class TakePhotoFragment extends Fragment {
         });
     }
 
+    private File createImageFile() {
+        String fileName = "IMG_" + System.currentTimeMillis() + ".jpg";
+        File storageDir = requireContext().getExternalFilesDir(Environment.DIRECTORY_PICTURES);
+        return new File(storageDir, fileName);
+    }
+
     private void openCamera() {
         if (ContextCompat.checkSelfPermission(requireContext(), Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED) {
-            currentPhotoUri = createImageUri();
-            if (currentPhotoUri != null) {
-                cameraLauncher.launch(currentPhotoUri);
-            } else {
-                Toast.makeText(requireContext(), "Unable to create image URI", Toast.LENGTH_SHORT).show();
-            }
+            File imageFile = createImageFile();
+            currentPhotoUri = FileProvider.getUriForFile(requireContext(), "com.example.memorai.fileprovider", imageFile);
+            cameraLauncher.launch(currentPhotoUri);
         } else {
             permissionLauncher.launch(Manifest.permission.CAMERA);
         }
     }
+
 
     private Uri createImageUri() {
         ContentValues values = new ContentValues();
