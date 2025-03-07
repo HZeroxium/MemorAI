@@ -141,7 +141,6 @@ public class AddPhotoFragment extends Fragment {
     private void savePhotoToDatabase(Uri uri) {
         Photo photo = new Photo(
                 String.valueOf(System.currentTimeMillis()),
-                ROOT_ALBUM_ID, // Example: albumId = 1
                 uri.toString()
         );
         if (photo.getFilePath() != null) {

@@ -8,13 +8,18 @@
     <com.google.android.material.appbar.MaterialToolbar
         android:id="@+id/toolbar"
         android:layout_width="0dp"
-        android:layout_height="wrap_content"
+        android:layout_height="?attr/actionBarSize"
         android:background="?attr/colorSurface"
         android:theme="@style/ThemeOverlay.MaterialComponents.Toolbar.Primary"
+        app:layout_constraintTop_toTopOf="parent"
+        app:navigationContentDescription="@string/back"
+        app:menu="@menu/menu_photo_detail"
+        app:navigationIcon="@drawable/ic_back"
+        app:title="@string/photo_detail"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:navigationIcon="@drawable/ic_back" />
+        app:titleCentered="false" />
+
 
     <!-- Image -->
     <ImageView
@@ -25,20 +30,9 @@
         android:scaleType="fitCenter"
         android:transitionName="shared_photo_transition"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintBottom_toTopOf="@id/fabShare"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/toolbar" />
 
-    <!-- Share button -->
-    <com.google.android.material.floatingactionbutton.FloatingActionButton
-        android:id="@+id/fabShare"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:contentDescription="@string/share"
-        android:src="@drawable/ic_share"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_marginBaseline="16dp" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
