@@ -7,6 +7,7 @@ coreKtx = "1.15.0"
 appcompat = "1.7.0"
 material = "1.12.0"
 constraintLayout = "2.2.0"
+photoeditor = "3.0.1"
 recyclerView = "1.4.0"
 hilt = "2.51.1"
 room = "2.6.1"
@@ -31,6 +32,7 @@ androidx-datastore-preferences = { module = "androidx.datastore:datastore-prefer
 appcompat = { group = "androidx.appcompat", name = "appcompat", version.ref = "appcompat" }
 material = { group = "com.google.android.material", name = "material", version.ref = "material" }
 constraintlayout = { group = "androidx.constraintlayout", name = "constraintlayout", version.ref = "constraintLayout" }
+photoeditor = { module = "com.burhanrashid52:photoeditor", version.ref = "photoeditor" }
 recyclerview = { group = "androidx.recyclerview", name = "recyclerview", version.ref = "recyclerView" }
 
 # Dagger Hilt

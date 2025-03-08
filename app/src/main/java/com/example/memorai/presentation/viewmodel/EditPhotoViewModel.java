@@ -8,6 +8,7 @@ import androidx.lifecycle.ViewModel;
 import com.example.memorai.domain.model.Photo;
 import com.example.memorai.domain.usecase.photo.EditPhotoUseCase;
 
+
 import javax.inject.Inject;
 
 import dagger.hilt.android.lifecycle.HiltViewModel;
@@ -32,4 +33,5 @@ public class EditPhotoViewModel extends ViewModel {
             editedPhoto.postValue(photo);
         }).start();
     }
+
 }

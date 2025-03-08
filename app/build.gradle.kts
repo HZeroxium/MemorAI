@@ -108,6 +108,11 @@ dependencies {
 
     // DataStore
     implementation(libs.androidx.datastore.preferences)
+
+    // Edit Image
+    //implementation("com.github.mukeshsolanki:photofilter:1.0.2")
+    //implementation("com.github.")
+    implementation(libs.photoeditor)
 }
 
 kapt {
