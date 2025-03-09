@@ -360,4 +360,3 @@ public class PhotoListFragment extends Fragment {
         binding = null;
     }
 }
-

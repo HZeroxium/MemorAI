@@ -135,4 +135,73 @@
             app:destination="@id/photoDetailFragment" />
     </fragment>
 
+    <fragment
+        android:id="@+id/albumCreateFragment"
+        android:name="com.example.memorai.presentation.ui.fragment.AlbumCreateFragment"
+        android:label="Create Album"
+        tools:layout="@layout/fragment_album_create">
+        <action
+            android:id="@+id/action_albumCreateFragment_to_albumListFragment"
+            app:destination="@id/albumListFragment" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/albumDetailFragment"
+        android:name="com.example.memorai.presentation.ui.fragment.AlbumDetailFragment"
+        android:label="Album Detail"
+        tools:layout="@layout/fragment_album_detail">
+        <action
+            android:id="@+id/action_albumDetailFragment_to_albumCreateFragment"
+            app:destination="@id/albumCreateFragment" />
+        <!-- Possibly an action to "select photos" or so -->
+    </fragment>
+
+    <fragment
+        android:id="@+id/albumAddPhotosFragment"
+        android:name="com.example.memorai.presentation.ui.fragment.AlbumAddPhotosFragment"
+        android:label="Add Photos to Album"
+        tools:layout="@layout/fragment_album_add_photos">
+        <action
+            android:id="@+id/action_albumAddPhotosFragment_to_albumDetailFragment"
+            app:destination="@id/albumDetailFragment" />
+    </fragment>
+
+
+    <fragment
+        android:id="@+id/albumUpdateFragment"
+        android:name="com.example.memorai.presentation.ui.fragment.AlbumUpdateFragment"
+        android:label="Update Album"
+        tools:layout="@layout/fragment_album_update">
+        <action
+            android:id="@+id/action_albumUpdateFragment_to_albumDetailFragment"
+            app:destination="@id/albumDetailFragment" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/takePhotoFragment"
+        android:name="com.example.memorai.presentation.ui.fragment.TakePhotoFragment"
+        android:label="Take Photo"
+        tools:layout="@layout/fragment_take_photo" />
+
+    <fragment
+        android:id="@+id/importPhotoFragment"
+        android:name="com.example.memorai.presentation.ui.fragment.ImportPhotoFragment"
+        android:label="Import Photo"
+        tools:layout="@layout/fragment_import_photo" />
+
+    <fragment
+        android:id="@+id/searchFragment"
+        android:name="com.example.memorai.presentation.ui.fragment.SearchFragment"
+        android:label="Search">
+        <action
+            android:id="@+id/action_searchFragment_to_photoDetailFragment"
+            app:destination="@id/photoDetailFragment" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/notificationFragment"
+        android:name="com.example.memorai.presentation.ui.fragment.NotificationFragment"
+        android:label="Notifications" />
+
+
 </navigation>

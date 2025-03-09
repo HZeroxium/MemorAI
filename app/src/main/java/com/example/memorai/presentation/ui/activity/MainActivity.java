@@ -1,8 +1,11 @@
 // presentation/ui/activity/MainActivity.java
 package com.example.memorai.presentation.ui.activity;
 
+import android.Manifest;
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
+import android.os.Build;
 import android.os.Bundle;
 import android.text.SpannableString;
 import android.text.style.ForegroundColorSpan;
@@ -12,6 +15,8 @@ import android.widget.PopupMenu;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.app.AppCompatDelegate;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.navigation.NavController;
 import androidx.navigation.fragment.NavHostFragment;
@@ -44,7 +49,19 @@ public class MainActivity extends AppCompatActivity {
         setupProfileIcon();
         setupAddButton();
         setupNotificationButton();
+        requestNotificationPermission();
     }
+
+    private void requestNotificationPermission() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) { // Android 13+
+            if (ContextCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS)
+                    != PackageManager.PERMISSION_GRANTED) {
+                ActivityCompat.requestPermissions(this,
+                        new String[]{Manifest.permission.POST_NOTIFICATIONS}, 101);
+            }
+        }
+    }
+
 
     /**
      * Apply Dark Mode based on SharedPreferences settings.
@@ -150,7 +167,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void setupNotificationButton() {
-        binding.buttonNotification.setOnClickListener(v -> navController.navigate(R.id.profileFragment));
+        binding.buttonNotification.setOnClickListener(v -> navController.navigate(R.id.notificationFragment));
     }
 
     private void showAddMenuBottomSheet() {
@@ -173,12 +190,4 @@ public class MainActivity extends AppCompatActivity {
 
         bottomSheet.show(getSupportFragmentManager(), "ModalBottomSheetAddMenu");
     }
-
-    @Override
-    protected void onDestroy() {
-        super.onDestroy();
-        binding = null;
-    }
-
-
 }

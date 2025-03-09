@@ -23,4 +23,3 @@
         android:textSize="14sp"
         android:visibility="gone" />
 </LinearLayout>
-

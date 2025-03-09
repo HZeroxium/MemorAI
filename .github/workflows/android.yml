@@ -45,6 +45,9 @@ jobs:
         run: chmod +x ./gradlew
 
       # Build and Test
+      - name: Create google-services.json
+        run: echo '${{ secrets.GOOGLE_SERVICES_JSON }}' > app/google-services.json
+
       - name: Run Unit Tests
         run: ./gradlew testDebugUnitTest
 
