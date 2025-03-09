@@ -2,14 +2,18 @@
 package com.example.memorai.presentation.ui.activity;
 
 import android.Manifest;
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.os.Build;
+import android.content.res.Configuration;
+import android.content.res.Resources;
 import android.os.Bundle;
 import android.text.SpannableString;
 import android.text.style.ForegroundColorSpan;
+import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.PopupMenu;
@@ -19,6 +23,8 @@ import androidx.appcompat.app.AppCompatDelegate;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.lifecycle.ViewModelProvider;
+import androidx.lifecycle.ViewModelProvider;
+import androidx.lifecycle.ViewModelStoreOwner;
 import androidx.navigation.NavController;
 import androidx.navigation.fragment.NavHostFragment;
 import androidx.navigation.ui.NavigationUI;
@@ -28,6 +34,8 @@ import com.example.memorai.databinding.ActivityMainBinding;
 import com.example.memorai.presentation.ui.dialog.ModalBottomSheetAddMenu;
 import com.example.memorai.presentation.viewmodel.AlbumViewModel;
 import com.example.memorai.utils.notification.MemoryReceiver;
+
+import java.util.Locale;
 
 import dagger.hilt.android.AndroidEntryPoint;
 
@@ -40,6 +48,9 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         applyDarkMode();
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
         binding = ActivityMainBinding.inflate(getLayoutInflater());
@@ -47,7 +58,12 @@ public class MainActivity extends AppCompatActivity {
 
         albumViewModel = new ViewModelProvider(this).get(AlbumViewModel.class);
         albumViewModel.ensureDefaultAlbumExists();
+        SharedPreferences sharedPreferences = getSharedPreferences("Mode", Context.MODE_PRIVATE);
+        boolean darkMode = sharedPreferences.getBoolean("night", false);
+        AlbumViewModel albumViewModel = new ViewModelProvider((ViewModelStoreOwner) this).get(AlbumViewModel.class);
+        albumViewModel.ensureDefaultAlbumExists(); // Ensure default album exists
 
+//        setupDarkMode();
         setupNavigation();
         setupProfileIcon();
         setupNotificationButton();
@@ -63,13 +79,28 @@ public class MainActivity extends AppCompatActivity {
             }
         }
     }
-
     private void applyDarkMode() {
         SharedPreferences sharedPreferences = getSharedPreferences("Mode", Context.MODE_PRIVATE);
         boolean darkMode = sharedPreferences.getBoolean("night", false);
         AppCompatDelegate.setDefaultNightMode(
                 darkMode ? AppCompatDelegate.MODE_NIGHT_YES : AppCompatDelegate.MODE_NIGHT_NO
         );
+      
+    @Override
+    protected void attachBaseContext(Context newBase) {
+        super.attachBaseContext(updateBaseContextLocale(newBase));
+    }
+
+    private Context updateBaseContextLocale(Context context) {
+        SharedPreferences prefs = context.getSharedPreferences("Settings", Context.MODE_PRIVATE);
+        String language = prefs.getString("Language", "en"); // Mặc định là English
+        Locale locale = new Locale(language);
+        Locale.setDefault(locale);
+
+        Resources resources = context.getResources();
+        Configuration configuration = resources.getConfiguration();
+        configuration.setLocale(locale);
+        return context.createConfigurationContext(configuration);
     }
 
     private void setupNavigation() {
@@ -81,13 +112,32 @@ public class MainActivity extends AppCompatActivity {
             }
             navController = navHostFragment.getNavController();
             NavigationUI.setupWithNavController(binding.bottomNavigation, navController);
-
             navController.addOnDestinationChangedListener((controller, destination, arguments) -> {
+              
                 boolean isHiddenScreen = destination.getId() == R.id.photoListFragment ||
                         destination.getId() == R.id.albumListFragment ||
                         destination.getId() == R.id.searchFragment;
 
                 toggleUIVisibility(isHiddenScreen);
+                if (destination.getId() == R.id.photoDetailFragment || destination.getId() == R.id.addPhotoFragment || destination.getId() == R.id.settingsFragment) {
+                    binding.bottomNavigation.setVisibility(View.GONE);
+                    binding.header.setVisibility(View.GONE);
+                    binding.searchBar.setVisibility(View.GONE);
+                } else {
+                    binding.bottomNavigation.setVisibility(View.VISIBLE);
+                    binding.header.setVisibility(View.VISIBLE);
+                    binding.headerText.setText(R.string.hi);
+                    MenuItem photosItem = binding.bottomNavigation.getMenu().findItem(R.id.photoListFragment);
+                    MenuItem albumsItem = binding.bottomNavigation.getMenu().findItem(R.id.albumListFragment);
+                    MenuItem searchItem = binding.bottomNavigation.getMenu().findItem(R.id.searchFragment);
+
+                    if (photosItem != null) photosItem.setTitle(R.string.photos);
+                    if (albumsItem != null) albumsItem.setTitle(R.string.albums);
+                    if (searchItem != null) searchItem.setTitle(R.string.search);
+
+                    binding.searchBar.setVisibility(View.VISIBLE);
+                }
+>>>>>>> master
             });
 
         } catch (IllegalStateException e) {

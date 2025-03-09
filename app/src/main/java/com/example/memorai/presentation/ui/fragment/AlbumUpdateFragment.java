@@ -20,6 +20,7 @@ import com.example.memorai.domain.model.Photo;
 import com.example.memorai.presentation.ui.adapter.SelectedPhotoAdapter;
 import com.example.memorai.presentation.viewmodel.AlbumCreationViewModel;
 import com.example.memorai.presentation.viewmodel.AlbumViewModel;
+import com.example.memorai.presentation.viewmodel.PhotoViewModel;
 import com.google.android.material.snackbar.Snackbar;
 
 import java.util.List;
@@ -34,8 +35,10 @@ public class AlbumUpdateFragment extends Fragment {
 
     private FragmentAlbumUpdateBinding binding;
     private AlbumViewModel albumViewModel;
+    private PhotoViewModel photoViewModel;
     private AlbumCreationViewModel albumCreationViewModel;
     private SelectedPhotoAdapter selectedPhotoAdapter;
+    private String albumId;
     private Album currentAlbum;
 
     @Nullable
@@ -54,11 +57,18 @@ public class AlbumUpdateFragment extends Fragment {
 
         albumViewModel = new ViewModelProvider(requireActivity()).get(AlbumViewModel.class);
         albumCreationViewModel = new ViewModelProvider(requireActivity()).get(AlbumCreationViewModel.class);
+        photoViewModel = new ViewModelProvider(requireActivity()).get(PhotoViewModel.class);
+
+        if (getArguments() != null) {
+            albumId = getArguments().getString("album_id", "");
+        }
 
         setupToolbar(view);
         setupRecyclerView();
         setupObservers();
         setupButtons(view);
+
+        loadAlbumAndPhotos();
     }
 
     private void setupToolbar(View view) {
@@ -72,28 +82,29 @@ public class AlbumUpdateFragment extends Fragment {
         binding.recyclerViewSelectedPhotos.setLayoutManager(new GridLayoutManager(requireContext(), 3));
         binding.recyclerViewSelectedPhotos.setAdapter(selectedPhotoAdapter);
 
+        // Remove photo from album
         selectedPhotoAdapter.setOnRemoveClickListener(photo -> {
             albumCreationViewModel.removePhoto(photo);
-            showSnackbar("Photo removed");
+            showSnackbar("Photo removed from album");
         });
     }
 
     private void setupObservers() {
+        // Observe selected photos
         albumCreationViewModel.getSelectedPhotos().observe(getViewLifecycleOwner(), photos -> {
             selectedPhotoAdapter.submitList(photos);
             validateForm();
         });
 
+        // Validate form whenever text changes
         binding.editTextAlbumTitle.addTextChangedListener(new android.text.TextWatcher() {
             @Override
             public void beforeTextChanged(CharSequence s, int start, int count, int after) {
             }
-
             @Override
             public void onTextChanged(CharSequence s, int start, int before, int count) {
                 validateForm();
             }
-
             @Override
             public void afterTextChanged(android.text.Editable s) {
             }
@@ -109,11 +120,30 @@ public class AlbumUpdateFragment extends Fragment {
     }
 
     private void setupButtons(View view) {
-        binding.buttonSelectPhotos.setOnClickListener(v ->
-                Navigation.findNavController(view).navigate(R.id.albumAddPhotosFragment));
+        binding.buttonSelectPhotos.setOnClickListener(v -> {
+//            Navigation.findNavController(view).navigate(R.id.albumAddPhotosFragment);
+        });
 
         binding.buttonUpdateAlbum.setOnClickListener(v -> {
-            Toast.makeText(requireContext(), "Album Updated!", Toast.LENGTH_SHORT).show();
+            String title = binding.editTextAlbumTitle.getText().toString().trim();
+            if (TextUtils.isEmpty(title)) {
+                Toast.makeText(requireContext(), "Enter a valid title", Toast.LENGTH_SHORT).show();
+                return;
+            }
+            List<Photo> selected = albumCreationViewModel.getSelectedPhotos().getValue();
+            if (selected == null || selected.isEmpty()) {
+                Toast.makeText(requireContext(), "No photos selected for album!", Toast.LENGTH_SHORT).show();
+                return;
+            }
+
+            // Actually do the update
+            currentAlbum = new Album(albumId, title, "", selected.get(0).getFilePath(),
+                    System.currentTimeMillis(), System.currentTimeMillis());
+            albumViewModel.updateAlbumWithPhotos(currentAlbum, selected);
+            Toast.makeText(requireContext(), "Album updated!", Toast.LENGTH_SHORT).show();
+
+            // Clear creationViewModel and go back
+            albumCreationViewModel.clear();
             Navigation.findNavController(view).popBackStack();
         });
     }
@@ -127,4 +157,15 @@ public class AlbumUpdateFragment extends Fragment {
         super.onDestroyView();
         binding = null;
     }
+
+    private void loadAlbumAndPhotos() {
+        // 1) Get album info from VM
+        albumViewModel.getAlbumById(albumId).observe(getViewLifecycleOwner(), album -> {
+            if (album == null) return;
+            currentAlbum = album;
+            binding.editTextAlbumTitle.setText(album.getName());
+        });
+
+    }
+
 }
