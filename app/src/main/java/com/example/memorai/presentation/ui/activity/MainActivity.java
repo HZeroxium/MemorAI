@@ -1,8 +1,12 @@
 // presentation/ui/activity/MainActivity.java
 package com.example.memorai.presentation.ui.activity;
 
+import android.Manifest;
 import android.content.Context;
+import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
+import android.os.Build;
 import android.os.Bundle;
 import android.text.SpannableString;
 import android.text.style.ForegroundColorSpan;
@@ -12,6 +16,8 @@ import android.widget.PopupMenu;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.app.AppCompatDelegate;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.navigation.NavController;
 import androidx.navigation.fragment.NavHostFragment;
@@ -21,6 +27,7 @@ import com.example.memorai.R;
 import com.example.memorai.databinding.ActivityMainBinding;
 import com.example.memorai.presentation.ui.dialog.ModalBottomSheetAddMenu;
 import com.example.memorai.presentation.viewmodel.AlbumViewModel;
+import com.example.memorai.utils.notification.MemoryReceiver;
 
 import dagger.hilt.android.AndroidEntryPoint;
 
@@ -43,13 +50,20 @@ public class MainActivity extends AppCompatActivity {
 
         setupNavigation();
         setupProfileIcon();
-        setupAddButton();
         setupNotificationButton();
+        requestNotificationPermission();
     }
 
-    /**
-     * Apply Dark Mode based on SharedPreferences settings.
-     */
+    private void requestNotificationPermission() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) { // Android 13+
+            if (ContextCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS)
+                    != PackageManager.PERMISSION_GRANTED) {
+                ActivityCompat.requestPermissions(this,
+                        new String[]{Manifest.permission.POST_NOTIFICATIONS}, 101);
+            }
+        }
+    }
+
     private void applyDarkMode() {
         SharedPreferences sharedPreferences = getSharedPreferences("Mode", Context.MODE_PRIVATE);
         boolean darkMode = sharedPreferences.getBoolean("night", false);
@@ -58,9 +72,6 @@ public class MainActivity extends AppCompatActivity {
         );
     }
 
-    /**
-     * Setup Navigation Controller and Destination Change Listener.
-     */
     private void setupNavigation() {
         try {
             NavHostFragment navHostFragment = (NavHostFragment) getSupportFragmentManager()
@@ -84,20 +95,18 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    /**
-     * Show/Hide UI elements based on navigation destination.
-     */
     private void toggleUIVisibility(boolean isVisible) {
         int visibility = isVisible ? View.VISIBLE : View.GONE;
         binding.bottomNavigation.setVisibility(visibility);
         binding.toolbar.setVisibility(visibility);
     }
 
-    /**
-     * Setup Profile Icon to show PopupMenu for navigation.
-     */
     private void setupProfileIcon() {
         binding.profileIcon.setOnClickListener(this::showProfileMenu);
+    }
+
+    private void setupNotificationButton() {
+        binding.buttonNotification.setOnClickListener(v -> {navController.navigate(R.id.notificationFragment);});
     }
 
     private void showProfileMenu(View anchor) {
@@ -112,9 +121,6 @@ public class MainActivity extends AppCompatActivity {
         popupMenu.show();
     }
 
-    /**
-     * Apply color span to menu items.
-     */
     private void setTitleSpan(MenuItem menuItem) {
         SpannableString s = new SpannableString(menuItem.getTitle());
         s.setSpan(new ForegroundColorSpan(getResources().getColor(R.color.md_theme_onBackground)),
@@ -122,12 +128,7 @@ public class MainActivity extends AppCompatActivity {
         menuItem.setTitle(s);
     }
 
-    /**
-     * Handle Profile Menu Item Clicks.
-     */
     private boolean handleProfileMenuClick(MenuItem item) {
-        if (navController == null) return false;
-
         int itemId = item.getItemId();
         if (itemId == R.id.menu_profile) {
             navController.navigate(R.id.profileFragment);
@@ -141,45 +142,4 @@ public class MainActivity extends AppCompatActivity {
         }
         return true;
     }
-
-
-    /**
-     * Show BottomSheet when clicking Add Button.
-     */
-    private void setupAddButton() {
-        binding.buttonAdd.setOnClickListener(v -> showAddMenuBottomSheet());
-    }
-
-    private void setupNotificationButton() {
-        binding.buttonNotification.setOnClickListener(v -> navController.navigate(R.id.profileFragment));
-    }
-
-    private void showAddMenuBottomSheet() {
-        ModalBottomSheetAddMenu bottomSheet = new ModalBottomSheetAddMenu(new ModalBottomSheetAddMenu.BottomSheetListener() {
-            @Override
-            public void onAddAlbum() {
-                navController.navigate(R.id.albumCreateFragment);
-            }
-
-            @Override
-            public void onImportPhoto() {
-                navController.navigate(R.id.importPhotoFragment);
-            }
-
-            @Override
-            public void onTakePhoto() {
-                navController.navigate(R.id.takePhotoFragment);
-            }
-        });
-
-        bottomSheet.show(getSupportFragmentManager(), "ModalBottomSheetAddMenu");
-    }
-
-    @Override
-    protected void onDestroy() {
-        super.onDestroy();
-        binding = null;
-    }
-
-
 }

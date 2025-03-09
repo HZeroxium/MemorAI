@@ -135,4 +135,10 @@
             app:destination="@id/photoDetailFragment" />
     </fragment>
 
+    <fragment
+        android:id="@+id/notificationFragment"
+        android:name="com.example.memorai.presentation.ui.fragment.NotificationFragment"
+        android:label="Notifications" />
+
+
 </navigation>
