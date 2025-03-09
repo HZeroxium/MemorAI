@@ -3,6 +3,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    style="@style/SCREEN"
     android:padding="8dp">
 
     <!-- Toolbar Container -->
@@ -11,6 +12,7 @@
         android:layout_width="match_parent"
         android:layout_height="?attr/actionBarSize"
         app:layout_constraintTop_toTopOf="parent"
+        style="@style/SCREEN"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent">
 
@@ -22,6 +24,7 @@
             android:layout_marginStart="16dp"
             android:text="@string/select_all"
             android:textSize="14sp"
+            style="@style/content"
             android:visibility="gone"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintStart_toStartOf="parent"
@@ -32,10 +35,10 @@
             android:id="@+id/toolbarPhotoList"
             android:layout_width="0dp"
             android:layout_height="match_parent"
-            android:background="?attr/colorSurface"
             android:theme="@style/ThemeOverlay.MaterialComponents.Toolbar.Primary"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toEndOf="@id/checkBoxSelectAll"
+            style="@style/CustomToolbarStyle"
             app:title="@string/photos" />
     </androidx.constraintlayout.widget.ConstraintLayout>
 
@@ -47,6 +50,7 @@
         android:text="@string/delete_selected"
         app:icon="@drawable/ic_delete"
         android:visibility="gone"
+        android:textColor="@color/theme_night_theme"
         android:layout_margin="16dp"
         app:layout_anchorGravity="bottom|end"
         app:layout_constraintEnd_toEndOf="parent"
