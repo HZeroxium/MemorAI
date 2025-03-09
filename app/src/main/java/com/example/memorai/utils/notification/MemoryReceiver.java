@@ -18,34 +18,37 @@ public class MemoryReceiver extends BroadcastReceiver {
     }
 
     private void sendNotification(Context context) {
-        String channelId = "memory_channel";
-        String channelName = "Memory Alerts";
+        String channelId = context.getString(R.string.memory_channel_id);
+        String channelName = context.getString(R.string.memory_channel_name);
+        String channelDescription = context.getString(R.string.memory_channel_description);
+        String title = context.getString(R.string.memory_alert_title);
+        String message = context.getString(R.string.memory_alert_message);
 
         NotificationManager notificationManager =
                 (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
 
-        // Kiểm tra và tạo Notification Channel cho Android 8.0+
+        // Check and create Notification Channel (For Android 8.0+)
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             NotificationChannel existingChannel = notificationManager.getNotificationChannel(channelId);
-            if (existingChannel == null) { // Chỉ tạo nếu channel chưa tồn tại
+            if (existingChannel == null) { // Create channel only if it doesn't exist
                 NotificationChannel channel = new NotificationChannel(
                         channelId, channelName, NotificationManager.IMPORTANCE_HIGH);
-                channel.setDescription("Thông báo về bộ nhớ thấp");
+                channel.setDescription(channelDescription);
                 notificationManager.createNotificationChannel(channel);
             }
         }
 
-        // Intent mở app khi nhấn vào thông báo
+        // Intent to open app when clicking the notification
         Intent openAppIntent = new Intent(context, MainActivity.class);
         openAppIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
         PendingIntent pendingIntent = PendingIntent.getActivity(
                 context, 0, openAppIntent, PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
 
-        // Tạo thông báo
+        // Create the notification
         NotificationCompat.Builder builder = new NotificationCompat.Builder(context, channelId)
                 .setSmallIcon(R.drawable.ic_notification)
-                .setContentTitle("Cảnh báo bộ nhớ")
-                .setContentText("Bộ nhớ thấp, hãy dọn dẹp ngay!")
+                .setContentTitle(title)
+                .setContentText(message)
                 .setPriority(NotificationCompat.PRIORITY_HIGH)
                 .setAutoCancel(true)
                 .setContentIntent(pendingIntent);

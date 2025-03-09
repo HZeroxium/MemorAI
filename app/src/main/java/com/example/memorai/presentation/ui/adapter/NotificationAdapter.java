@@ -42,7 +42,6 @@ public class NotificationAdapter extends RecyclerView.Adapter<NotificationAdapte
 
     public void setNotifications(List<NotificationDto> notifications) {
         this.notifications = notifications;
-        notifyDataSetChanged();
     }
 
     public static class NotificationViewHolder extends RecyclerView.ViewHolder {

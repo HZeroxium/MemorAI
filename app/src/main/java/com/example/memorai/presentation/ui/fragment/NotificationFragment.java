@@ -1,5 +1,6 @@
 package com.example.memorai.presentation.ui.fragment;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -12,6 +13,7 @@ import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.LinearLayoutManager;
 
 import com.example.memorai.databinding.FragmentNotificationBinding;
+import com.example.memorai.presentation.ui.activity.MainActivity;
 import com.example.memorai.presentation.ui.adapter.NotificationAdapter;
 import com.example.memorai.presentation.viewmodel.NotificationViewModel;
 
@@ -38,6 +40,13 @@ public class NotificationFragment extends Fragment {
         });
 
         viewModel.loadNotifications();
+
+        // ✅ Xử lý nút quay về
+        binding.buttonBack.setOnClickListener(v -> {
+            Intent intent = new Intent(getActivity(), MainActivity.class);
+            intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
+            startActivity(intent);
+        });
 
         return binding.getRoot();
     }

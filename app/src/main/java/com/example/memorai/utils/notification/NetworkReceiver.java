@@ -6,6 +6,7 @@ import android.content.Intent;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 
+import com.example.memorai.R;
 import com.example.memorai.presentation.ui.activity.MainActivity;
 
 public class NetworkReceiver extends BroadcastReceiver {
@@ -16,9 +17,10 @@ public class NetworkReceiver extends BroadcastReceiver {
 
         if (activeNetwork == null || !activeNetwork.isConnected()) {
             NotificationHelper.sendSystemNotification(
-                    context, "network_channel",
-                    "Mạng yếu",
-                    "Vui lòng kiểm tra kết nối!",
+                    context,
+                    context.getString(R.string.network_channel_id),
+                    context.getString(R.string.network_alert_title),
+                    context.getString(R.string.network_alert_message),
                     new Intent(context, MainActivity.class)
             );
         }
