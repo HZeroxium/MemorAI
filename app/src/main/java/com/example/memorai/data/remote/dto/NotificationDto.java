@@ -6,7 +6,8 @@ public class NotificationDto {
     public String message;
     public long timestamp;
 
-    public NotificationDto() {}
+    public NotificationDto() {
+    }
 
     public NotificationDto(String id, String title, String message, long timestamp) {
         this.id = id;

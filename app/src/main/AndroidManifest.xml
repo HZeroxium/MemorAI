@@ -16,7 +16,7 @@
     <uses-permission
         android:name="android.permission.READ_EXTERNAL_STORAGE"
         android:maxSdkVersion="32" />
-    <uses-permission android:name="android.permission.POST_NOTIFICATIONS"/>
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
 
     <application
         android:allowBackup="true"
@@ -50,17 +50,19 @@
                 android:resource="@xml/file_paths" />
         </provider>
 
-        <receiver android:name=".utils.notification.NetworkReceiver"
+        <receiver
+            android:name=".utils.notification.NetworkReceiver"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.net.conn.CONNECTIVITY_CHANGE" />
             </intent-filter>
         </receiver>
 
-        <receiver android:name=".utils.notification.MemoryReceiver"
+        <receiver
+            android:name=".utils.notification.MemoryReceiver"
             android:exported="true">
             <intent-filter>
-                <action android:name="android.intent.action.DEVICE_STORAGE_LOW"/>
+                <action android:name="android.intent.action.DEVICE_STORAGE_LOW" />
             </intent-filter>
         </receiver>
     </application>
