@@ -86,7 +86,7 @@ public class AlbumDetailFragment extends Fragment {
         if (id == R.id.action_edit_album) {
             Bundle args = new Bundle();
             args.putString("album_id", albumId);
-            Navigation.findNavController(requireView()).navigate(R.id.albumUpdateFragment, args);
+//            Navigation.findNavController(requireView()).navigate(R.id.albumUpdateFragment, args);
             return true;
         } else if (id == R.id.action_album_options) {
             Toast.makeText(requireContext(), "Album options clicked", Toast.LENGTH_SHORT).show();

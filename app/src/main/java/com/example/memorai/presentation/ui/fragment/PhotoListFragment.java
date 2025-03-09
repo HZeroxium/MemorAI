@@ -70,7 +70,7 @@ public class PhotoListFragment extends Fragment {
         super.onViewCreated(view, savedInstanceState);
 
         // Initialize toolbar with no menu; we will handle menu via MenuHost
-        binding.toolbarPhotoList.setTitle("Photos");
+        binding.toolbarPhotoList.setTitle(getString(R.string.photos));
         binding.toolbarPhotoList.setNavigationIcon(R.drawable.ic_more_vert);
         binding.toolbarPhotoList.setNavigationOnClickListener(this::showViewModePopup);
 
@@ -263,7 +263,7 @@ public class PhotoListFragment extends Fragment {
                 result.add(new PhotoSection(currentLabel, currentList));
             }
         } else {
-            result.add(new PhotoSection("All Photos", photos));
+            result.add(new PhotoSection(getString(R.string.all_photos), photos));
         }
         return result;
     }
@@ -307,7 +307,7 @@ public class PhotoListFragment extends Fragment {
         } else {
             // Normal mode
             binding.toolbarPhotoList.setNavigationIcon(R.drawable.ic_more_vert);
-            binding.toolbarPhotoList.setTitle("Photos");
+            binding.toolbarPhotoList.setTitle(getString(R.string.photos));
             binding.toolbarPhotoList.setNavigationOnClickListener(this::showViewModePopup);
 
             fab.setVisibility(View.GONE);
