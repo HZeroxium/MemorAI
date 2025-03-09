@@ -13,6 +13,7 @@ import androidx.lifecycle.ViewModelProvider;
 import androidx.navigation.Navigation;
 import androidx.recyclerview.widget.GridLayoutManager;
 
+import com.example.memorai.R;
 import com.example.memorai.databinding.FragmentAlbumCreateBinding;
 import com.example.memorai.domain.model.Album;
 import com.example.memorai.domain.model.Photo;
@@ -109,8 +110,8 @@ public class AlbumCreateFragment extends Fragment {
     }
 
     private void setupButtons(View view) {
-//        binding.buttonSelectPhotos.setOnClickListener(v ->
-//                Navigation.findNavController(view).navigate(R.id.albumAddPhotosFragment));
+        binding.buttonSelectPhotos.setOnClickListener(v ->
+                Navigation.findNavController(view).navigate(R.id.albumAddPhotosFragment));
 
         binding.buttonAddAlbum.setOnClickListener(v -> {
             String title = binding.editTextAlbumTitle.getText().toString().trim();
