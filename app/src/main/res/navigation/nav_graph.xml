@@ -34,6 +34,16 @@
         tools:layout="@layout/fragment_photo_detail" />
 
     <fragment
+        android:id="@+id/profileFragment"
+        android:name="com.example.memorai.presentation.ui.fragment.ProfileFragment"
+        android:label="Profile" />
+
+    <fragment
+        android:id="@+id/loginFragment"
+        android:name="com.example.memorai.presentation.ui.fragment.LoginFragment"
+        android:label="Login" />
+
+    <fragment
         android:id="@+id/addPhotoFragment"
         android:name="com.example.memorai.presentation.ui.fragment.AddPhotoFragment"
         android:label="Add Photo"

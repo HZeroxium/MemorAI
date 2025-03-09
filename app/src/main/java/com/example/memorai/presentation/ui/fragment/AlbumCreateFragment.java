@@ -110,8 +110,8 @@ public class AlbumCreateFragment extends Fragment {
     }
 
     private void setupButtons(View view) {
-        binding.buttonSelectPhotos.setOnClickListener(v ->
-                Navigation.findNavController(view).navigate(R.id.albumAddPhotosFragment));
+//        binding.buttonSelectPhotos.setOnClickListener(v ->
+//                Navigation.findNavController(view).navigate(R.id.albumAddPhotosFragment));
 
         binding.buttonAddAlbum.setOnClickListener(v -> {
             String title = binding.editTextAlbumTitle.getText().toString().trim();

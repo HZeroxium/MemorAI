@@ -121,7 +121,7 @@ public class AlbumUpdateFragment extends Fragment {
 
     private void setupButtons(View view) {
         binding.buttonSelectPhotos.setOnClickListener(v -> {
-            Navigation.findNavController(view).navigate(R.id.albumAddPhotosFragment);
+//            Navigation.findNavController(view).navigate(R.id.albumAddPhotosFragment);
         });
 
         binding.buttonUpdateAlbum.setOnClickListener(v -> {
