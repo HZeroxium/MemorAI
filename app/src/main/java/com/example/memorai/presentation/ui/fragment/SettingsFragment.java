@@ -6,7 +6,6 @@ import android.content.SharedPreferences;
 import android.content.res.Configuration;
 import android.content.res.Resources;
 import android.os.Bundle;
-import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -140,8 +139,6 @@ public class SettingsFragment extends Fragment {
                 }
                 updateUIText(); // Cập nhật lại giao diện người dùng
             }
-
-
 
 
             private void updateUIText() {

@@ -4,7 +4,9 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.content.res.Configuration;
 import android.content.res.Resources;
+
 import androidx.fragment.app.Fragment;
+
 import java.util.Locale;
 
 public class BaseFragment extends Fragment {

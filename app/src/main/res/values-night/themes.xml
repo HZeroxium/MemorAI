@@ -67,6 +67,7 @@
         <item name="titleTextColor">#6EACDA</item>
         <item name="android:background">@drawable/rounder_bottom_menu_night</item>
     </style>
+
     <style name="CustomToolbarStyle" parent="Widget.MaterialComponents.Toolbar">
         <item name="android:background">#021526</item>
         <item name="titleTextColor">#6EACDA</item>

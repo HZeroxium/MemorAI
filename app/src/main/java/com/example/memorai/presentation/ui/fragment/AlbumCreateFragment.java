@@ -13,7 +13,6 @@ import androidx.lifecycle.ViewModelProvider;
 import androidx.navigation.Navigation;
 import androidx.recyclerview.widget.GridLayoutManager;
 
-import com.example.memorai.R;
 import com.example.memorai.databinding.FragmentAlbumCreateBinding;
 import com.example.memorai.domain.model.Album;
 import com.example.memorai.domain.model.Photo;
