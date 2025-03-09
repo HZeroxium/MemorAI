@@ -67,6 +67,7 @@
         <item name="titleTextColor">?attr/colorOnSurface</item>
         <item name="android:background">@drawable/rounder_bottom_menu</item>
     </style>
+
     <style name="CustomToolbarStyle" parent="Widget.MaterialComponents.Toolbar">
         <item name="android:background">?attr/colorSurface</item>
         <item name="titleTextColor">?attr/colorOnSurface</item>
