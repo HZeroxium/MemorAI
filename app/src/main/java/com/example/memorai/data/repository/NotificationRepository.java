@@ -12,7 +12,7 @@ public class NotificationRepository {
     }
 
     public void addNotification(NotificationDto notification) {
-        databaseRef.child(notification.id).setValue(notification);
+        databaseRef.child(notification.getId()).setValue(notification);
     }
 
     public DatabaseReference getAllNotifications() {

@@ -7,15 +7,20 @@
     tools:context=".presentation.ui.fragment.NotificationFragment">
 
     <!-- Header -->
+
     <LinearLayout
+        android:id="@+id/headerLayout"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_marginTop="80dp"
         android:gravity="center_vertical"
         android:orientation="horizontal"
         android:padding="16dp"
-        tools:ignore="MissingConstraints">
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
 
-        <!-- Nút quay về -->
         <ImageView
             android:id="@+id/buttonBack"
             android:layout_width="24dp"
@@ -24,7 +29,6 @@
             android:contentDescription="Back"
             android:src="@drawable/ic_back" />
 
-        <!-- Tiêu đề -->
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -33,17 +37,16 @@
             android:textStyle="bold" />
     </LinearLayout>
 
-    <!-- Danh sách thông báo -->
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/recyclerViewNotifications"
-        android:layout_width="match_parent"
+        android:layout_width="0dp"
         android:layout_height="0dp"
         android:layout_marginTop="12dp"
         android:layout_marginBottom="12dp"
         android:paddingHorizontal="16dp"
-        app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
+        app:layout_constraintTop_toBottomOf="@id/headerLayout"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/buttonBack"
-        tools:ignore="NotSibling" />
-
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"/>
+  
 </androidx.constraintlayout.widget.ConstraintLayout>

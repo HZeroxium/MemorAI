@@ -9,30 +9,32 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.memorai.R;
-import com.example.memorai.data.remote.dto.NotificationDto;
+import com.example.memorai.domain.model.Notification;
+import com.example.memorai.utils.DateUtils;
 
-import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
-import java.util.Locale;
 
-public class NotificationAdapter extends RecyclerView.Adapter<NotificationAdapter.NotificationViewHolder> {
+public class NotificationAdapter extends RecyclerView.Adapter<NotificationAdapter.ViewHolder> {
+    private List<Notification> notifications;
 
-    private List<NotificationDto> notifications = new ArrayList<>();
+    public NotificationAdapter(List<Notification> notifications) {
+        this.notifications = notifications;
+    }
 
     @NonNull
     @Override
-    public NotificationViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+    public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         View view = LayoutInflater.from(parent.getContext())
                 .inflate(R.layout.item_notification, parent, false);
-        return new NotificationViewHolder(view);
+        return new ViewHolder(view);
     }
 
     @Override
-    public void onBindViewHolder(@NonNull NotificationViewHolder holder, int position) {
-        NotificationDto notification = notifications.get(position);
-        holder.bind(notification);
+    public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
+        Notification notification = notifications.get(position);
+        holder.tvTitle.setText(notification.getTitle());
+        holder.tvMessage.setText(notification.getMessage());
+        holder.tvTimestamp.setText(DateUtils.formatTimestamp(notification.getTimestamp()));
     }
 
     @Override
@@ -40,26 +42,14 @@ public class NotificationAdapter extends RecyclerView.Adapter<NotificationAdapte
         return notifications.size();
     }
 
-    public void setNotifications(List<NotificationDto> notifications) {
-        this.notifications = notifications;
-    }
+    public class ViewHolder extends RecyclerView.ViewHolder {
+        TextView tvTitle, tvMessage, tvTimestamp;
 
-    public static class NotificationViewHolder extends RecyclerView.ViewHolder {
-        private final TextView txtTitle, txtMessage, txtTimestamp;
-
-        public NotificationViewHolder(@NonNull View itemView) {
+        public ViewHolder(@NonNull View itemView) {
             super(itemView);
-            txtTitle = itemView.findViewById(R.id.txtTitle);
-            txtMessage = itemView.findViewById(R.id.txtMessage);
-            txtTimestamp = itemView.findViewById(R.id.txtTimestamp);
-        }
-
-        public void bind(NotificationDto notification) {
-            txtTitle.setText(notification.title);
-            txtMessage.setText(notification.message);
-
-            SimpleDateFormat sdf = new SimpleDateFormat("hh:mm a, dd/MM/yyyy", Locale.getDefault());
-            txtTimestamp.setText(sdf.format(new Date(notification.timestamp)));
+            tvTitle = itemView.findViewById(R.id.txtTitle);
+            tvMessage = itemView.findViewById(R.id.txtMessage);
+            tvTimestamp = itemView.findViewById(R.id.txtTimestamp);
         }
     }
 }
