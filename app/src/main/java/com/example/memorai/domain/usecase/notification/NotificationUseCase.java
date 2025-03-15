@@ -13,11 +13,17 @@ public class NotificationUseCase {
         repository = new NotificationRepository();
     }
 
-    public void sendNotificationToFirebase(String title, String message) {
-        String id = UUID.randomUUID().toString();
-        NotificationDto notification = new NotificationDto(id, title, message, System.currentTimeMillis());
-        repository.addNotification(notification);
+    public void sendNotificationToFirebase(NotificationDto notification) {
+        DatabaseReference databaseRef = null;
+        String notificationId = databaseRef.push().getKey();
+        notification.setId(notificationId);
+        notification.setTimestamp(System.currentTimeMillis());
+
+        if (notificationId != null) {
+            databaseRef.child(notificationId).setValue(notification);
+        }
     }
+
 
     public DatabaseReference fetchNotifications() {
         return repository.getAllNotifications();

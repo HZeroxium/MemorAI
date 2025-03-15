@@ -1,59 +1,75 @@
 package com.example.memorai.presentation.ui.fragment;
 
-import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
 import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
-import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
-import com.example.memorai.databinding.FragmentNotificationBinding;
-import com.example.memorai.presentation.ui.activity.MainActivity;
+import com.example.memorai.R;
+import com.example.memorai.domain.model.Notification;
 import com.example.memorai.presentation.ui.adapter.NotificationAdapter;
-import com.example.memorai.presentation.viewmodel.NotificationViewModel;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class NotificationFragment extends Fragment {
-    private FragmentNotificationBinding binding;
-    private NotificationViewModel viewModel;
+
     private NotificationAdapter adapter;
-
-    @Nullable
-    @Override
-    public View onCreateView(@NonNull LayoutInflater inflater,
-                             @Nullable ViewGroup container,
-                             @Nullable Bundle savedInstanceState) {
-
-        binding = FragmentNotificationBinding.inflate(inflater, container, false);
-        viewModel = new ViewModelProvider(this).get(NotificationViewModel.class);
-        adapter = new NotificationAdapter();
-
-        binding.recyclerViewNotifications.setLayoutManager(new LinearLayoutManager(getContext()));
-        binding.recyclerViewNotifications.setAdapter(adapter);
-
-        viewModel.getNotifications().observe(getViewLifecycleOwner(), notifications -> {
-            adapter.setNotifications(notifications);
-        });
-
-        viewModel.loadNotifications();
-
-        // ✅ Xử lý nút quay về
-        binding.buttonBack.setOnClickListener(v -> {
-            Intent intent = new Intent(getActivity(), MainActivity.class);
-            intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
-            startActivity(intent);
-        });
-
-        return binding.getRoot();
-    }
+    private List<Notification> notificationList;
 
     @Override
-    public void onDestroyView() {
-        super.onDestroyView();
-        binding = null;
+    public View onCreateView(LayoutInflater inflater, ViewGroup container,
+                             Bundle savedInstanceState) {
+        View view = inflater.inflate(R.layout.fragment_notification, container, false);
+
+        RecyclerView recyclerView = view.findViewById(R.id.recyclerViewNotifications);
+        recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
+
+        notificationList = new ArrayList<>();
+        adapter = new NotificationAdapter(notificationList);
+        recyclerView.setAdapter(adapter);
+
+        DatabaseReference notificationsRef = FirebaseDatabase.getInstance().getReference("notifications");
+
+        notificationsRef.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                notificationList.clear();
+                for (DataSnapshot dataSnapshot : snapshot.getChildren()) {
+                    // Lấy ID Firebase nếu cần
+                    String notificationId = dataSnapshot.getKey();
+                    Notification notification = dataSnapshot.getValue(Notification.class);
+                    if (notification != null) {
+                        notificationList.add(notification);
+                    }
+                }
+                adapter.notifyDataSetChanged();
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+                Log.w("NotificationFragment", "Failed to load notifications.", error.toException());
+            }
+        });
+
+        View buttonBack = view.findViewById(R.id.buttonBack);
+        buttonBack.setOnClickListener(v -> {
+            if (getActivity() != null) {
+                getActivity().onBackPressed();
+            }
+        });
+
+        return view;
     }
 }
