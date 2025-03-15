@@ -5,11 +5,9 @@ public class NotificationDto {
     private String title;
     private String message;
     private long timestamp;
-
-    // Constructor mặc định (Firebase yêu cầu)
+  
     public NotificationDto() {}
 
-    // Constructor đầy đủ
     public NotificationDto(String id, String title, String message, long timestamp) {
         this.id = id;
         this.title = title;
@@ -17,7 +15,6 @@ public class NotificationDto {
         this.timestamp = timestamp;
     }
 
-    // Getter & Setter chuẩn
     public String getId() {
         return id;
     }
