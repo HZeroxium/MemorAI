@@ -79,8 +79,9 @@ public class AlbumViewModel extends ViewModel {
             List<Album> albums = getAlbumsUseCase.execute();
             if (albums == null || albums.isEmpty()) {
                 // Default album does not exist, create one
+                String defaultCoverPhoto = "android.resource://com.example.memorai/drawable/default_album_cover.jpg";
                 Album defaultAlbum = new Album("1",
-                        "root", "", "",
+                        "root", "", defaultCoverPhoto,
                         System.currentTimeMillis(),
                         System.currentTimeMillis());
                 createAlbumUseCase.execute(defaultAlbum);

@@ -13,7 +13,6 @@ import androidx.lifecycle.ViewModelProvider;
 import androidx.navigation.Navigation;
 import androidx.recyclerview.widget.GridLayoutManager;
 
-import com.example.memorai.R;
 import com.example.memorai.databinding.FragmentAlbumListBinding;
 import com.example.memorai.presentation.ui.adapter.AlbumAdapter;
 import com.example.memorai.presentation.viewmodel.AlbumViewModel;
@@ -54,7 +53,7 @@ public class AlbumListFragment extends Fragment {
         albumAdapter.setOnAlbumClickListener(album -> {
             Bundle args = new Bundle();
             args.putString("album_id", album.getId());
-            Navigation.findNavController(view).navigate(R.id.albumDetailFragment, args);
+//            Navigation.findNavController(view).navigate(R.id.albumDetailFragment, args);
         });
 
         // ViewModel to observe albums
@@ -68,7 +67,7 @@ public class AlbumListFragment extends Fragment {
         // Handle Floating Action Button click (to add new album)
         binding.fabAddAlbum.setOnClickListener(v -> {
             // Navigate to create album screen
-            Navigation.findNavController(view).navigate(R.id.albumCreateFragment);
+//            Navigation.findNavController(view).navigate(R.id.albumCreateFragment);
         });
     }
 

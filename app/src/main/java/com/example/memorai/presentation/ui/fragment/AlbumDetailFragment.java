@@ -86,7 +86,7 @@ public class AlbumDetailFragment extends Fragment {
         if (id == R.id.action_edit_album) {
             Bundle args = new Bundle();
             args.putString("album_id", albumId);
-            Navigation.findNavController(requireView()).navigate(R.id.albumUpdateFragment, args);
+//            Navigation.findNavController(requireView()).navigate(R.id.albumUpdateFragment, args);
             return true;
         } else if (id == R.id.action_album_options) {
             Toast.makeText(requireContext(), "Album options clicked", Toast.LENGTH_SHORT).show();
@@ -135,12 +135,6 @@ public class AlbumDetailFragment extends Fragment {
     }
 
 
-    @Override
-    public void onDestroyView() {
-        super.onDestroyView();
-        binding = null;
-    }
-
     private void showDeleteConfirmationDialog() {
         albumViewModel.getAlbumById(albumId).observe(getViewLifecycleOwner(), album -> {
             if (album == null) return; // Ensure album exists
@@ -172,6 +166,12 @@ public class AlbumDetailFragment extends Fragment {
 
             builder.show();
         });
+    }
+
+    @Override
+    public void onDestroyView() {
+        super.onDestroyView();
+        binding = null;
     }
 
 }

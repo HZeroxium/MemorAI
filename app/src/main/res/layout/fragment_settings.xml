@@ -7,172 +7,158 @@
     android:orientation="vertical"
     style="@style/SCREEN"
     android:id="@+id/settingsLayout"
-    android:padding="10dp">
+    android:padding="16dp">
 
-
+    <!-- Header -->
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginBottom="15dp"
+        android:layout_marginBottom="16dp"
         android:layout_marginTop="20dp">
 
-        <!-- Icon Exit -->
+        <!-- Exit Button -->
         <ImageButton
             android:id="@+id/btnExit"
-            android:layout_width="73dp"
-            android:layout_height="match_parent"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
             android:background="?attr/selectableItemBackgroundBorderless"
-            android:contentDescription="Exit"
+            android:contentDescription="@string/exit"
             android:src="@drawable/ic_exit"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent"
-            tools:ignore="HardcodedText,TouchTargetSizeCheck" />
+            app:layout_constraintTop_toTopOf="parent" />
 
-        <!-- TextView Settings -->
-        <TextView
+        <!-- Title -->
+        <com.google.android.material.textview.MaterialTextView
             android:id="@+id/tvSettings"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:drawableRight="@drawable/ic_gear_icon"
+            style="@style/TextAppearance.MaterialComponents.Headline5"
             android:drawablePadding="5dp"
             android:gravity="center"
-            android:text="Settings"
-            style="@style/content"
-            android:textSize="30sp"
-            android:textStyle="bold"
+            android:drawableEnd="@drawable/ic_gear_icon"
+            android:text="@string/settings"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintHorizontal_bias="0.262"
             app:layout_constraintStart_toEndOf="@+id/btnExit"
-            app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintVertical_bias="0.0"
-            tools:ignore="HardcodedText,RtlHardcoded,UseCompatTextViewDrawableXml" />
+            app:layout_constraintTop_toTopOf="parent" />
     </androidx.constraintlayout.widget.ConstraintLayout>
 
-    <androidx.constraintlayout.widget.ConstraintLayout
+    <!-- Settings Box -->
+    <androidx.cardview.widget.CardView
         android:layout_width="match_parent"
-        android:layout_height="480dp"
+        android:layout_height="wrap_content"
         android:layout_margin="16dp"
-        android:background="@drawable/rounded_corner_bg"
-        android:elevation="4dp"
-        android:padding="35dp">
+        app:cardCornerRadius="12dp"
+        app:cardElevation="6dp">
 
-
-        <TextView
-            android:id="@+id/tvDarkMode"
-            android:layout_width="wrap_content"
+        <LinearLayout
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="20dp"
-            android:gravity="center"
-            android:minWidth="48dp"
-            android:minHeight="48dp"
-            android:text="Dark Mode"
-            android:textColor="@android:color/black"
-            android:textSize="18sp"
-            app:layout_constraintBottom_toTopOf="@+id/tvLanguage"
-            app:layout_constraintEnd_toStartOf="@+id/switchDarkMode"
-            app:layout_constraintHorizontal_bias="0.0"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintVertical_bias="0.5"
-            app:layout_constraintVertical_chainStyle="packed"
-            tools:ignore="HardcodedText" />
+            android:orientation="vertical"
+            android:padding="24dp">
 
-        <Switch
-            android:id="@+id/switchDarkMode"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:minWidth="48dp"
-            android:minHeight="48dp"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintTop_toTopOf="@id/tvDarkMode"
-            tools:ignore="DuplicateSpeakableTextCheck,UseSwitchCompatOrMaterialXml" />
+            <!-- Dark Mode Switch -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center_vertical"
+                android:orientation="horizontal"
+                android:paddingBottom="16dp">
 
-        <TextView
-            android:id="@+id/tvLanguage"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="20dp"
-            android:gravity="center"
-            android:minWidth="48dp"
-            android:minHeight="48dp"
-            android:text="Language"
-            android:textColor="@android:color/black"
-            android:textSize="18sp"
-            app:layout_constraintBottom_toTopOf="@id/tvSync"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/tvDarkMode"
-            tools:ignore="HardcodedText" />
+                <com.google.android.material.textview.MaterialTextView
+                    android:id="@+id/tvDarkMode"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="@string/dark_mode"
+                    android:textSize="18sp" />
 
-        <!-- Language EditText -->
-        <Spinner
-            android:id="@+id/textViewLanguage"
-            android:layout_width="wrap_content"
-            android:layout_height="48dp"
-            android:layout_marginTop="20dp"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/switchDarkMode" />
-        <!-- Synchronize Label -->
-        <TextView
-            android:id="@+id/tvSync"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="20dp"
-            android:gravity="center"
-            android:minWidth="48dp"
-            android:minHeight="48dp"
-            android:text="Synchronize"
-            android:textColor="@android:color/black"
-            android:textSize="18sp"
-            app:layout_constraintBottom_toTopOf="@id/btnChangePin"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/tvLanguage"
-            tools:ignore="HardcodedText" />
+                <com.google.android.material.switchmaterial.SwitchMaterial
+                    android:id="@+id/switchDarkMode"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    tools:ignore="DuplicateSpeakableTextCheck" />
+            </LinearLayout>
 
-        <!-- Synchronize Switch -->
-        <Switch
-            android:id="@+id/switchCloudSync"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:minWidth="48dp"
-            android:minHeight="48dp"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintTop_toTopOf="@id/tvSync"
-            tools:ignore="UseSwitchCompatOrMaterialXml" />
+            <!-- Language Selection -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center_vertical"
+                android:orientation="horizontal"
+                android:paddingBottom="16dp">
 
-        <!-- Change PIN Button -->
-        <Button
-            android:id="@+id/btnChangePin"
-            android:layout_width="0dp"
-            android:layout_height="48dp"
-            android:layout_marginTop="60dp"
-            android:background="@drawable/rounded_button"
-            android:backgroundTint="@color/md_theme_error"
-            android:fontFamily="sans-serif-medium"
-            android:text="Change PIN"
-            android:textColor="@android:color/white"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/tvSync"
-            tools:ignore="HardcodedText,VisualLintButtonSize" />
+                <com.google.android.material.textview.MaterialTextView
+                    android:id="@+id/tvLanguage"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="@string/language"
+                    android:textSize="18sp" />
 
-        <!-- Reset System Button -->
-        <Button
-            android:id="@+id/btnResetSystem"
-            android:layout_width="0dp"
-            android:layout_height="48dp"
-            android:layout_marginTop="20dp"
-            android:background="@drawable/rounded_button"
-            android:backgroundTint="@color/md_theme_error"
-            android:text="Reset System"
-            android:textColor="@android:color/white"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintHorizontal_bias="0.0"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/btnChangePin"
-            tools:ignore="HardcodedText,VisualLintButtonSize" />
-    </androidx.constraintlayout.widget.ConstraintLayout>
+                <com.google.android.material.textfield.TextInputLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    app:boxCornerRadiusTopEnd="8dp"
+                    app:boxCornerRadiusTopStart="8dp">
 
+                    <Spinner
+                        android:id="@+id/spinnerLanguage"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:background="?attr/selectableItemBackground"
+                        android:padding="8dp"
+                        tools:ignore="TouchTargetSizeCheck" />
+                </com.google.android.material.textfield.TextInputLayout>
+            </LinearLayout>
+
+            <!-- Cloud Sync Switch -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center_vertical"
+                android:orientation="horizontal"
+                android:paddingBottom="16dp">
+
+                <com.google.android.material.textview.MaterialTextView
+                    android:id="@+id/tvSync"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="@string/synchronize"
+                    android:textSize="18sp" />
+
+                <com.google.android.material.switchmaterial.SwitchMaterial
+                    android:id="@+id/switchCloudSync"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content" />
+            </LinearLayout>
+
+            <!-- Change PIN Button -->
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnChangePin"
+                style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                android:layout_width="match_parent"
+                android:layout_height="48dp"
+                android:layout_marginTop="16dp"
+                android:backgroundTint="@color/md_theme_error"
+                android:text="@string/change_pin"
+                android:textAllCaps="false"
+                android:textColor="#fff" />
+
+            <!-- Reset System Button -->
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnResetSystem"
+                style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                android:layout_width="match_parent"
+                android:layout_height="48dp"
+                android:layout_marginTop="16dp"
+                android:backgroundTint="@color/md_theme_error"
+                android:text="@string/reset_system"
+                android:textAllCaps="false"
+                android:textColor="#fff" />
+        </LinearLayout>
+    </androidx.cardview.widget.CardView>
 
 </LinearLayout>

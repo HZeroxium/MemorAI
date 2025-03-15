@@ -17,10 +17,12 @@
 
     <Button
         android:id="@+id/buttonSelectFromGallery"
+        style="@style/Widget.Material3.Button.TonalButton.Icon"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="16dp"
-        android:text="Select Photos"
+        android:text="@string/select_photos"
+        app:icon="@drawable/ic_collections"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/toolbarImportPhoto" />
@@ -38,10 +40,11 @@
 
     <Button
         android:id="@+id/buttonConfirmImport"
-        android:layout_width="wrap_content"
+        style="@style/Widget.Material3.Button.TonalButton"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_margin="16dp"
-        android:text="Confirm"
+        android:text="@string/confirm"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent" />
 </androidx.constraintlayout.widget.ConstraintLayout>

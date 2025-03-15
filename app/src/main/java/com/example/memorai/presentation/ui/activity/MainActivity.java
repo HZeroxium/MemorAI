@@ -2,11 +2,14 @@
 package com.example.memorai.presentation.ui.activity;
 
 import android.Manifest;
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.os.Build;
+import android.content.res.Configuration;
+import android.content.res.Resources;
 import android.os.Bundle;
 import android.text.SpannableString;
 import android.text.style.ForegroundColorSpan;
@@ -18,6 +21,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.app.AppCompatDelegate;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
+import androidx.lifecycle.ViewModelProvider;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.navigation.NavController;
 import androidx.navigation.fragment.NavHostFragment;
@@ -34,7 +38,6 @@ import dagger.hilt.android.AndroidEntryPoint;
 @AndroidEntryPoint
 public class MainActivity extends AppCompatActivity {
     private ActivityMainBinding binding;
-    private AlbumViewModel albumViewModel;
     private NavController navController;
 
     @Override
@@ -45,11 +48,12 @@ public class MainActivity extends AppCompatActivity {
         binding = ActivityMainBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
 
-        albumViewModel = new ViewModelProvider(this).get(AlbumViewModel.class);
+        AlbumViewModel albumViewModel = new ViewModelProvider(this).get(AlbumViewModel.class);
         albumViewModel.ensureDefaultAlbumExists();
 
         setupNavigation();
         setupProfileIcon();
+        setupAddButton();
         setupNotificationButton();
         requestNotificationPermission();
     }
@@ -64,6 +68,10 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+
+    /**
+     * Apply Dark Mode based on SharedPreferences settings.
+     */
     private void applyDarkMode() {
         SharedPreferences sharedPreferences = getSharedPreferences("Mode", Context.MODE_PRIVATE);
         boolean darkMode = sharedPreferences.getBoolean("night", false);
@@ -72,6 +80,9 @@ public class MainActivity extends AppCompatActivity {
         );
     }
 
+    /**
+     * Setup Navigation Controller and Destination Change Listener.
+     */
     private void setupNavigation() {
         try {
             NavHostFragment navHostFragment = (NavHostFragment) getSupportFragmentManager()
@@ -95,18 +106,95 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    /**
+     * Show/Hide UI elements based on navigation destination.
+     */
     private void toggleUIVisibility(boolean isVisible) {
         int visibility = isVisible ? View.VISIBLE : View.GONE;
         binding.bottomNavigation.setVisibility(visibility);
         binding.toolbar.setVisibility(visibility);
     }
-
+  
+    /**
+     * Setup Profile Icon to show PopupMenu for navigation.
+     */
     private void setupProfileIcon() {
         binding.profileIcon.setOnClickListener(this::showProfileMenu);
     }
 
+    private void showProfileMenu(View anchor) {
+        PopupMenu popupMenu = new PopupMenu(this, anchor);
+        popupMenu.getMenuInflater().inflate(R.menu.profile_menu, popupMenu.getMenu());
+
+        for (int i = 0; i < popupMenu.getMenu().size(); i++) {
+            setTitleSpan(popupMenu.getMenu().getItem(i));
+        }
+
+        popupMenu.setOnMenuItemClickListener(this::handleProfileMenuClick);
+        popupMenu.show();
+    }
+
+    /**
+     * Apply color span to menu items.
+     */
+    private void setTitleSpan(MenuItem menuItem) {
+        SpannableString s = new SpannableString(menuItem.getTitle());
+        s.setSpan(new ForegroundColorSpan(getResources().getColor(R.color.md_theme_onBackground)),
+                0, s.length(), 0);
+        menuItem.setTitle(s);
+    }
+
+    /**
+     * Handle Profile Menu Item Clicks.
+     */
+    private boolean handleProfileMenuClick(MenuItem item) {
+        if (navController == null) return false;
+
+        int itemId = item.getItemId();
+        if (itemId == R.id.menu_profile) {
+            navController.navigate(R.id.profileFragment);
+        } else if (itemId == R.id.menu_settings) {
+            navController.navigate(R.id.settingsFragment);
+            toggleUIVisibility(false);
+        } else if (itemId == R.id.menu_login) {
+            navController.navigate(R.id.loginFragment);
+        } else {
+            return false;
+        }
+        return true;
+    }
+
+
+    /**
+     * Show BottomSheet when clicking Add Button.
+     */
+    private void setupAddButton() {
+        binding.buttonAdd.setOnClickListener(v -> showAddMenuBottomSheet());
+    }
+
     private void setupNotificationButton() {
-        binding.buttonNotification.setOnClickListener(v -> {navController.navigate(R.id.notificationFragment);});
+        binding.buttonNotification.setOnClickListener(v -> navController.navigate(R.id.notificationFragment));
+    }
+
+    private void showAddMenuBottomSheet() {
+        ModalBottomSheetAddMenu bottomSheet = new ModalBottomSheetAddMenu(new ModalBottomSheetAddMenu.BottomSheetListener() {
+            @Override
+            public void onAddAlbum() {
+                navController.navigate(R.id.albumCreateFragment);
+            }
+
+            @Override
+            public void onImportPhoto() {
+                navController.navigate(R.id.importPhotoFragment);
+            }
+
+            @Override
+            public void onTakePhoto() {
+                navController.navigate(R.id.takePhotoFragment);
+            }
+        });
+
+        bottomSheet.show(getSupportFragmentManager(), "ModalBottomSheetAddMenu");
     }
 
     private void showProfileMenu(View anchor) {
