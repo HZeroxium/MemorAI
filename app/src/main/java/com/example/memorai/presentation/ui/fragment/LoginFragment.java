@@ -1,18 +1,130 @@
 package com.example.memorai.presentation.ui.fragment;
 
+import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
-import androidx.fragment.app.Fragment;
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 
-import com.example.memorai.R;
+import com.example.memorai.databinding.FragmentLoginBinding;
+import com.example.memorai.presentation.ui.activity.MainActivity;
+import com.google.android.gms.auth.api.signin.GoogleSignIn;
+import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
+import com.google.android.gms.auth.api.signin.GoogleSignInClient;
+import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
+import com.google.android.gms.common.api.ApiException;
+import com.google.firebase.auth.AuthCredential;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.auth.GoogleAuthProvider;
+import com.google.android.material.bottomsheet.BottomSheetDialogFragment;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
 
-public class LoginFragment extends Fragment {
+import java.util.HashMap;
+import java.util.Map;
+
+public class LoginFragment extends BottomSheetDialogFragment {
+    private FragmentLoginBinding binding;
+    private GoogleSignInClient mGoogleSignInClient;
+    private FirebaseAuth mAuth;
+    private static final int RC_SIGN_IN = 9001;
+
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        // Inflate the layout for this fragment
-        return inflater.inflate(R.layout.fragment_login, container, false);
+    public void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+
+        // Khởi tạo FirebaseAuth
+        mAuth = FirebaseAuth.getInstance();
+
+        // Cấu hình Google Sign-In
+        GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
+                .requestIdToken("619405178592-ml761krg19iac2ratge3eul9mdhg84pg.apps.googleusercontent.com")
+                .requestEmail()
+                .build();
+
+        // Khởi tạo GoogleSignInClient
+        mGoogleSignInClient = GoogleSignIn.getClient(requireActivity(), gso);
+    }
+
+    @Override
+    public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+        binding = FragmentLoginBinding.inflate(inflater, container, false);
+        return binding.getRoot();
+    }
+
+    @Override
+    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
+
+        // Bắt sự kiện khi người dùng nhấn nút đăng nhập Google
+        binding.btnGoogleSignIn.setOnClickListener(v -> signIn());
+    }
+
+    private void signIn() {
+        Intent signInIntent = mGoogleSignInClient.getSignInIntent();
+        startActivityForResult(signInIntent, RC_SIGN_IN);
+    }
+
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+
+        if (requestCode == RC_SIGN_IN) {
+            try {
+                GoogleSignInAccount account = GoogleSignIn.getSignedInAccountFromIntent(data)
+                        .getResult(ApiException.class);
+                firebaseAuthWithGoogle(account);
+            } catch (ApiException e) {
+                Log.w("LoginFragment", "Google sign-in failed", e);
+            }
+        }
+    }
+
+    private void firebaseAuthWithGoogle(GoogleSignInAccount account) {
+        AuthCredential credential = GoogleAuthProvider.getCredential(account.getIdToken(), null);
+        mAuth.signInWithCredential(credential)
+                .addOnCompleteListener(requireActivity(), task -> {
+                    if (task.isSuccessful()) {
+                        FirebaseUser user = mAuth.getCurrentUser();
+                        if (user != null) {
+                            // Lưu thông tin vào Firestore
+                            saveUserToFirestore(user);
+                            Intent intent = new Intent(requireActivity(), MainActivity.class);
+                            intent.putExtra("userName", user.getDisplayName());
+                            intent.putExtra("profilePic", user.getPhotoUrl() != null ? user.getPhotoUrl().toString() : "");
+                            startActivity(intent);
+                            requireActivity().finish();
+                        }
+                    } else {
+                        Log.w("LoginFragment", "Đăng nhập Firebase thất bại", task.getException());
+                    }
+                });
+    }
+
+    private void saveUserToFirestore(FirebaseUser user) {
+        FirebaseDatabase database = FirebaseDatabase.getInstance();
+        DatabaseReference usersRef = database.getReference("users").child(user.getUid());
+
+        Map<String, Object> userData = new HashMap<>();
+        userData.put("id", user.getUid());
+        userData.put("name", user.getDisplayName());
+        userData.put("mail", user.getEmail());
+        userData.put("profilePictureUrl", user.getPhotoUrl() != null ? user.getPhotoUrl().toString() : null);
+
+        usersRef.setValue(userData)
+                .addOnSuccessListener(aVoid -> Log.d("LoginFragment", "Lưu dữ liệu thành công"))
+                .addOnFailureListener(e -> Log.w("LoginFragment", "Lưu dữ liệu thất bại", e));
+    }
+
+
+    @Override
+    public void onDestroyView() {
+        super.onDestroyView();
+        binding = null;
     }
 }

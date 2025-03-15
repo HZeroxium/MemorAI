@@ -3,6 +3,7 @@
 plugins {
     id("com.android.application")
     id("com.google.dagger.hilt.android")
+    id("com.google.gms.google-services")
     kotlin("android")
     kotlin("kapt")
 }
@@ -63,6 +64,10 @@ dependencies {
     implementation(libs.hilt.android)
     implementation(libs.androidx.preference)
     implementation(libs.litert)
+    implementation(libs.androidx.credentials)
+    implementation(libs.androidx.credentials.play.services.auth)
+    implementation(libs.googleid)
+    implementation(libs.firebase.database)
     kapt(libs.hilt.compiler)
 
     // Room Database
@@ -102,9 +107,19 @@ dependencies {
     implementation(libs.navigation.fragment.ktx)
     implementation(libs.navigation.ui.ktx)
 
+
+// Google Sign-In
+    implementation("com.google.firebase:firebase-appcheck-debug:17.0.1")
+    implementation("com.google.android.gms:play-services-auth:20.7.0")
+    implementation("androidx.credentials:credentials-play-services-auth:1.3.0")
+    implementation("com.google.android.gms:play-services-base:18.2.0")
     // Retrofit2
     implementation("com.squareup.retrofit2:retrofit:2.11.0")
     implementation("com.squareup.retrofit2:converter-gson:2.11.0")
+
+    //Picasso
+    implementation("com.squareup.picasso:picasso:2.8")
+
 
     // DataStore
     implementation(libs.androidx.datastore.preferences)

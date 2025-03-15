@@ -6,6 +6,7 @@
     app:layout_constraintBottom_toBottomOf="parent"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
+    android:background="@drawable/border_login"
     style="@style/SCREEN"
     >
 

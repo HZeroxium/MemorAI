@@ -1,8 +1,8 @@
 // presentation/ui/activity/MainActivity.java
 package com.example.memorai.presentation.ui.activity;
 
-import android.annotation.SuppressLint;
 import android.content.Context;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.res.Configuration;
 import android.content.res.Resources;
@@ -21,9 +21,17 @@ import androidx.navigation.NavController;
 import androidx.navigation.fragment.NavHostFragment;
 import androidx.navigation.ui.NavigationUI;
 
+import com.bumptech.glide.Glide;
 import com.example.memorai.R;
 import com.example.memorai.databinding.ActivityMainBinding;
+import com.example.memorai.presentation.ui.fragment.LoginFragment;
 import com.example.memorai.presentation.viewmodel.AlbumViewModel;
+import com.google.firebase.FirebaseApp;
+import com.google.firebase.appcheck.FirebaseAppCheck;
+import com.google.firebase.appcheck.debug.DebugAppCheckProviderFactory;
+import com.squareup.picasso.Callback;
+import com.squareup.picasso.Picasso;
+
 
 import java.util.Locale;
 
@@ -38,9 +46,13 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         binding = ActivityMainBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
+        FirebaseApp.initializeApp(this);
+        FirebaseAppCheck firebaseAppCheck = FirebaseAppCheck.getInstance();
+        firebaseAppCheck.installAppCheckProviderFactory(
+                DebugAppCheckProviderFactory.getInstance());
         SharedPreferences sharedPreferences = getSharedPreferences("Mode", Context.MODE_PRIVATE);
         boolean darkMode = sharedPreferences.getBoolean("night", false);
-        AlbumViewModel albumViewModel = new ViewModelProvider((ViewModelStoreOwner) this).get(AlbumViewModel.class);
+        AlbumViewModel albumViewModel = new ViewModelProvider(this).get(AlbumViewModel.class);
         albumViewModel.ensureDefaultAlbumExists(); // Ensure default album exists
 
 //        setupDarkMode();
@@ -82,7 +94,23 @@ public class MainActivity extends AppCompatActivity {
                 } else {
                     binding.bottomNavigation.setVisibility(View.VISIBLE);
                     binding.header.setVisibility(View.VISIBLE);
-                    binding.headerText.setText(R.string.hi);
+                    Intent intent = getIntent();
+                    String userName = intent.getStringExtra("userName");
+                    if (userName == null || userName.isEmpty()) {
+                        userName = "you";
+                    }
+                    String profilePicUrl = intent.getStringExtra("profilePic");
+                    Log.d("MainActivity", "Profile Pic URL: " + profilePicUrl);
+                    String greetingMessage = getString(R.string.hi, userName);
+                    binding.headerText.setText(greetingMessage);
+                    Glide.with(this)
+                            .load(profilePicUrl)
+                            .override(1000, 1000)
+                            .circleCrop()
+                            .error(R.drawable.ic_profile)
+                            .into(binding.profileIcon);
+
+
                     MenuItem photosItem = binding.bottomNavigation.getMenu().findItem(R.id.photoListFragment);
                     MenuItem albumsItem = binding.bottomNavigation.getMenu().findItem(R.id.albumListFragment);
                     MenuItem searchItem = binding.bottomNavigation.getMenu().findItem(R.id.searchFragment);
@@ -134,10 +162,8 @@ public class MainActivity extends AppCompatActivity {
                         binding.bottomNavigation.setVisibility(View.GONE);
                         return true;
                     } else if (itemId == R.id.menu_login) {
-                        // Navigate to Login
-                        NavController navController = ((NavHostFragment) getSupportFragmentManager()
-                                .findFragmentById(R.id.nav_host_fragment)).getNavController();
-                        navController.navigate(R.id.loginFragment);
+                        LoginFragment loginFragment = new LoginFragment();
+                        loginFragment.show(getSupportFragmentManager(), "LoginFragment");
                         return true;
                     }
                     return false;
