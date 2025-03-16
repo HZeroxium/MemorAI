@@ -34,7 +34,12 @@
     <string name="app_intent_name">PhotoEditor</string>
     <string name="msg_save_image_to_share">Please save image to share</string>
     <string name="msg_share_image">Share Image</string>
-
+    <string name="add_text">Done</string>
+    <string name="edit_rotation">Rotation</string>
+    <string name="edit_opacity">Opacity</string>
+    <string name="edit_brush">Brush</string>
+    <string name="edit_close">Close</string>
+    <string name="edit_done">Done</string>
 
     <string-array name="photo_editor_emoji">
 
