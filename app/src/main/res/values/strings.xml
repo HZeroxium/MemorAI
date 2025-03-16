@@ -75,4 +75,5 @@
     <string name="network_alert_title">Weak Network</string>
     <string name="network_alert_message">Please check your internet connection!</string>
     <string name="network_channel_id">Network channel</string>
+    <string name="logout">Logout</string>
 </resources>

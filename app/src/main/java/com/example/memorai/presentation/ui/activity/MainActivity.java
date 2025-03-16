@@ -26,9 +26,17 @@ import com.example.memorai.R;
 import com.example.memorai.databinding.ActivityMainBinding;
 import com.example.memorai.presentation.ui.fragment.LoginFragment;
 import com.example.memorai.presentation.viewmodel.AlbumViewModel;
+import com.google.android.gms.auth.api.signin.GoogleSignIn;
+import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
+import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
 import com.google.firebase.FirebaseApp;
 import com.google.firebase.appcheck.FirebaseAppCheck;
 import com.google.firebase.appcheck.debug.DebugAppCheckProviderFactory;
+import com.google.firebase.auth.AuthCredential;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
+import com.google.android.gms.auth.api.signin.GoogleSignInClient;
+import com.google.firebase.auth.GoogleAuthProvider;
 import com.squareup.picasso.Callback;
 import com.squareup.picasso.Picasso;
 
@@ -40,24 +48,39 @@ import dagger.hilt.android.AndroidEntryPoint;
 @AndroidEntryPoint
 public class MainActivity extends AppCompatActivity {
     private ActivityMainBinding binding;
+    private GoogleSignInClient googleSignInClient;
+    private FirebaseAuth firebaseAuth;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         binding = ActivityMainBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
-        FirebaseApp.initializeApp(this);
-        FirebaseAppCheck firebaseAppCheck = FirebaseAppCheck.getInstance();
-        firebaseAppCheck.installAppCheckProviderFactory(
-                DebugAppCheckProviderFactory.getInstance());
         SharedPreferences sharedPreferences = getSharedPreferences("Mode", Context.MODE_PRIVATE);
         boolean darkMode = sharedPreferences.getBoolean("night", false);
         AlbumViewModel albumViewModel = new ViewModelProvider(this).get(AlbumViewModel.class);
         albumViewModel.ensureDefaultAlbumExists(); // Ensure default album exists
+        firebaseAuth = FirebaseAuth.getInstance();
 
+        // Cấu hình Google Sign-In
+        GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
+                .requestIdToken("619405178592-ml761krg19iac2ratge3eul9mdhg84pg.apps.googleusercontent.com") // Lấy ID Token để xác thực Firebase
+                .requestEmail()
+                .build();
+
+        googleSignInClient = GoogleSignIn.getClient(this, gso);
 //        setupDarkMode();
+        autoSignIn();
         setupNavigation();
         setupProfileIcon();
+    }
+
+    private void autoSignIn() {
+        GoogleSignInAccount account = GoogleSignIn.getLastSignedInAccount(this);
+        if (account != null) {
+            firebaseAuthWithGoogle(account);
+        }
     }
 
     @Override
@@ -100,7 +123,6 @@ public class MainActivity extends AppCompatActivity {
                         userName = "you";
                     }
                     String profilePicUrl = intent.getStringExtra("profilePic");
-                    Log.d("MainActivity", "Profile Pic URL: " + profilePicUrl);
                     String greetingMessage = getString(R.string.hi, userName);
                     binding.headerText.setText(greetingMessage);
                     Glide.with(this)
@@ -132,6 +154,15 @@ public class MainActivity extends AppCompatActivity {
             // Create a PopupMenu
             PopupMenu popupMenu = new PopupMenu(this, v);
             popupMenu.getMenuInflater().inflate(R.menu.profile_menu, popupMenu.getMenu());
+            MenuItem loginMenuItem = popupMenu.getMenu().findItem(R.id.menu_login);
+            FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+            if(user!= null) {
+                loginMenuItem.setTitle(R.string.logout);
+            }
+            else {
+                loginMenuItem.setTitle(R.string.login);
+            }
+
             for (int i = 0; i < popupMenu.getMenu().size(); i++) {
                 MenuItem menuItem = popupMenu.getMenu().getItem(i);
                 SpannableString s = new SpannableString(menuItem.getTitle());
@@ -162,8 +193,12 @@ public class MainActivity extends AppCompatActivity {
                         binding.bottomNavigation.setVisibility(View.GONE);
                         return true;
                     } else if (itemId == R.id.menu_login) {
-                        LoginFragment loginFragment = new LoginFragment();
-                        loginFragment.show(getSupportFragmentManager(), "LoginFragment");
+                        if (user != null) {
+                            logout(); // Nếu đã đăng nhập thì logout
+                        } else {
+                            LoginFragment loginFragment = new LoginFragment();
+                            loginFragment.show(getSupportFragmentManager(), "LoginFragment");
+                        }
                         return true;
                     }
                     return false;
@@ -173,6 +208,66 @@ public class MainActivity extends AppCompatActivity {
             // Show the PopupMenu
             popupMenu.show();
         });
+    }
+
+    private void signInSilently() {
+        GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
+                .requestIdToken("619405178592-ml761krg19iac2ratge3eul9mdhg84pg.apps.googleusercontent.com") // Lấy ID token từ Firebase
+                .requestEmail()
+                .build();
+
+        GoogleSignInClient googleSignInClient = GoogleSignIn.getClient(this, gso);
+
+        googleSignInClient.silentSignIn().addOnCompleteListener(this, task -> {
+            if (task.isSuccessful()) {
+                // Nếu đăng nhập thành công, lấy tài khoản Google và đăng nhập vào Firebase
+                GoogleSignInAccount account = task.getResult();
+                if (account != null) {
+                    firebaseAuthWithGoogle(account);
+                }
+            } else {
+                Log.e("MainActivity", "Google Sign-In failed.");
+            }
+        });
+    }
+
+    private void logout() {
+        FirebaseAuth.getInstance().signOut();
+        GoogleSignIn.getClient(this, new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN).build()).signOut()
+                .addOnCompleteListener(this, task -> {
+                    binding.headerText.setText(getString(R.string.hi, "you"));
+                    binding.profileIcon.setImageResource(R.drawable.ic_profile);
+                    setupProfileIcon();
+                });
+    }
+
+
+    private void firebaseAuthWithGoogle(GoogleSignInAccount account) {
+        AuthCredential credential = GoogleAuthProvider.getCredential(account.getIdToken(), null);
+        firebaseAuth.signInWithCredential(credential)
+                .addOnCompleteListener(this, task -> {
+                    if (task.isSuccessful()) {
+                        FirebaseUser user = firebaseAuth.getCurrentUser();
+                        updateUI(user);
+                    } else {
+                        updateUI(null);
+                    }
+                });
+    }
+
+
+    private void updateUI(FirebaseUser user) {
+        if (user != null) {
+            String userName = user.getDisplayName();
+            String userEmail = user.getEmail();
+            String profilePic = (user.getPhotoUrl() != null) ? user.getPhotoUrl().toString() : "";
+            binding.headerText.setText(getString(R.string.hi, userName));
+            Glide.with(this)
+                    .load(profilePic)
+                    .circleCrop()
+                    .error(R.drawable.ic_profile)
+                    .into(binding.profileIcon);
+        }
     }
 
     @Override
