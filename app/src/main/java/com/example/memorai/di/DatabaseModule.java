@@ -8,6 +8,7 @@ import androidx.room.Room;
 
 import com.example.memorai.data.local.AppDatabase;
 import com.example.memorai.data.local.dao.AlbumDao;
+import com.example.memorai.data.local.dao.PhotoAlbumCrossRefDao;
 import com.example.memorai.data.local.dao.PhotoDao;
 import com.example.memorai.data.local.dao.UserDao;
 import com.example.memorai.data.repository.AlbumRepositoryImpl;
@@ -59,13 +60,19 @@ public class DatabaseModule {
     }
 
     @Provides
-    public AlbumRepository provideAlbumRepository(AlbumDao albumDao) {
-        return new AlbumRepositoryImpl(albumDao);
+    public PhotoAlbumCrossRefDao providePhotoAlbumCrossRefDao(AppDatabase database) {
+        return database.photoAlbumCrossRefDao();
+    }
+
+
+    @Provides
+    public AlbumRepository provideAlbumRepository(AlbumDao albumDao, PhotoAlbumCrossRefDao photoAlbumCrossRefDao) {
+        return new AlbumRepositoryImpl(albumDao, photoAlbumCrossRefDao);
     }
 
     @Provides
-    public PhotoRepository providePhotoRepository(PhotoDao photoDao) {
-        return new PhotoRepositoryImpl(photoDao);
+    public PhotoRepository providePhotoRepository(PhotoDao photoDao, PhotoAlbumCrossRefDao photoAlbumCrossRefDao) {
+        return new PhotoRepositoryImpl(photoDao, photoAlbumCrossRefDao);
     }
 
     @Provides

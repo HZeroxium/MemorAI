@@ -39,38 +39,38 @@ public class EditPhotoFragment extends Fragment {
         return binding.getRoot();
     }
 
-//    @Override
-//    public void onViewCreated(@NonNull View view,
-//                              @Nullable Bundle savedInstanceState) {
-//        super.onViewCreated(view, savedInstanceState);
-//
-//        editPhotoViewModel = new ViewModelProvider(this).get(EditPhotoViewModel.class);
-//
-//        // Assume photo is passed as argument (e.g., photo id or URL)
-//        if (getArguments() != null) {
-//            String photoUrl = getArguments().getString("photo_url", "");
-//            // In a real scenario, you might retrieve the full Photo object
-//            currentPhoto = new Photo("id", "albumId", photoUrl, null, System.currentTimeMillis(), System.currentTimeMillis());
-//            Glide.with(this)
-//                    .load(currentPhoto.getFilePath())
-//                    .placeholder(R.drawable.placeholder_image)
-//                    .error(R.drawable.error_image)
-//                    .into(binding.photoEditorView);
-//        }
-//
-//        binding.btnSaveEdit.setOnClickListener(v -> {
-//            // Perform edit operations; here we simulate by simply updating the photo timestamp
-//            currentPhoto = new Photo(currentPhoto.getId(), currentPhoto.getAlbumId(),
-//                    currentPhoto.getFilePath(), currentPhoto.getTags(),
-//                    currentPhoto.getCreatedAt(), System.currentTimeMillis());
-//            editPhotoViewModel.updatePhoto(currentPhoto);
-//        });
-//
-//        editPhotoViewModel.getEditedPhoto().observe(getViewLifecycleOwner(), photo -> {
-//            // Navigate back or show success message
-//            getParentFragmentManager().popBackStack();
-//        });
-//    }
+    @Override
+    public void onViewCreated(@NonNull View view,
+                              @Nullable Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
+
+        editPhotoViewModel = new ViewModelProvider(this).get(EditPhotoViewModel.class);
+
+        // Assume photo is passed as argument (e.g., photo id or URL)
+        if (getArguments() != null) {
+            String photoUrl = getArguments().getString("photo_url", "");
+            // In a real scenario, you might retrieve the full Photo object
+            currentPhoto = new Photo("id", photoUrl, null, System.currentTimeMillis(), System.currentTimeMillis());
+            Glide.with(this)
+                    .load(currentPhoto.getFilePath())
+                    .placeholder(R.drawable.placeholder_image)
+                    .error(R.drawable.error_image)
+                    .into(binding.imageViewEditPhoto);
+        }
+
+        binding.btnSaveEdit.setOnClickListener(v -> {
+            // Perform edit operations; here we simulate by simply updating the photo timestamp
+            currentPhoto = new Photo(currentPhoto.getId(),
+                    currentPhoto.getFilePath(), currentPhoto.getTags(),
+                    currentPhoto.getCreatedAt(), System.currentTimeMillis());
+            editPhotoViewModel.updatePhoto(currentPhoto);
+        });
+
+        editPhotoViewModel.getEditedPhoto().observe(getViewLifecycleOwner(), photo -> {
+            // Navigate back or show success message
+            getParentFragmentManager().popBackStack();
+        });
+    }
 
     @Override
     public void onDestroyView() {

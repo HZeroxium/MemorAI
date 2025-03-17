@@ -1,18 +1,39 @@
 <?xml version="1.0" encoding="utf-8"?><!-- res/layout/item_album.xml -->
-<androidx.cardview.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
+<com.google.android.material.card.MaterialCardView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:layout_margin="8dp"
-    app:cardCornerRadius="8dp"
-    app:cardElevation="4dp">
+    app:cardBackgroundColor="?attr/colorSurfaceContainer"
+    app:cardElevation="4dp"
+    app:cardCornerRadius="16dp"
+    app:strokeColor="?attr/colorOutline"
+    app:strokeWidth="1dp">
 
-    <TextView
-        android:id="@+id/textViewAlbumName"
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:padding="16dp"
-        android:textColor="@android:color/black"
-        android:textSize="16sp" />
+        android:orientation="vertical"
+        android:padding="12dp">
 
-</androidx.cardview.widget.CardView>
+        <!-- Album Cover Image -->
+        <ImageView
+            android:id="@+id/imageViewAlbumCover"
+            android:layout_width="match_parent"
+            android:layout_height="160dp"
+            android:background="?attr/colorSurfaceVariant"
+            android:contentDescription="@string/album_cover"
+            android:scaleType="centerCrop" />
+
+        <!-- Album Name -->
+        <TextView
+            android:id="@+id/textViewAlbumName"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:textColor="?attr/colorOnSurface"
+            android:textSize="16sp"
+            android:textStyle="bold" />
+    </LinearLayout>
+
+</com.google.android.material.card.MaterialCardView>

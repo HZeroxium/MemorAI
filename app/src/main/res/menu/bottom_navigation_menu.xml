@@ -3,9 +3,15 @@
     <item
         android:id="@+id/photoListFragment"
         android:icon="@drawable/ic_photos"
-        android:title="@string/photos" />
+        android:title="@string/photos"/>
     <item
         android:id="@+id/albumListFragment"
         android:icon="@drawable/ic_albums"
         android:title="@string/albums" />
+
+    <item
+        android:id="@+id/searchFragment"
+        android:icon="@drawable/ic_search"
+        android:title="@string/search" />
+
 </menu>
