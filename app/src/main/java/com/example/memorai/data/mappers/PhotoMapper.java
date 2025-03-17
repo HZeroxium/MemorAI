@@ -10,15 +10,22 @@ import java.util.List;
 
 public class PhotoMapper {
     public static Photo toDomain(PhotoEntity entity) {
-        List<String> tags = (entity.tags != null && !entity.tags.isEmpty()) ?
-                Arrays.asList(entity.tags.split(",")) : Collections.emptyList();
-        return new Photo(entity.id, entity.albumId, entity.filePath, tags, entity.createdAt, entity.updatedAt);
+        List<String> tags = (entity.tags != null && !entity.tags.isEmpty())
+                ? Arrays.asList(entity.tags.split(","))
+                : Collections.emptyList();
+
+        return new Photo(
+                entity.id,
+                entity.filePath,
+                tags,
+                entity.createdAt,
+                entity.updatedAt
+        );
     }
 
     public static PhotoEntity fromDomain(Photo photo) {
         PhotoEntity entity = new PhotoEntity();
         entity.id = photo.getId();
-        entity.albumId = photo.getAlbumId();
         entity.filePath = photo.getFilePath();
         entity.tags = String.join(",", photo.getTags());
         entity.createdAt = photo.getCreatedAt();
@@ -26,4 +33,3 @@ public class PhotoMapper {
         return entity;
     }
 }
-

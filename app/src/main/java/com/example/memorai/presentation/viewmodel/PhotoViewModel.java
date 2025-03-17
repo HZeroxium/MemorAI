@@ -90,4 +90,25 @@ public class PhotoViewModel extends ViewModel {
             albumPhotos.postValue(photos);
         }).start();
     }
+
+    public LiveData<List<Photo>> getPhotosByAlbum(String albumId) {
+        MutableLiveData<List<Photo>> albumPhotosLiveData = new MutableLiveData<>();
+
+        new Thread(() -> {
+            List<Photo> photos = getPhotosByAlbumUseCase.execute(albumId);
+            albumPhotosLiveData.postValue(photos); // PostValue is used to update LiveData from a background thread
+        }).start();
+
+        return albumPhotosLiveData;
+    }
+
+    public LiveData<List<Photo>> observePhotosByAlbum() {
+        return albumPhotos;
+    }
+
+    public void clearSearch() {
+        loadAllPhotos();
+    }
+
+
 }

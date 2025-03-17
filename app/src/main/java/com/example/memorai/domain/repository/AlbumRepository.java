@@ -2,6 +2,7 @@
 package com.example.memorai.domain.repository;
 
 import com.example.memorai.domain.model.Album;
+import com.example.memorai.domain.model.Photo;
 
 import java.util.List;
 
@@ -20,5 +21,9 @@ public interface AlbumRepository {
 
     // Get albums sorted by criteria (e.g., "date", "name")
     List<Album> getAlbumsSorted(String sortBy);
+
+    void createAlbumWithPhotos(Album album, List<Photo> photos);
+
+    void updateAlbumWithPhotos(Album album, List<Photo> photos);
 }
 

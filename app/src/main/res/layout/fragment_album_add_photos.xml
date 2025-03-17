@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="utf-8"?><!-- res/layout/fragment_album_add_photos.xml -->
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <com.google.android.material.appbar.MaterialToolbar
+        android:id="@+id/toolbarAddPhotos"
+        android:layout_width="0dp"
+        android:layout_height="?attr/actionBarSize"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:navigationIcon="@drawable/ic_back"
+        app:title="Add Photos To Album" />
+
+    <!-- Search or filter text if you want -->
+    <com.google.android.material.textfield.TextInputLayout
+        android:id="@+id/textInputLayoutSearchPhotos"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_margin="8dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/toolbarAddPhotos">
+
+        <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/editTextSearchPhotos"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="@string/search_your_photos" />
+    </com.google.android.material.textfield.TextInputLayout>
+
+    <!-- Photo list with checkboxes to add to album -->
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/recyclerViewAllPhotosForSelection"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_marginTop="4dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/textInputLayoutSearchPhotos" />
+
+    <Button
+        android:id="@+id/buttonConfirmSelection"
+        style="@style/Widget.Material3.Button.TonalButton"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/add"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent" />
+</androidx.constraintlayout.widget.ConstraintLayout>

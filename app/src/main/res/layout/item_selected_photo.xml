@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?><!--res/layout/item_selected_photo.xml-->
+<androidx.cardview.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_margin="4dp">
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <ImageView
+            android:id="@+id/imageViewSelected"
+            android:layout_width="match_parent"
+            android:layout_height="120dp"
+            android:scaleType="centerCrop" />
+
+        <ImageButton
+            android:id="@+id/buttonRemovePhoto"
+            android:layout_width="32dp"
+            android:layout_height="32dp"
+            android:layout_alignParentEnd="true"
+            android:layout_margin="4dp"
+            android:background="@android:color/transparent"
+            android:src="@drawable/ic_close" />
+    </RelativeLayout>
+</androidx.cardview.widget.CardView>
+
