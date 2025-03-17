@@ -8,7 +8,7 @@
     tools:background="@color/black"
     android:orientation="vertical">
     <ImageView
-        android:id="@+id/txtToolIcon"
+        android:id="@+id/imgToolIcon"
         android:layout_width="35dp"
         android:layout_height="35dp"
         android:layout_margin="4dp"
@@ -26,7 +26,7 @@
         android:textColor="@color/white"
         app:layout_constraintStart_toStartOf="parent
 "       app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/txtToolIcon"
+        app:layout_constraintTop_toBottomOf="@id/imgToolIcon"
         android:text="@string/label_brush"
         />
 
