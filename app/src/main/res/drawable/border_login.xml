@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <!-- Nền trắng -->
+    <item>
+        <shape android:shape="rectangle">
+            <corners android:topLeftRadius="30dp" android:topRightRadius="30dp"/>
+        </shape>
+    </item>
+
+    <!-- Viền trên-trái và trên-phải -->
+    <item>
+        <shape android:shape="rectangle">
+            <stroke
+                android:width="2dp"
+                android:color="@android:color/darker_gray"/>
+            <corners android:topLeftRadius="30dp" android:topRightRadius="30dp"/>
+        </shape>
+    </item>
+
+</layer-list>
