@@ -5,6 +5,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     style="@style/SCREEN"
+    android:fitsSystemWindows="true"
     tools:context=".presentation.ui.activity.MainActivity">
 
     <com.google.android.material.appbar.MaterialToolbar

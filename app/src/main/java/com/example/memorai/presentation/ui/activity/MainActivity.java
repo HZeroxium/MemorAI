@@ -2,7 +2,6 @@
 package com.example.memorai.presentation.ui.activity;
 
 import android.content.Context;
-import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.res.Configuration;
 import android.content.res.Resources;
@@ -16,7 +15,6 @@ import android.widget.PopupMenu;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.lifecycle.ViewModelProvider;
-import androidx.lifecycle.ViewModelStoreOwner;
 import androidx.navigation.NavController;
 import androidx.navigation.fragment.NavHostFragment;
 import androidx.navigation.ui.NavigationUI;
@@ -26,19 +24,15 @@ import com.example.memorai.R;
 import com.example.memorai.databinding.ActivityMainBinding;
 import com.example.memorai.presentation.ui.fragment.LoginFragment;
 import com.example.memorai.presentation.viewmodel.AlbumViewModel;
+import com.example.memorai.presentation.viewmodel.UserViewModel;
 import com.google.android.gms.auth.api.signin.GoogleSignIn;
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
-import com.google.firebase.FirebaseApp;
-import com.google.firebase.appcheck.FirebaseAppCheck;
-import com.google.firebase.appcheck.debug.DebugAppCheckProviderFactory;
 import com.google.firebase.auth.AuthCredential;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.android.gms.auth.api.signin.GoogleSignInClient;
 import com.google.firebase.auth.GoogleAuthProvider;
-import com.squareup.picasso.Callback;
-import com.squareup.picasso.Picasso;
 
 
 import java.util.Locale;
@@ -51,6 +45,8 @@ public class MainActivity extends AppCompatActivity {
     private GoogleSignInClient googleSignInClient;
     private FirebaseAuth firebaseAuth;
 
+    private UserViewModel userViewModel;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -61,20 +57,58 @@ public class MainActivity extends AppCompatActivity {
         boolean darkMode = sharedPreferences.getBoolean("night", false);
         AlbumViewModel albumViewModel = new ViewModelProvider(this).get(AlbumViewModel.class);
         albumViewModel.ensureDefaultAlbumExists(); // Ensure default album exists
+
+        userViewModel = new ViewModelProvider(this).get(UserViewModel.class);
+
+
         firebaseAuth = FirebaseAuth.getInstance();
 
-        // Cấu hình Google Sign-In
         GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
                 .requestIdToken("619405178592-ml761krg19iac2ratge3eul9mdhg84pg.apps.googleusercontent.com") // Lấy ID Token để xác thực Firebase
                 .requestEmail()
                 .build();
 
         googleSignInClient = GoogleSignIn.getClient(this, gso);
-//        setupDarkMode();
-        autoSignIn();
+
+
+
+
+        setupObservers();
         setupNavigation();
         setupProfileIcon();
     }
+
+
+    private void setupObservers() {
+        if (userViewModel.getUserLiveData().getValue() == null) {
+            binding.headerText.setText(getString(R.string.hi, "you"));
+            binding.profileIcon.setImageResource(R.drawable.ic_profile);
+        }
+        userViewModel.getUserLiveData().observe(this, user -> {
+            if (user != null) {
+                String userName = user.getDisplayName() != null ? user.getDisplayName() : "you";
+                binding.headerText.setText(getString(R.string.hi, userName));
+                Glide.with(this)
+                        .load(user.getPhotoUrl())
+                        .circleCrop()
+                        .error(R.drawable.ic_profile)
+                        .into(binding.profileIcon);
+            } else {
+                binding.headerText.setText(getString(R.string.hi, "you"));
+                binding.profileIcon.setImageResource(R.drawable.ic_profile);
+            }
+        });
+    }
+
+
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        autoSignIn();
+        setupNavigation();
+    }
+
 
     private void autoSignIn() {
         GoogleSignInAccount account = GoogleSignIn.getLastSignedInAccount(this);
@@ -117,21 +151,6 @@ public class MainActivity extends AppCompatActivity {
                 } else {
                     binding.bottomNavigation.setVisibility(View.VISIBLE);
                     binding.header.setVisibility(View.VISIBLE);
-                    Intent intent = getIntent();
-                    String userName = intent.getStringExtra("userName");
-                    if (userName == null || userName.isEmpty()) {
-                        userName = "you";
-                    }
-                    String profilePicUrl = intent.getStringExtra("profilePic");
-                    String greetingMessage = getString(R.string.hi, userName);
-                    binding.headerText.setText(greetingMessage);
-                    Glide.with(this)
-                            .load(profilePicUrl)
-                            .override(1000, 1000)
-                            .circleCrop()
-                            .error(R.drawable.ic_profile)
-                            .into(binding.profileIcon);
-
 
                     MenuItem photosItem = binding.bottomNavigation.getMenu().findItem(R.id.photoListFragment);
                     MenuItem albumsItem = binding.bottomNavigation.getMenu().findItem(R.id.albumListFragment);
@@ -259,11 +278,24 @@ public class MainActivity extends AppCompatActivity {
     private void updateUI(FirebaseUser user) {
         if (user != null) {
             String userName = user.getDisplayName();
-            String userEmail = user.getEmail();
+            if (userName != null && !userName.trim().isEmpty()) {
+                String[] nameParts = userName.trim().split("\\s+");
+                userName = nameParts[nameParts.length - 1];
+            } else {
+                userName = "you";
+            }
             String profilePic = (user.getPhotoUrl() != null) ? user.getPhotoUrl().toString() : "";
             binding.headerText.setText(getString(R.string.hi, userName));
             Glide.with(this)
                     .load(profilePic)
+                    .circleCrop()
+                    .error(R.drawable.ic_profile)
+                    .into(binding.profileIcon);
+        }
+        else {
+            binding.headerText.setText(getString(R.string.hi, "you"));
+            Glide.with(this)
+                    .load(R.drawable.ic_profile)
                     .circleCrop()
                     .error(R.drawable.ic_profile)
                     .into(binding.profileIcon);

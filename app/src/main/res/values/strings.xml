@@ -16,7 +16,7 @@
     <string name="photos">Photos</string>
     <string name="albums">Albums</string>
     <string name="root_album_id">1</string>
-    <string name="hi">Hi %1$s! \n Have a nice day</string>
+    <string name="hi">Hi %1$s! \nHave a nice day</string>
     <string name="all_photos">All Photos</string>
     <string name="comfortable">Comfortable</string>
     <string name="day">Day</string>

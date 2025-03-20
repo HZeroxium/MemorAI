@@ -97,6 +97,7 @@ public class PhotoListFragment extends Fragment {
                 args.putString("photo_id", photo.getId());
                 args.putString("photo_url", photo.getFilePath());
                 Navigation.findNavController(view).navigate(R.id.photoDetailFragment, args);
+                Toast.makeText(requireContext(), "Path: " + photo.getFilePath(), Toast.LENGTH_SHORT).show();
             }
         });
         adapter.setOnPhotoLongClickListener(photo -> {

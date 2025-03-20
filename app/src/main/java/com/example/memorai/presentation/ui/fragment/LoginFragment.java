@@ -11,6 +11,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import com.example.memorai.databinding.FragmentLoginBinding;
+import com.example.memorai.domain.model.User;
 import com.example.memorai.presentation.ui.activity.MainActivity;
 import com.google.android.gms.auth.api.signin.GoogleSignIn;
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
@@ -24,9 +25,6 @@ import com.google.firebase.auth.GoogleAuthProvider;
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
-
-import java.util.HashMap;
-import java.util.Map;
 
 public class LoginFragment extends BottomSheetDialogFragment {
     private FragmentLoginBinding binding;
@@ -92,11 +90,18 @@ public class LoginFragment extends BottomSheetDialogFragment {
                     if (task.isSuccessful()) {
                         FirebaseUser user = mAuth.getCurrentUser();
                         if (user != null) {
-                            // Lưu thông tin vào Firestore
+                            // Lưu thông tin vào Firebase
                             saveUserToFirestore(user);
+
+                            User authUser = new User(
+                                    user.getUid(),
+                                    user.getDisplayName(),
+                                    user.getEmail(),
+                                    user.getPhotoUrl() != null ?user.getPhotoUrl().toString() : null
+                            );
+
                             Intent intent = new Intent(requireActivity(), MainActivity.class);
-                            intent.putExtra("userName", user.getDisplayName());
-                            intent.putExtra("profilePic", user.getPhotoUrl() != null ? user.getPhotoUrl().toString() : "");
+                            intent.putExtra("user", authUser);
                             startActivity(intent);
                             requireActivity().finish();
                         }
@@ -106,21 +111,23 @@ public class LoginFragment extends BottomSheetDialogFragment {
                 });
     }
 
-    private void saveUserToFirestore(FirebaseUser user) {
+    private void saveUserToFirestore(FirebaseUser firebaseUser) {
         FirebaseDatabase database = FirebaseDatabase.getInstance();
-        DatabaseReference usersRef = database.getReference("users").child(user.getUid());
+        DatabaseReference usersRef = database.getReference("users").child(firebaseUser.getUid());
 
-        Map<String, Object> userData = new HashMap<>();
-        userData.put("id", user.getUid());
-        userData.put("name", user.getDisplayName());
-        userData.put("mail", user.getEmail());
-        userData.put("profilePictureUrl", user.getPhotoUrl() != null ? user.getPhotoUrl().toString() : null);
+        // Tạo đối tượng User từ model
+        User user = new User(
+                firebaseUser.getUid(),
+                firebaseUser.getDisplayName(),
+                firebaseUser.getEmail(),
+                firebaseUser.getPhotoUrl() != null ? firebaseUser.getPhotoUrl().toString() : null
+        );
 
-        usersRef.setValue(userData)
+        // Lưu User vào Firebase
+        usersRef.setValue(user)
                 .addOnSuccessListener(aVoid -> Log.d("LoginFragment", "Lưu dữ liệu thành công"))
                 .addOnFailureListener(e -> Log.w("LoginFragment", "Lưu dữ liệu thất bại", e));
     }
-
 
     @Override
     public void onDestroyView() {
