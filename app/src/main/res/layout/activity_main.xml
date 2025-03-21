@@ -5,15 +5,18 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     style="@style/SCREEN"
+    android:fitsSystemWindows="true"
     tools:context=".presentation.ui.activity.MainActivity">
 
     <com.google.android.material.appbar.MaterialToolbar
-        android:id="@+id/toolbar"
+        android:id="@+id/header"
         android:layout_width="0dp"
-        android:layout_height="?attr/actionBarSize"
+        android:layout_height="0dp"
         android:background="?attr/colorSurface"
         android:elevation="4dp"
+        app:layout_constraintHeight_percent="0.1"
         app:contentInsetStart="16dp"
+        android:fitsSystemWindows="true"
         app:layout_constraintEnd_toEndOf="parent"
         app:popupTheme="@style/ThemeOverlay.MaterialComponents.Light"
         app:layout_constraintTop_toTopOf="parent"
@@ -27,13 +30,14 @@
             <!-- Profile Icon -->
             <ImageView
                 android:id="@+id/profileIcon"
-                android:layout_width="40dp"
-                android:layout_height="40dp"
+                android:layout_width="50dp"
+                android:layout_height="50dp"
                 android:contentDescription="@string/profile"
                 android:scaleType="centerCrop"
                 android:src="@drawable/ic_profile"
                 app:layout_constraintBottom_toBottomOf="parent"
-                app:layout_constraintTop_toTopOf="parent" />
+                app:layout_constraintTop_toTopOf="parent"
+                tools:ignore="MissingConstraints" />
 
             <!-- Text Greeting -->
             <TextView
@@ -84,6 +88,17 @@
 
     </com.google.android.material.appbar.MaterialToolbar>
 
+    <androidx.appcompat.widget.SearchView
+        android:id="@+id/searchBar"
+        android:layout_width="0dp"
+        android:layout_height="48dp"
+        android:layout_marginTop="10dp"
+        style="@style/search"
+        android:layout_marginHorizontal="16dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="@id/header"
+        app:layout_constraintTop_toBottomOf="@id/header"
+        tools:ignore="MissingConstraints" />
 
     <androidx.fragment.app.FragmentContainerView
         android:id="@+id/nav_host_fragment"
@@ -93,7 +108,7 @@
         android:layout_marginTop="0dp"
         app:defaultNavHost="true"
         app:layout_constraintBottom_toTopOf="@id/bottomNavigation"
-        app:layout_constraintTop_toBottomOf="@id/toolbar"
+        app:layout_constraintTop_toBottomOf="@id/searchBar"
         app:navGraph="@navigation/nav_graph" />
 
     <!-- Bottom Navigation View -->
