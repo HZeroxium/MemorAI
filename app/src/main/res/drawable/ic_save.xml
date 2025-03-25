@@ -1,10 +1,32 @@
-<?xml version="1.0" encoding="utf-8"?>
-<vector xmlns:android="http://schemas.android.com/apk/res/android"
-    android:width="24dp"
-    android:height="24dp"
-    android:viewportWidth="24.0"
-    android:viewportHeight="24.0">
-    <path
-        android:fillColor="#FFFFFF"
-        android:pathData="M19,9h-4V3H9v6H5l7,7 7,-7zM5,18v2h14v-2H5z"/>
-</vector>
+<!-- File tick_v.xml trong res/drawable -->
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- Nền của nút -->
+    <item>
+        <shape android:shape="rectangle">
+
+            <corners android:radius="8dp" />
+            <size
+                android:width="40dp"
+                android:height="40dp" />
+        </shape>
+    </item>
+
+    <!-- Dấu V -->
+    <item
+        android:left="10dp"
+        android:right="10dp"
+        android:top="5dp"
+        android:bottom="15dp">
+        <vector
+            android:width="24dp"
+            android:height="24dp"
+            android:viewportWidth="24"
+            android:viewportHeight="24">
+            <path
+                android:strokeWidth="2"
+                android:strokeColor="#FFFFFF"
+                android:strokeLineCap="round"
+                android:pathData="M20 6L9 17L4 12" />
+        </vector>
+    </item>
+</layer-list>

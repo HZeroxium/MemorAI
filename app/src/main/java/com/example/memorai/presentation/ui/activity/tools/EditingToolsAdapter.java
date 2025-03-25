@@ -71,7 +71,7 @@ public class EditingToolsAdapter extends RecyclerView.Adapter<EditingToolsAdapte
         public ViewHolder(@NonNull View itemView) {
             super(itemView);
             imgToolIcon = itemView.findViewById(R.id.imgToolIcon);
-            txtTool = itemView.findViewById(R.id.txtTool);
+            txtTool = itemView.findViewById(R.id.txtToolName);
 
             itemView.setOnClickListener(v ->
                     mOnItemSelected.onToolSelected(mToolList.get(getAdapterPosition()).mToolType)

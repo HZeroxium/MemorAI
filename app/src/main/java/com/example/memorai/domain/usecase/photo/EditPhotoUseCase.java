@@ -12,6 +12,8 @@ public class EditPhotoUseCase {
     @Inject
     public EditPhotoUseCase(PhotoRepository photoRepository) {
         this.photoRepository = photoRepository;
+
+        
     }
 
     public void execute(Photo photo) {

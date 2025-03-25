@@ -1,25 +1,11 @@
-package com.example.memorai.presentation.ui.fragment;
+package com.example.memorai.presentation.ui.dialog;
 
-import android.annotation.SuppressLint;
-import android.app.Dialog;
-import android.content.Context;
-import android.content.res.Resources;
-import android.view.LayoutInflater;
 import android.view.View;
-import android.view.ViewGroup;
-import android.widget.TextView;
+
 import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-import androidx.coordinatorlayout.widget.CoordinatorLayout;
+
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment;
 import com.google.android.material.bottomsheet.BottomSheetBehavior;
-import androidx.recyclerview.widget.RecyclerView;
-import androidx.recyclerview.widget.GridLayoutManager;
-
-import com.example.memorai.R;
-import com.example.memorai.utils.EmojiUtils;
-import java.util.ArrayList;
-import java.util.List;
 
 public class EmojiBSFragment extends BottomSheetDialogFragment {
     private EmojiListener mEmojiListener;

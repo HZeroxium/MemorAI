@@ -80,4 +80,19 @@
         <item name="titleTextColor">?attr/colorOnSurface</item>
         <item name="navigationIconTint">?attr/colorOnSurface</item>
     </style>
+
+    <style name="TransparentDialogTheme" parent="@style/Theme.AppCompat.Dialog">
+        <!-- Nền của Dialog trong suốt -->
+        <item name="android:windowBackground">@android:color/transparent</item>
+
+        <!-- Tắt bóng mờ đằng sau Dialog (nếu muốn) -->
+        <item name="android:backgroundDimEnabled">false</item>
+
+        <!-- Cho phép chạm bên ngoài để đóng (nếu muốn) -->
+        <item name="android:windowCloseOnTouchOutside">true</item>
+
+        <!-- Duy trì tính chất trong suốt -->
+        <item name="android:windowIsTranslucent">true</item>
+    </style>
+
 </resources>
