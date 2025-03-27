@@ -1,19 +1,35 @@
-// presentation/viewModel/PhotoViewModel.java
 package com.example.memorai.presentation.viewmodel;
 
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.os.Handler;
+import android.os.Looper;
+import android.util.Base64;
+import android.util.Log;
+
+import androidx.dynamicanimation.animation.FloatValueHolder;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.ViewModel;
 
 import com.example.memorai.domain.model.Photo;
-import com.example.memorai.domain.usecase.photo.AddPhotoUseCase;
-import com.example.memorai.domain.usecase.photo.DeletePhotoUseCase;
-import com.example.memorai.domain.usecase.photo.EditPhotoUseCase;
-import com.example.memorai.domain.usecase.photo.GetPhotosByAlbumUseCase;
-import com.example.memorai.domain.usecase.photo.SearchPhotosUseCase;
-import com.example.memorai.domain.usecase.photo.SortPhotosUseCase;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.firestore.CollectionReference;
+import com.google.firebase.firestore.DocumentReference;
+import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.FieldPath;
+import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.Query;
+import com.google.firebase.firestore.QuerySnapshot;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import javax.inject.Inject;
 
@@ -21,93 +37,256 @@ import dagger.hilt.android.lifecycle.HiltViewModel;
 
 @HiltViewModel
 public class PhotoViewModel extends ViewModel {
-    private final AddPhotoUseCase addPhotoUseCase;
-    private final GetPhotosByAlbumUseCase getPhotosByAlbumUseCase;
-    private final EditPhotoUseCase editPhotoUseCase;
-    private final DeletePhotoUseCase deletePhotoUseCase;
-    private final SearchPhotosUseCase searchPhotosUseCase;
-    private final SortPhotosUseCase sortPhotosUseCase;
+    private final FirebaseFirestore firestore = FirebaseFirestore.getInstance();
+    private final Map<String, MutableLiveData<List<Photo>>> albumPhotosMap = new HashMap<>();
+
+    private final MutableLiveData<List<Photo>> searchResults = new MutableLiveData<>();
+
+    private final MutableLiveData<List<Photo>> allPhotos = new MutableLiveData<>();
+
+    private final ExecutorService executorService = Executors.newFixedThreadPool(4);
+    private final Handler mainHandler = new Handler(Looper.getMainLooper());
 
     public static final String ROOT_ALBUM_ID = "1";
 
-    private final MutableLiveData<List<Photo>> albumPhotos = new MutableLiveData<>();
-
     @Inject
-    public PhotoViewModel(AddPhotoUseCase addPhotoUseCase,
-                          GetPhotosByAlbumUseCase getPhotosByAlbumUseCase,
-                          EditPhotoUseCase editPhotoUseCase,
-                          DeletePhotoUseCase deletePhotoUseCase,
-                          SearchPhotosUseCase searchPhotosUseCase,
-                          SortPhotosUseCase sortPhotosUseCase) {
-        this.addPhotoUseCase = addPhotoUseCase;
-        this.getPhotosByAlbumUseCase = getPhotosByAlbumUseCase;
-        this.editPhotoUseCase = editPhotoUseCase;
-        this.deletePhotoUseCase = deletePhotoUseCase;
-        this.searchPhotosUseCase = searchPhotosUseCase;
-        this.sortPhotosUseCase = sortPhotosUseCase;
+    public PhotoViewModel() {
+        // Không cần UseCase, thao tác Firestore trực tiếp
     }
 
     public LiveData<List<Photo>> observeAllPhotos() {
-        return albumPhotos;
+        return allPhotos;
     }
 
-    public void loadAllPhotos() {
-        new Thread(() -> {
-            List<Photo> photos = getPhotosByAlbumUseCase.execute(ROOT_ALBUM_ID);
-            albumPhotos.postValue(photos);
-        }).start();
+    public void loadAllPhotos(String userId) {
+        CollectionReference userPhotosRef = firestore.collection("photos")
+                .document(userId)
+                .collection("user_photos");
+
+        userPhotosRef.orderBy("createdAt", Query.Direction.DESCENDING)
+                .addSnapshotListener((queryDocumentSnapshots, error) -> {
+                    if (error != null) {
+                        Log.e("PhotoViewModel", "Error loading photos", error);
+                        return;
+                    }
+
+                    if (queryDocumentSnapshots == null) {
+                        Log.w("PhotoViewModel", "QueryDocumentSnapshots is null");
+                        return;
+                    }
+
+                    List<Photo> photos = new ArrayList<>();
+                    ExecutorService executorService = Executors.newFixedThreadPool(4);
+                    Handler mainHandler = new Handler(Looper.getMainLooper());
+
+                    for (DocumentSnapshot doc : queryDocumentSnapshots.getDocuments()) {
+                        Photo photo = doc.toObject(Photo.class);
+                        if (photo != null && photo.getFilePath() != null) {
+                            photos.add(photo);
+
+                            // Xử lý ảnh trong thread pool nhưng cập nhật ảnh ngay sau khi xử lý xong
+                            executorService.execute(() -> {
+                                createBitmap(photo);
+
+                                // Cập nhật ảnh ngay khi xử lý xong thay vì đợi tất cả ảnh
+                                mainHandler.post(() -> allPhotos.setValue(new ArrayList<>(photos)));
+                            });
+                        } else {
+                            Log.w("PhotoViewModel", "Photo object or file path is null for document: " + doc.getId());
+                        }
+                    }
+
+                    // Cập nhật danh sách ảnh ngay lập tức mà không cần chờ giải mã ảnh
+                    new Handler(Looper.getMainLooper()).post(() -> allPhotos.setValue(photos));
+
+                    executorService.shutdown();
+                });
     }
+
+
+    public String encodeBase64(String rawString) {
+        if (rawString == null || rawString.isEmpty()) {
+            return rawString;
+        }
+        byte[] encodedBytes = Base64.encode(rawString.getBytes(), Base64.DEFAULT);
+        return new String(encodedBytes);
+    }
+
+
 
     public void loadPhotosByAlbum(String albumId) {
-        new Thread(() -> {
-            List<Photo> photos = getPhotosByAlbumUseCase.execute(albumId);
-            albumPhotos.postValue(photos);
-        }).start();
+        String userId = FirebaseAuth.getInstance().getCurrentUser().getUid();
+        if (userId == null) {
+            Log.w("PhotoViewModel", "User not authenticated");
+            return;
+        }
+        if (!albumPhotosMap.containsKey(albumId)) {
+            albumPhotosMap.put(albumId, new MutableLiveData<>());
+        }
+        MutableLiveData<List<Photo>> result = albumPhotosMap.get(albumId);
+
+        // Tham chiếu đến document album cụ thể
+        DocumentReference albumRef = firestore.collection("photos")
+                .document(userId)
+                .collection("user_albums")
+                .document(albumId);
+
+        albumRef.get().addOnCompleteListener(albumTask -> {
+            if (!albumTask.isSuccessful() || albumTask.getResult() == null) {
+                Log.e("PhotoViewModel", "Error loading album", albumTask.getException());
+                return;
+            }
+
+            DocumentSnapshot albumDoc = albumTask.getResult();
+            List<String> photoIds = (List<String>) albumDoc.get("photos");
+            if (photoIds == null || photoIds.isEmpty()) {
+                result.postValue(Collections.emptyList());
+                return;
+            }
+
+            // Lấy tất cả ảnh thuộc album
+            CollectionReference photosRef = firestore.collection("photos")
+                    .document(userId)
+                    .collection("user_photos");
+
+            photosRef.whereIn(FieldPath.documentId(), photoIds)
+                    .orderBy("createdAt", Query.Direction.DESCENDING)
+                    .get()
+                    .addOnCompleteListener(photosTask -> {
+                        if (!photosTask.isSuccessful()) {
+                            Log.e("PhotoViewModel", "Error loading photos", photosTask.getException());
+                            return;
+                        }
+
+                        QuerySnapshot photosSnapshot = photosTask.getResult();
+                        if (photosSnapshot == null || photosSnapshot.isEmpty()) {
+                            result.postValue(Collections.emptyList());
+                            return;
+                        }
+
+                        List<Photo> photos = new ArrayList<>();
+                        AtomicInteger processedCount = new AtomicInteger(0);
+                        int totalCount = photosSnapshot.size();
+
+                        for (DocumentSnapshot doc : photosSnapshot.getDocuments()) {
+                            Photo photo = doc.toObject(Photo.class);
+                            if (photo != null) {
+                                photos.add(photo);
+
+                                // Xử lý ảnh trong background
+                                executorService.execute(() -> {
+                                    try {
+                                        createBitmap(photo);
+                                    } catch (Exception e) {
+                                        Log.e("PhotoViewModel", "Error processing image", e);
+                                    }
+
+                                    // Cập nhật khi tất cả ảnh đã xử lý xong
+                                    if (processedCount.incrementAndGet() == totalCount) {
+                                        mainHandler.post(() -> result.setValue(photos));
+                                    }
+                                });
+                            } else {
+                                processedCount.incrementAndGet();
+                            }
+                        }
+
+                        // Xử lý trường hợp tất cả ảnh đã được xử lý ngay lập tức
+                        if (processedCount.get() == totalCount) {
+                            result.postValue(photos);
+                        }
+                    });
+        });
     }
 
     public void addPhoto(Photo photo) {
-        new Thread(() -> addPhotoUseCase.execute(photo)).start();
-    }
+        List<Photo> currentPhotos = allPhotos.getValue();
+        if (currentPhotos == null) {
+            currentPhotos = new ArrayList<>();
+        }
 
-    public void updatePhoto(Photo photo) {
-        new Thread(() -> editPhotoUseCase.execute(photo)).start();
+        // Kiểm tra xem ảnh đã tồn tại chưa (dựa vào ID)
+        boolean exists = false;
+        for (Photo p : currentPhotos) {
+            if (p.getId().equals(photo.getId())) {
+                exists = true;
+                break;
+            }
+        }
+
+        if (!exists) {
+            currentPhotos.add(photo);
+            allPhotos.setValue(currentPhotos);
+        }
     }
 
     public void deletePhoto(String photoId) {
-        new Thread(() -> deletePhotoUseCase.execute(photoId)).start();
+        List<Photo> currentPhotos = allPhotos.getValue();
+        if (currentPhotos != null) {
+            // Lọc ra danh sách mới không chứa ảnh có ID bị xóa
+            List<Photo> updatedPhotos = new ArrayList<>();
+            for (Photo p : currentPhotos) {
+                if (!p.getId().equals(photoId)) {
+                    updatedPhotos.add(p);
+                }
+            }
+            allPhotos.setValue(updatedPhotos);
+        }
     }
+
+
+    public void createBitmap(Photo photo) {
+        Bitmap bitmap = decodeBase64ToImage(photo.getFilePath());
+        photo.setBitmap(bitmap);
+    }
+
+    public static Bitmap decodeBase64ToImage(String base64) {
+        try {
+            byte[] decodedBytes = Base64.decode(base64, Base64.DEFAULT);
+            return BitmapFactory.decodeByteArray(decodedBytes, 0, decodedBytes.length);
+        } catch (Exception e) {
+            Log.e("Photo", "Error decoding Base64 to image", e);
+            return null;
+        }
+    }
+    public LiveData<List<Photo>> observePhotosByAlbum(String albumId) {
+        // Kiểm tra xem album đã có trong map chưa, nếu chưa thì tạo mới
+        if (!albumPhotosMap.containsKey(albumId)) {
+            albumPhotosMap.put(albumId, new MutableLiveData<>());
+            // Tự động load dữ liệu khi lần đầu observe
+            loadPhotosByAlbum(albumId);
+        }
+        return albumPhotosMap.get(albumId);
+    }
+
 
     public void searchPhotos(String query) {
-        new Thread(() -> {
-            List<Photo> photos = searchPhotosUseCase.execute(query);
-            albumPhotos.postValue(photos);
-        }).start();
-    }
+        String userId = FirebaseAuth.getInstance().getCurrentUser().getUid();
+        CollectionReference userPhotosRef = firestore.collection("photos")
+                .document(userId)
+                .collection("user_photos");
 
-    public void sortPhotos(String albumId, String sortBy) {
-        new Thread(() -> {
-            List<Photo> photos = sortPhotosUseCase.execute(albumId, sortBy);
-            albumPhotos.postValue(photos);
-        }).start();
-    }
-
-    public LiveData<List<Photo>> getPhotosByAlbum(String albumId) {
-        MutableLiveData<List<Photo>> albumPhotosLiveData = new MutableLiveData<>();
-
-        new Thread(() -> {
-            List<Photo> photos = getPhotosByAlbumUseCase.execute(albumId);
-            albumPhotosLiveData.postValue(photos); // PostValue is used to update LiveData from a background thread
-        }).start();
-
-        return albumPhotosLiveData;
-    }
-
-    public LiveData<List<Photo>> observePhotosByAlbum() {
-        return albumPhotos;
+        userPhotosRef.whereGreaterThanOrEqualTo("filePath", query)
+                .whereLessThanOrEqualTo("filePath", query + "\uf8ff")
+                .get()
+                .addOnCompleteListener(task -> {
+                    if (task.isSuccessful() && task.getResult() != null) {
+                        List<Photo> photos = new ArrayList<>();
+                        for (DocumentSnapshot doc : task.getResult()) {
+                            Photo photo = doc.toObject(Photo.class);
+                            if (photo != null) {
+                                photos.add(photo);
+                            }
+                        }
+                        searchResults.setValue(photos);
+                    } else {
+                        Log.e("PhotoViewModel", "Error searching photos", task.getException());
+                    }
+                });
     }
 
     public void clearSearch() {
-        loadAllPhotos();
+        searchResults.setValue(new ArrayList<>()); // Đặt danh sách tìm kiếm thành rỗng
     }
 
 

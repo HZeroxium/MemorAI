@@ -2,6 +2,7 @@ package com.example.memorai.presentation.ui.fragment;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.res.Configuration;
 import android.content.res.Resources;
@@ -101,9 +102,6 @@ public class SettingsFragment extends Fragment {
         SettingsViewModel settingsViewModel = new ViewModelProvider(this).get(SettingsViewModel.class);
         settingsViewModel.getSettings().observe(getViewLifecycleOwner(), this::updateUI);
         settingsViewModel.loadSettings();
-        Log.d("SettingsFragment", "Fragment is created");
-        Log.d("SettingsFragment", "Binding initialized: " + (binding != null));
-
 
         SharedPreferences prefs = requireContext().getSharedPreferences("Settings", Context.MODE_PRIVATE);
         String savedLanguage = prefs.getString("Language", "en"); // Mặc định là English
@@ -162,7 +160,7 @@ public class SettingsFragment extends Fragment {
         binding.btnExit.setOnClickListener(v -> {
             NavController navController = NavHostFragment.findNavController(this);
             navController.popBackStack();
-                }
+        }
 );
 
 
