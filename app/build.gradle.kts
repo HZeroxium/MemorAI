@@ -110,7 +110,6 @@ dependencies {
 
 
 // Google Sign-In
-    implementation("com.google.firebase:firebase-appcheck-debug:17.0.1")
     implementation("com.google.android.gms:play-services-auth:20.7.0")
     implementation("androidx.credentials:credentials-play-services-auth:1.3.0")
     implementation("com.google.android.gms:play-services-base:18.2.0")
@@ -120,6 +119,10 @@ dependencies {
 
     //Picasso
     implementation("com.squareup.picasso:picasso:2.8")
+
+    //firebase
+    implementation("com.google.firebase:firebase-storage:20.2.1")
+    implementation("com.google.firebase:firebase-appcheck-debug:17.0.1")
 
 
     // DataStore

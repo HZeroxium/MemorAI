@@ -4,9 +4,11 @@ package com.example.memorai.presentation.ui.fragment;
 import android.Manifest;
 import android.content.ContentValues;
 import android.content.pm.PackageManager;
+import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.MediaStore;
+import android.util.Base64;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -26,6 +28,11 @@ import com.bumptech.glide.Glide;
 import com.example.memorai.R;
 import com.example.memorai.domain.model.Photo;
 import com.example.memorai.presentation.viewmodel.PhotoViewModel;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.firestore.CollectionReference;
+import com.google.firebase.firestore.FirebaseFirestore;
+
+import java.io.ByteArrayOutputStream;
 
 import dagger.hilt.android.AndroidEntryPoint;
 
@@ -51,7 +58,7 @@ public class AddPhotoFragment extends Fragment {
             registerForActivityResult(new ActivityResultContracts.TakePicture(), success -> {
                 if (success && photoUri != null) {
                     displayImage(photoUri);
-                    savePhotoToDatabase(photoUri);
+                    savePhotoToFirestore(photoUri);
                 } else {
                     Toast.makeText(requireContext(), "Camera operation failed", Toast.LENGTH_SHORT).show();
                 }
@@ -63,8 +70,8 @@ public class AddPhotoFragment extends Fragment {
             registerForActivityResult(new ActivityResultContracts.GetContent(), uri -> {
                 if (uri != null) {
                     displayImage(uri);
-                    Log.d("AddPhotoFragment", "onActivityResult: " + uri);
-                    savePhotoToDatabase(uri);
+                    Log.d("AddPhotoFragment", "Selected image URI: " + uri);
+                    savePhotoToFirestore(uri); // Convert & save image to Firestore
                 } else {
                     Toast.makeText(requireContext(), "No image selected", Toast.LENGTH_SHORT).show();
                 }
@@ -126,6 +133,62 @@ public class AddPhotoFragment extends Fragment {
         values.put(MediaStore.Images.Media.DESCRIPTION, "Captured via Camera");
         return requireContext().getContentResolver()
                 .insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, values);
+    }
+
+    private void savePhotoToFirestore(Uri imageUri) {
+        if (imageUri == null) {
+            Toast.makeText(requireContext(), "Invalid image URI", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        String userId = FirebaseAuth.getInstance().getCurrentUser().getUid(); // Get user ID
+        if (userId == null) {
+            Toast.makeText(requireContext(), "User not authenticated", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        try {
+            // Convert URI to Bitmap
+            Bitmap bitmap = MediaStore.Images.Media.getBitmap(requireContext().getContentResolver(), imageUri);
+
+            // Convert Bitmap to Base64
+            String encodedImage = encodeBitmapToBase64(bitmap);
+
+            // Save to Firestore
+            uploadToFirestore(userId, encodedImage);
+
+        } catch (Exception e) {
+            Toast.makeText(requireContext(), "Error processing image", Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    /**
+     * Convert Bitmap to Base64 String.
+     */
+    private String encodeBitmapToBase64(Bitmap bitmap) {
+        ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+        bitmap.compress(Bitmap.CompressFormat.JPEG, 100, byteArrayOutputStream); // Compress bitmap
+        byte[] byteArray = byteArrayOutputStream.toByteArray();
+        return Base64.encodeToString(byteArray, Base64.DEFAULT); // Encode to Base64
+    }
+
+    /**
+     * Save Base64 image string to Firestore under user's collection.
+     */
+    private void uploadToFirestore(String userId, String base64Image) {
+        FirebaseFirestore firestore = FirebaseFirestore.getInstance();
+        CollectionReference userPhotosRef = firestore.collection("photos")
+                .document(userId) // Document for the user
+                .collection("user_photos"); // Subcollection for user photos
+
+        String photoId = String.valueOf(System.currentTimeMillis());
+
+        Photo photo = new Photo(photoId, base64Image);
+        photoViewModel.addPhoto(photo);
+
+        userPhotosRef.document(photoId).set(photo)
+                .addOnSuccessListener(aVoid -> Toast.makeText(requireContext(), "Photo saved successfully", Toast.LENGTH_SHORT).show())
+                .addOnFailureListener(e -> Toast.makeText(requireContext(), "Failed to save photo", Toast.LENGTH_SHORT).show());
     }
 
     /**

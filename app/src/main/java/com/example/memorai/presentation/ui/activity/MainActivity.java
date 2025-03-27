@@ -30,6 +30,7 @@ import com.example.memorai.presentation.ui.dialog.ModalBottomSheetAddMenu;
 import com.example.memorai.presentation.ui.fragment.LoginFragment;
 import com.example.memorai.presentation.viewmodel.AlbumViewModel;
 import com.example.memorai.presentation.viewmodel.UserViewModel;
+import com.example.memorai.presentation.viewmodel.PhotoViewModel;
 import com.google.android.gms.auth.api.signin.GoogleSignIn;
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
@@ -54,6 +55,7 @@ public class MainActivity extends AppCompatActivity {
 
     private NavController navController;
 
+    private PhotoViewModel photoViewModel;
 
 
     @Override
@@ -64,19 +66,21 @@ public class MainActivity extends AppCompatActivity {
         SharedPreferences sharedPreferences = getSharedPreferences("Mode", Context.MODE_PRIVATE);
         boolean darkMode = sharedPreferences.getBoolean("night", false);
         AlbumViewModel albumViewModel = new ViewModelProvider(this).get(AlbumViewModel.class);
-        albumViewModel.ensureDefaultAlbumExists(); // Ensure default album exists
 
         userViewModel = new ViewModelProvider(this).get(UserViewModel.class);
-
-
+        photoViewModel = new ViewModelProvider(this).get(PhotoViewModel.class);
         firebaseAuth = FirebaseAuth.getInstance();
-
+        FirebaseUser user = firebaseAuth.getCurrentUser();
+        if (user != null) {
+            photoViewModel.loadAllPhotos(user.getUid());
+        }
         GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
                 .requestIdToken("619405178592-ml761krg19iac2ratge3eul9mdhg84pg.apps.googleusercontent.com") // Lấy ID Token để xác thực Firebase
                 .requestEmail()
                 .build();
 
         googleSignInClient = GoogleSignIn.getClient(this, gso);
+
 
         setupObservers();
         setupNavigation();
@@ -85,6 +89,8 @@ public class MainActivity extends AppCompatActivity {
         setupNotificationButton();
         requestNotificationPermission();
     }
+
+
 
     private void requestNotificationPermission() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) { // Android 13+
@@ -96,43 +102,21 @@ public class MainActivity extends AppCompatActivity {
         }
     }
     private void setupObservers() {
-        if (userViewModel.getUserLiveData().getValue() == null) {
-            binding.headerText.setText(getString(R.string.hi, "you"));
-            binding.profileIcon.setImageResource(R.drawable.ic_profile);
+        if(userViewModel.getUserLiveData().getValue() == null) {
+            updateUI(null);
         }
         userViewModel.getUserLiveData().observe(this, user -> {
             if (user != null) {
-                String userName = user.getDisplayName() != null ? user.getDisplayName() : "you";
-                binding.headerText.setText(getString(R.string.hi, userName));
-                Glide.with(this)
-                        .load(user.getPhotoUrl())
-                        .circleCrop()
-                        .error(R.drawable.ic_profile)
-                        .into(binding.profileIcon);
-            } else {
-                binding.headerText.setText(getString(R.string.hi, "you"));
-                binding.profileIcon.setImageResource(R.drawable.ic_profile);
+                updateUI(user);
             }
         });
+
     }
-
-
-
-
 
     @Override
     protected void onResume() {
         super.onResume();
-        autoSignIn();
-        setupNavigation();
-    }
-
-
-    private void autoSignIn() {
-        GoogleSignInAccount account = GoogleSignIn.getLastSignedInAccount(this);
-        if (account != null) {
-            firebaseAuthWithGoogle(account);
-        }
+        updateUI(userViewModel.getUserLiveData().getValue());
     }
 
     @Override
@@ -143,6 +127,7 @@ public class MainActivity extends AppCompatActivity {
     private Context updateBaseContextLocale(Context context) {
         SharedPreferences prefs = context.getSharedPreferences("Settings", Context.MODE_PRIVATE);
         String language = prefs.getString("Language", "en"); // Mặc định là English
+
         Locale locale = new Locale(language);
         Locale.setDefault(locale);
 
@@ -176,10 +161,18 @@ public class MainActivity extends AppCompatActivity {
                 if (albumsItem != null) albumsItem.setTitle(R.string.albums);
                 if (searchItem != null) searchItem.setTitle(R.string.search);
 
+                userViewModel.getUserLiveData().observe(this, user -> {
+                    updateUI(user);
+                });
+
             });
         } catch (IllegalStateException e) {
             throw new IllegalStateException("Failed to initialize NavHostFragment: " + e.getMessage());
         }
+    }
+
+    public PhotoViewModel getPhotoViewModel() {
+        return photoViewModel;
     }
 
     private void toggleUIVisibility(boolean isVisible) {
@@ -197,7 +190,9 @@ public class MainActivity extends AppCompatActivity {
     private void showProfileMenu(View anchor) {
         PopupMenu popupMenu = new PopupMenu(this, anchor);
         popupMenu.getMenuInflater().inflate(R.menu.profile_menu, popupMenu.getMenu());
-        boolean isLoggedIn = userViewModel.getUserLiveData().getValue() != null;
+        FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+        boolean isLoggedIn = (user != null);
+
         MenuItem loginMenuItem = popupMenu.getMenu().findItem(R.id.menu_login);
         if (loginMenuItem != null) {
             loginMenuItem.setTitle(isLoggedIn ? R.string.logout : R.string.login);
@@ -235,7 +230,6 @@ public class MainActivity extends AppCompatActivity {
             navController.navigate(R.id.settingsFragment);
             toggleUIVisibility(false);
         } else if (itemId == R.id.menu_login) {
-            Log.d("click","login");
             if (user != null) {
                 logout();
             } else {
@@ -282,34 +276,16 @@ public class MainActivity extends AppCompatActivity {
 
         bottomSheet.show(getSupportFragmentManager(), "ModalBottomSheetAddMenu");
     }
-    private void signInSilently() {
-        GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
-                .requestIdToken("619405178592-ml761krg19iac2ratge3eul9mdhg84pg.apps.googleusercontent.com") // Lấy ID token từ Firebase
-                .requestEmail()
-                .build();
 
-        GoogleSignInClient googleSignInClient = GoogleSignIn.getClient(this, gso);
-
-        googleSignInClient.silentSignIn().addOnCompleteListener(this, task -> {
-            if (task.isSuccessful()) {
-                // Nếu đăng nhập thành công, lấy tài khoản Google và đăng nhập vào Firebase
-                GoogleSignInAccount account = task.getResult();
-                if (account != null) {
-                    firebaseAuthWithGoogle(account);
-                }
-            } else {
-                Log.e("MainActivity", "Google Sign-In failed.");
-            }
-        });
-    }
 
     private void logout() {
         FirebaseAuth.getInstance().signOut();
         GoogleSignIn.getClient(this, new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN).build()).signOut()
                 .addOnCompleteListener(this, task -> {
-                    binding.headerText.setText(getString(R.string.hi, "you"));
+                    binding.headerText.setText(getString(R.string.hi, getString(R.string.you)));
                     binding.profileIcon.setImageResource(R.drawable.ic_profile);
                     userViewModel.clearUser();
+                    updateUI(null);
                     setupProfileIcon();
                 });
     }
@@ -325,6 +301,7 @@ public class MainActivity extends AppCompatActivity {
                         updateUI(user);
                     } else {
                         updateUI(null);
+                        Log.w("GoogleSignIn", "Đăng nhập thất bại", task.getException());
                     }
                 });
     }
@@ -337,7 +314,7 @@ public class MainActivity extends AppCompatActivity {
                 String[] nameParts = userName.trim().split("\\s+");
                 userName = nameParts[nameParts.length - 1];
             } else {
-                userName = "you";
+                userName = getString(R.string.you); // Sử dụng chuỗi bản địa hóa
             }
             String profilePic = (user.getPhotoUrl() != null) ? user.getPhotoUrl().toString() : "";
             binding.headerText.setText(getString(R.string.hi, userName));
@@ -346,9 +323,8 @@ public class MainActivity extends AppCompatActivity {
                     .circleCrop()
                     .error(R.drawable.ic_profile)
                     .into(binding.profileIcon);
-        }
-        else {
-            binding.headerText.setText(getString(R.string.hi, "you"));
+        } else {
+            binding.headerText.setText(getString(R.string.hi, getString(R.string.you))); // Sử dụng chuỗi bản địa hóa
             Glide.with(this)
                     .load(R.drawable.ic_profile)
                     .circleCrop()

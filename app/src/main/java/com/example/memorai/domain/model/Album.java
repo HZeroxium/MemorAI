@@ -1,24 +1,45 @@
 // domain/model/Album.java
 package com.example.memorai.domain.model;
 
+import android.graphics.Bitmap;
+
+import androidx.annotation.NonNull;
+
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 
 public final class Album {
     private final String id;
     private final String name;
     private final String description;
-    private final String coverPhotoUrl;
+    private String coverPhotoUrl;
+    private Bitmap bitmap;
     private final long createdAt;
+    private final List<String> photos;
+
     private final long updatedAt;
 
-    public Album(String id, String name, String description, String coverPhotoUrl, long createdAt, long updatedAt) {
+    public Album() {
+        this.id = "";
+        this.name = "";
+        this.description = "";
+        this.photos = new ArrayList<>();
+        this.coverPhotoUrl = null;
+        this.createdAt = System.currentTimeMillis();
+        this.updatedAt = System.currentTimeMillis();
+    }
+
+    public Album(String id, String name, String description, List<String> photos, String coverPhotoUrl, long createdAt, long updatedAt) {
         this.id = id;
         this.name = name;
         this.description = description;
+        this.photos = photos;
         this.coverPhotoUrl = coverPhotoUrl;
         this.createdAt = createdAt;
         this.updatedAt = updatedAt;
     }
+
 
     public String getId() {
         return id;
@@ -28,12 +49,27 @@ public final class Album {
         return name;
     }
 
+    public List<String> getPhotos() { return photos; }
+
     public String getDescription() {
         return description;
     }
 
     public String getCoverPhotoUrl() {
         return coverPhotoUrl;
+    }
+
+
+    public  void setCoverPhotoUrl(String coverPhotoUrl) {
+        this.coverPhotoUrl = coverPhotoUrl;
+    }
+
+    public Bitmap getBitmap() {
+        return bitmap;
+    }
+
+    public void setBitmap(Bitmap bitmap) {
+        this.bitmap = bitmap;
     }
 
     public long getCreatedAt() {
@@ -62,6 +98,7 @@ public final class Album {
         return Objects.hash(id, name, description, coverPhotoUrl, createdAt, updatedAt);
     }
 
+    @NonNull
     @Override
     public String toString() {
         return "Album{" +

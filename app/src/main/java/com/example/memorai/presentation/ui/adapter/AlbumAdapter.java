@@ -1,6 +1,7 @@
 // presentation/ui/adapter/AlbumAdapter.java
 package com.example.memorai.presentation.ui.adapter;
 
+import android.graphics.Bitmap;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -46,9 +47,9 @@ public class AlbumAdapter extends ListAdapter<Album, AlbumAdapter.AlbumViewHolde
         Album album = getItem(position);
         holder.textViewAlbumName.setText(album.getName());
 
-        // Load album cover with Glide and add a placeholder
+        Bitmap bitmap = album.getBitmap();
         Glide.with(holder.itemView.getContext())
-                .load(album.getCoverPhotoUrl())
+                .load(bitmap)
                 .placeholder(R.drawable.placeholder_image)
                 .into(holder.imageViewCover);
 
