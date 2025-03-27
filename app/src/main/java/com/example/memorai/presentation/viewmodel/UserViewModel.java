@@ -37,6 +37,7 @@ public class UserViewModel extends ViewModel {
         return userLiveData;
     }
 
+
     public LiveData<Boolean> getIsAuthenticated() {
         return isAuthenticated;
     }

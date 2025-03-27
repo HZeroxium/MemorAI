@@ -17,6 +17,8 @@ import com.example.memorai.R;
 import com.example.memorai.databinding.FragmentAlbumListBinding;
 import com.example.memorai.presentation.ui.adapter.AlbumAdapter;
 import com.example.memorai.presentation.viewmodel.AlbumViewModel;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 
 import dagger.hilt.android.AndroidEntryPoint;
 
@@ -25,6 +27,8 @@ public class AlbumListFragment extends Fragment {
     private FragmentAlbumListBinding binding;
     private AlbumViewModel albumViewModel;
     private AlbumAdapter albumAdapter;
+
+    private FirebaseUser user;
 
     @Nullable
     @Override
@@ -59,11 +63,13 @@ public class AlbumListFragment extends Fragment {
 
         // ViewModel to observe albums
         albumViewModel = new ViewModelProvider(this).get(AlbumViewModel.class);
-        albumViewModel.observeAllAlbums().observe(getViewLifecycleOwner(), albums ->
+
+        user = FirebaseAuth.getInstance().getCurrentUser();
+        albumViewModel.loadAlbums();
+
+        albumViewModel.getAlbums().observe(getViewLifecycleOwner(), albums ->
                 albumAdapter.submitList(albums)
         );
-
-        albumViewModel.loadAllAlbums();
 
         // Handle Floating Action Button click (to add new album)
         binding.fabAddAlbum.setOnClickListener(v -> {

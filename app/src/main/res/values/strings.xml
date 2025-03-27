@@ -76,4 +76,5 @@
     <string name="auth">We do not share your data with third parties.</string>
     <string name="login">Login</string>
     <string name="logout">Logout</string>
+    <string name="you">you</string>
 </resources>

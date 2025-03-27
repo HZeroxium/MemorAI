@@ -1,4 +1,3 @@
-// presentation/ui/fragment/AlbumDetailFragment.java
 package com.example.memorai.presentation.ui.fragment;
 
 import android.app.AlertDialog;
@@ -21,6 +20,8 @@ import com.example.memorai.databinding.FragmentAlbumDetailBinding;
 import com.example.memorai.presentation.ui.adapter.PhotoAdapter;
 import com.example.memorai.presentation.viewmodel.AlbumViewModel;
 import com.example.memorai.presentation.viewmodel.PhotoViewModel;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -33,6 +34,9 @@ public class AlbumDetailFragment extends Fragment {
     private FragmentAlbumDetailBinding binding;
     private AlbumViewModel albumViewModel;
     private PhotoViewModel photoViewModel;
+
+    private FirebaseUser user;
+
     private PhotoAdapter photoAdapter;
     private String albumId;
 
@@ -57,36 +61,67 @@ public class AlbumDetailFragment extends Fragment {
             albumId = getArguments().getString("album_id", "");
         }
 
+        setupToolbar(view);
+        setupRecyclerView();
+        observeViewModels();
+
+        albumViewModel.loadAlbumById(albumId);
+        photoViewModel.loadPhotosByAlbum(albumId);
+    }
+
+    private void setupToolbar(View view) {
         binding.toolbarAlbumDetail.setNavigationOnClickListener(v -> {
             Navigation.findNavController(view).popBackStack();
         });
-
         binding.toolbarAlbumDetail.setOnMenuItemClickListener(this::onMenuItemClick);
+    }
 
-        // Setup RecyclerView
+    private void setupRecyclerView() {
         photoAdapter = new PhotoAdapter();
         binding.recyclerViewAlbumPhotos.setLayoutManager(new GridLayoutManager(requireContext(), 3));
         binding.recyclerViewAlbumPhotos.setAdapter(photoAdapter);
 
-        // Handle photo click event to navigate to PhotoDetailFragment
         photoAdapter.setOnPhotoClickListener((sharedView, photo) -> {
             Bundle args = new Bundle();
             args.putString("photo_id", photo.getId());
             args.putString("photo_url", photo.getFilePath());
-            Navigation.findNavController(view).navigate(R.id.photoDetailFragment, args);
+            Navigation.findNavController(requireView()).navigate(R.id.photoDetailFragment, args);
         });
-
-        loadAlbumInfo();
-        loadAlbumPhotos();
     }
 
+    private void observeViewModels() {
+        albumViewModel.getAlbumLiveData().observe(getViewLifecycleOwner(), album -> {
+            if (album != null) {
+                displayAlbumInfo(album.getId(), album.getCreatedAt(), album.getName());
+            }
+        });
+
+        photoViewModel.observePhotosByAlbum(albumId).observe(getViewLifecycleOwner(), albumPhotos -> {
+            if (albumPhotos != null && !albumPhotos.isEmpty()) {
+                photoAdapter.submitList(albumPhotos);
+                binding.recyclerViewAlbumPhotos.setVisibility(View.VISIBLE);
+                binding.textViewNoPhotos.setVisibility(View.GONE);
+            } else {
+                binding.recyclerViewAlbumPhotos.setVisibility(View.GONE);
+                binding.textViewNoPhotos.setVisibility(View.VISIBLE);
+            }
+        });
+    }
+
+    private void displayAlbumInfo(String id, long createdAt, String name) {
+        SimpleDateFormat sdf = new SimpleDateFormat("dd-MM-yyyy", Locale.getDefault());
+        String formattedDate = sdf.format(new Date(createdAt));
+
+        String info = "Album ID: " + id + "\n" +
+                "Created: " + formattedDate + "\n" +
+                "Name: " + name;
+        binding.textViewAlbumInfo.setText(info);
+    }
 
     private boolean onMenuItemClick(MenuItem item) {
         int id = item.getItemId();
         if (id == R.id.action_edit_album) {
-            Bundle args = new Bundle();
-            args.putString("album_id", albumId);
-            Navigation.findNavController(requireView()).navigate(R.id.albumUpdateFragment, args);
+            navigateToEditAlbum();
             return true;
         } else if (id == R.id.action_album_options) {
             Toast.makeText(requireContext(), "Album options clicked", Toast.LENGTH_SHORT).show();
@@ -98,62 +133,30 @@ public class AlbumDetailFragment extends Fragment {
         return false;
     }
 
-
-    private void loadAlbumInfo() {
-        albumViewModel.getAlbumById(albumId).observe(getViewLifecycleOwner(), album -> {
-            if (album != null) {
-                // Format creation date as dd-MM-yyyy
-                long createdMillis = album.getCreatedAt();
-                Date date = new Date(createdMillis);
-                SimpleDateFormat sdf = new SimpleDateFormat("dd-MM-yyyy", Locale.getDefault());
-                String formattedDate = sdf.format(date);
-
-                // Display album info
-                String info = "Album ID: " + album.getId() + "\n" +
-                        "Created: " + formattedDate + "\n" +
-                        "Name: " + album.getName();
-                binding.textViewAlbumInfo.setText(info);
-            }
-        });
+    private void navigateToEditAlbum() {
+        Bundle args = new Bundle();
+        args.putString("album_id", albumId);
+        Navigation.findNavController(requireView()).navigate(R.id.albumUpdateFragment, args);
     }
-
-    private void loadAlbumPhotos() {
-        // Already setting GridLayoutManager(3) in onViewCreated
-        photoViewModel.observePhotosByAlbum().observe(getViewLifecycleOwner(), albumPhotos -> {
-            if (albumPhotos != null && !albumPhotos.isEmpty()) {
-                // Show photos
-                photoAdapter.submitList(albumPhotos);
-                binding.recyclerViewAlbumPhotos.setVisibility(View.VISIBLE);
-                binding.textViewNoPhotos.setVisibility(View.GONE);
-            } else {
-                // No photos
-                binding.recyclerViewAlbumPhotos.setVisibility(View.GONE);
-                binding.textViewNoPhotos.setVisibility(View.VISIBLE);
-            }
-        });
-        photoViewModel.loadPhotosByAlbum(albumId);
-    }
-
 
     private void showDeleteConfirmationDialog() {
-        albumViewModel.getAlbumById(albumId).observe(getViewLifecycleOwner(), album -> {
-            if (album == null) return; // Ensure album exists
+        albumViewModel.getAlbumLiveData().observe(getViewLifecycleOwner(), album -> {
+            if (album == null) return;
 
             AlertDialog.Builder builder = new AlertDialog.Builder(requireContext());
             builder.setTitle("Delete Album");
             builder.setMessage("Enter the album name to confirm deletion:");
 
-            // Input field for confirmation
             final EditText input = new EditText(requireContext());
             input.setInputType(InputType.TYPE_CLASS_TEXT);
             input.setHint("Album Name");
             builder.setView(input);
 
-            // Confirm button
             builder.setPositiveButton("Delete", (dialog, which) -> {
                 String enteredName = input.getText().toString().trim();
                 if (enteredName.equals(album.getName())) {
-                    albumViewModel.deleteAlbum(albumId);
+                    user = FirebaseAuth.getInstance().getCurrentUser();
+                    albumViewModel.deleteAlbum(albumId, user.getUid());
                     Toast.makeText(requireContext(), "Album deleted", Toast.LENGTH_SHORT).show();
                     Navigation.findNavController(requireView()).popBackStack();
                 } else {
@@ -161,9 +164,7 @@ public class AlbumDetailFragment extends Fragment {
                 }
             });
 
-            // Cancel button
             builder.setNegativeButton("Cancel", (dialog, which) -> dialog.dismiss());
-
             builder.show();
         });
     }
@@ -173,5 +174,4 @@ public class AlbumDetailFragment extends Fragment {
         super.onDestroyView();
         binding = null;
     }
-
 }

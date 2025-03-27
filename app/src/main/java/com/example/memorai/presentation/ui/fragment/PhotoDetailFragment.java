@@ -3,7 +3,11 @@ package com.example.memorai.presentation.ui.fragment;
 
 import android.app.AlertDialog;
 import android.content.Intent;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.net.Uri;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -13,6 +17,7 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.widget.PopupMenu;
+import androidx.core.content.FileProvider;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.navigation.Navigation;
@@ -22,6 +27,9 @@ import com.example.memorai.R;
 import com.example.memorai.databinding.FragmentPhotoDetailBinding;
 import com.example.memorai.presentation.viewmodel.PhotoViewModel;
 
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 
@@ -32,7 +40,7 @@ public class PhotoDetailFragment extends Fragment {
 
     private FragmentPhotoDetailBinding binding;
     private PhotoViewModel photoViewModel;
-    private String photoUrl;
+    private byte[] photoUrl;
     private String photoId;
 
     @Nullable
@@ -49,7 +57,10 @@ public class PhotoDetailFragment extends Fragment {
         super.onViewCreated(view, savedInstanceState);
 
         if (getArguments() != null) {
-            photoUrl = getArguments().getString("photo_url", "");
+            photoUrl = getArguments().getByteArray("photo_url");
+            if (photoUrl != null) {
+                Bitmap bitmap = BitmapFactory.decodeByteArray(photoUrl, 0, photoUrl.length);
+            }
             photoId = getArguments().getString("photo_id", "");
         }
 
@@ -70,8 +81,8 @@ public class PhotoDetailFragment extends Fragment {
 
             if (item.getItemId() == R.id.action_edit_photo) {
                 Bundle args = new Bundle();
-                args.putString("photo_url", photoUrl);
-                Navigation.findNavController(view).navigate(R.id.editPhotoFragment, args);
+                args.putByteArray("photo_bitmap", photoUrl);  // Đúng kiểu dữ liệu
+                Navigation.findNavController(requireView()).navigate(R.id.editPhotoFragment, args);
                 return true;
             }
 
@@ -83,20 +94,45 @@ public class PhotoDetailFragment extends Fragment {
             return false;
         });
 
-        Glide.with(this)
-                .load(photoUrl)
-                .placeholder(R.drawable.placeholder_image)
-                .error(R.drawable.error_image)
-                .into(binding.imageViewDetailPhoto);
+        if (photoUrl != null) {
+            Bitmap bitmap = BitmapFactory.decodeByteArray(photoUrl, 0, photoUrl.length);
+            Glide.with(this)
+                    .load(bitmap) // Load bằng Bitmap
+                    .placeholder(R.drawable.placeholder_image)
+                    .error(R.drawable.error_image)
+                    .into(binding.imageViewDetailPhoto);
+        }
+
     }
 
 
-    private void sharePhoto(String url) {
-        Intent shareIntent = new Intent(Intent.ACTION_SEND);
-        shareIntent.setType("text/plain");
-        shareIntent.putExtra(Intent.EXTRA_TEXT, url);
-        startActivity(Intent.createChooser(shareIntent, getString(R.string.share_with)));
+    private void sharePhoto(byte[] photoByteArray) {
+        if (photoByteArray == null) {
+            Toast.makeText(requireContext(), "No photo to share", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        try {
+            File file = new File(requireContext().getCacheDir(), "shared_photo.png");
+            FileOutputStream fos = new FileOutputStream(file);
+            fos.write(photoByteArray);
+            fos.flush();
+            fos.close();
+
+            Uri uri = FileProvider.getUriForFile(requireContext(), "com.example.memorai.fileprovider", file);
+
+            Intent shareIntent = new Intent(Intent.ACTION_SEND);
+            shareIntent.setType("image/png");
+            shareIntent.putExtra(Intent.EXTRA_STREAM, uri);
+            shareIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+
+            startActivity(Intent.createChooser(shareIntent, getString(R.string.share_with)));
+        } catch (IOException e) {
+            e.printStackTrace();
+            Toast.makeText(requireContext(), "Failed to share photo", Toast.LENGTH_SHORT).show();
+        }
     }
+
 
     private void setSharedElementTransition() {
         setSharedElementEnterTransition(
@@ -141,7 +177,7 @@ public class PhotoDetailFragment extends Fragment {
             }
             if (item.getItemId() == R.id.action_edit_photo) {
                 Bundle args = new Bundle();
-                args.putString("photo_url", photoUrl);
+                args.putByteArray("photo_bitmap", photoUrl);  // Đúng kiểu dữ liệu
                 Navigation.findNavController(requireView()).navigate(R.id.editPhotoFragment, args);
                 return true;
             }
