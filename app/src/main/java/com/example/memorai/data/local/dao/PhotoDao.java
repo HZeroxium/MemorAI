@@ -36,4 +36,7 @@ public interface PhotoDao {
 
     @Query("SELECT * FROM photo ORDER BY file_path ASC")
     List<PhotoEntity> getAllPhotosSortedByName();
+
+    @Query("UPDATE photo SET is_private = :isPrivate WHERE id = :photoId")
+    void updatePhotoPrivacy(String photoId, boolean isPrivate);
 }

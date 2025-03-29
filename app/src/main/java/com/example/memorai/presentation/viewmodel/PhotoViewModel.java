@@ -13,6 +13,7 @@ import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.ViewModel;
 
 import com.example.memorai.domain.model.Photo;
+import com.example.memorai.domain.repository.PhotoRepository;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentReference;
@@ -47,11 +48,13 @@ public class PhotoViewModel extends ViewModel {
     private final ExecutorService executorService = Executors.newFixedThreadPool(4);
     private final Handler mainHandler = new Handler(Looper.getMainLooper());
 
+    private final PhotoRepository photoRepository;
+
     public static final String ROOT_ALBUM_ID = "1";
 
     @Inject
-    public PhotoViewModel() {
-        // Không cần UseCase, thao tác Firestore trực tiếp
+    public PhotoViewModel(PhotoRepository photoRepository) {
+        this.photoRepository = photoRepository;
     }
 
     public LiveData<List<Photo>> observeAllPhotos() {
@@ -289,5 +292,9 @@ public class PhotoViewModel extends ViewModel {
         searchResults.setValue(new ArrayList<>()); // Đặt danh sách tìm kiếm thành rỗng
     }
 
-
+    public void setPhotoPrivacy(String photoId, boolean isPrivate) {
+        if (photoId != null) {
+            photoRepository.setPhotoPrivacy(photoId, isPrivate);
+        }
+    }
 }
