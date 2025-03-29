@@ -73,6 +73,7 @@ public class MainActivity extends AppCompatActivity {
         FirebaseUser user = firebaseAuth.getCurrentUser();
         if (user != null) {
             photoViewModel.loadAllPhotos(user.getUid());
+            albumViewModel.loadAlbums();
         }
         GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
                 .requestIdToken("619405178592-ml761krg19iac2ratge3eul9mdhg84pg.apps.googleusercontent.com") // Lấy ID Token để xác thực Firebase
@@ -284,25 +285,9 @@ public class MainActivity extends AppCompatActivity {
                 .addOnCompleteListener(this, task -> {
                     binding.headerText.setText(getString(R.string.hi, getString(R.string.you)));
                     binding.profileIcon.setImageResource(R.drawable.ic_profile);
-                    userViewModel.clearUser();
+                    userViewModel.signOut();
                     updateUI(null);
                     setupProfileIcon();
-                });
-    }
-
-
-    private void firebaseAuthWithGoogle(GoogleSignInAccount account) {
-        AuthCredential credential = GoogleAuthProvider.getCredential(account.getIdToken(), null);
-        firebaseAuth.signInWithCredential(credential)
-                .addOnCompleteListener(this, task -> {
-                    if (task.isSuccessful()) {
-                        FirebaseUser user = firebaseAuth.getCurrentUser();
-                        userViewModel.setUser(user);
-                        updateUI(user);
-                    } else {
-                        updateUI(null);
-                        Log.w("GoogleSignIn", "Đăng nhập thất bại", task.getException());
-                    }
                 });
     }
 

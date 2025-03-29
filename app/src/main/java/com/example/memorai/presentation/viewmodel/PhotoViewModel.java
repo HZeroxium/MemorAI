@@ -221,9 +221,48 @@ public class PhotoViewModel extends ViewModel {
     }
 
     public void deletePhoto(String photoId) {
+        String userId = FirebaseAuth.getInstance().getCurrentUser().getUid();
+        if (userId == null) {
+            Log.w("PhotoViewModel", "User not authenticated");
+            return;
+        }
+
+        // Tham chiếu đến ảnh trong Firestore
+        DocumentReference photoRef = firestore.collection("photos")
+                .document(userId)
+                .collection("user_photos")
+                .document(photoId);
+
+        // Xóa ảnh trong Firestore
+        photoRef.delete().addOnSuccessListener(aVoid -> {
+            Log.d("PhotoViewModel", "Photo deleted from Firestore");
+
+            // Tiếp theo, tìm tất cả album chứa ảnh này
+            CollectionReference albumsRef = firestore.collection("photos")
+                    .document(userId)
+                    .collection("user_albums");
+
+            albumsRef.get().addOnSuccessListener(queryDocumentSnapshots -> {
+                for (DocumentSnapshot albumDoc : queryDocumentSnapshots.getDocuments()) {
+                    List<String> photoIds = (List<String>) albumDoc.get("photos");
+                    if (photoIds != null && photoIds.contains(photoId)) {
+                        // Xóa ID ảnh khỏi danh sách album
+                        photoIds.remove(photoId);
+
+                        // Cập nhật album trong Firestore
+                        albumDoc.getReference().update("photos", photoIds)
+                                .addOnSuccessListener(aVoid1 ->
+                                        Log.d("PhotoViewModel", "Photo ID removed from album: " + albumDoc.getId()))
+                                .addOnFailureListener(e ->
+                                        Log.e("PhotoViewModel", "Failed to update album", e));
+                    }
+                }
+            }).addOnFailureListener(e -> Log.e("PhotoViewModel", "Failed to fetch albums", e));
+        }).addOnFailureListener(e -> Log.e("PhotoViewModel", "Failed to delete photo", e));
+
+        // Cập nhật LiveData trong ViewModel
         List<Photo> currentPhotos = allPhotos.getValue();
         if (currentPhotos != null) {
-            // Lọc ra danh sách mới không chứa ảnh có ID bị xóa
             List<Photo> updatedPhotos = new ArrayList<>();
             for (Photo p : currentPhotos) {
                 if (!p.getId().equals(photoId)) {
@@ -232,7 +271,17 @@ public class PhotoViewModel extends ViewModel {
             }
             allPhotos.setValue(updatedPhotos);
         }
+
+        // Xóa ảnh khỏi tất cả album trong ViewModel
+        for (MutableLiveData<List<Photo>> albumLiveData : albumPhotosMap.values()) {
+            List<Photo> albumPhotos = albumLiveData.getValue();
+            if (albumPhotos != null) {
+                albumPhotos.removeIf(photo -> photo.getId().equals(photoId));
+                albumLiveData.setValue(new ArrayList<>(albumPhotos));
+            }
+        }
     }
+
 
 
     public void createBitmap(Photo photo) {
@@ -257,6 +306,10 @@ public class PhotoViewModel extends ViewModel {
             loadPhotosByAlbum(albumId);
         }
         return albumPhotosMap.get(albumId);
+    }
+
+    public int getPhotoCount() {
+        return allPhotos.getValue() != null ? allPhotos.getValue().size() : 0;
     }
 
 

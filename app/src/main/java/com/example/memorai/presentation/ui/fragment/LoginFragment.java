@@ -99,11 +99,12 @@ public class LoginFragment extends BottomSheetDialogFragment {
                                     user.getEmail(),
                                     user.getPhotoUrl() != null ?user.getPhotoUrl().toString() : null
                             );
+                            PinFragment pinFragment = new PinFragment();
+                            Bundle bundle = new Bundle();
+                            bundle.putParcelable("user", authUser);
+                            pinFragment.setArguments(bundle);
+                            pinFragment.show(getParentFragmentManager(), "PinFragment");
 
-                            Intent intent = new Intent(requireActivity(), MainActivity.class);
-                            intent.putExtra("user", authUser);
-                            startActivity(intent);
-                            requireActivity().finish();
                         }
                     } else {
                         Log.w("LoginFragment", "Đăng nhập Firebase thất bại", task.getException());

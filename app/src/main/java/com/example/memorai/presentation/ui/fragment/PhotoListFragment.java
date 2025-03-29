@@ -104,7 +104,6 @@ public class PhotoListFragment extends Fragment {
                 args.putString("photo_id", photo.getId());
                 args.putByteArray("photo_url", convertBitmapToByteArray(photo.getBitmap()));
                 Navigation.findNavController(view).navigate(R.id.photoDetailFragment, args);
-                Toast.makeText(requireContext(), "Path: " + photo.getFilePath(), Toast.LENGTH_SHORT).show();
             }
         });
         adapter.setOnPhotoLongClickListener(photo -> {
