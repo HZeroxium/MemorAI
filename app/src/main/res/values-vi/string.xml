@@ -78,4 +78,9 @@
     <string name="network_channel_id">Network channel</string>
     <string name="logout">Đăng xuất</string>
     <string name="you">bạn</string>
+    <string name="cancel">Hủy</string>
+    <string name="pin_length_error">Mã PIN phải có 6 chữ số!</string>
+    <string name="user_not_found">Lỗi: Không tìm thấy thông tin người dùng!</string>
+    <string name="pin_saved">Mã PIN đã được lưu!</string>
+    <string name="error_saving_pin">Lưu mã PIN thất bại!</string>
 </resources>

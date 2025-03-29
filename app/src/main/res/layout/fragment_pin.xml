@@ -1,32 +1,55 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
+    android:layout_height="wrap_content"
     android:orientation="vertical"
-    android:padding="16dp">
+    android:padding="16dp"
+    android:background="@drawable/dialog_background">
 
     <TextView
-        android:id="@+id/pin_prompt"
+        android:id="@+id/title"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Nhập mã PIN để tiếp tục"
+        android:text="Nhập mã PIN"
         android:textSize="18sp"
-        android:layout_gravity="center"/>
+        android:textStyle="bold"
+        android:layout_gravity="center" />
 
     <EditText
-        android:id="@+id/pin_edit_text"
+        android:id="@+id/pin_input"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:autofillHints=""
         android:inputType="numberPassword"
-        android:hint="Mã PIN"
-        android:textSize="18sp"
-        android:layout_marginTop="20dp"/>
+        android:maxLength="6"
+        android:gravity="center"
+        android:textSize="24sp"
+        android:digits="0123456789"
+        android:letterSpacing="1.5"
+        android:background="@drawable/pin_edit_text_background"
+        android:padding="8dp"/>
 
-    <Button
-        android:id="@+id/submit_button"
+
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Xác thực"
-        android:layout_marginTop="20dp"/>
+        android:orientation="horizontal"
+        android:layout_marginTop="16dp"
+        android:gravity="center">
+
+        <Button
+            android:id="@+id/btn_cancel"
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:layout_height="wrap_content"
+            android:text="@string/cancel"
+            android:backgroundTint="@color/theme_night_theme"/>
+
+        <Button
+            android:id="@+id/btn_confirm"
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:layout_height="wrap_content"
+            android:text="@string/confirm"
+            android:backgroundTint="@color/theme_night_theme"/>
+    </LinearLayout>
 </LinearLayout>

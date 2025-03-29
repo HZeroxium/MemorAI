@@ -79,6 +79,10 @@ public class AlbumViewModel extends ViewModel {
         return albumsLiveData;
     }
 
+    public int getAlbumCount() {
+        return albumsLiveData.getValue() != null ? albumsLiveData.getValue().size() : 0;
+    }
+
     /**
      * Lấy album cụ thể theo ID.
      */

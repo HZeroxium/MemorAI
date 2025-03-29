@@ -1,53 +1,74 @@
-package com.example.memorai.presentation.ui.fragment;
-
-import android.os.Bundle;
-import android.view.LayoutInflater;
-import android.view.View;
-import android.view.ViewGroup;
-import android.widget.Button;
-import android.widget.EditText;
 import android.widget.Toast;
 
-import androidx.fragment.app.Fragment;
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 
 import com.example.memorai.R;
+import com.example.memorai.databinding.FragmentPinBinding;
+import com.example.memorai.domain.model.User;
+import com.example.memorai.presentation.ui.activity.MainActivity;
+import com.google.android.material.bottomsheet.BottomSheetDialogFragment;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
 
-public class PinFragment extends Fragment {
+public class PinFragment extends BottomSheetDialogFragment {
+    private FragmentPinBinding binding;
+    private User user;
+    private static final String CORRECT_PIN = "123456";
 
-    private EditText pinEditText;
-
-    public PinFragment() {
-        // Required empty public constructor
+    @Override
+    public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+        binding = FragmentPinBinding.inflate(inflater, container, false);
+        return binding.getRoot();
     }
 
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                             Bundle savedInstanceState) {
-        View rootView = inflater.inflate(R.layout.fragment_pin, container, false);
-        pinEditText = rootView.findViewById(R.id.pin_edit_text);
-        Button submitButton = rootView.findViewById(R.id.submit_button);
+    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
 
-        submitButton.setOnClickListener(view -> {
-            String pin = pinEditText.getText().toString();
-            if (isPinValid(pin)) {
-                openPrivateAlbumFragment();  // Nếu đúng, mở PrivateAlbumFragment
+        if (getArguments() != null) {
+            user = getArguments().getParcelable("user");
+        }
+
+        binding.btnConfirm.setOnClickListener(v -> {
+            String enteredPin = binding.pinInput.getText().toString();
+            if (enteredPin.length() == 6) {
+                savePinToFirebase(enteredPin);
             } else {
-                Toast.makeText(getContext(), "PIN không chính xác", Toast.LENGTH_SHORT).show();
+                Toast.makeText(requireContext(), R.string.pin_length_error, Toast.LENGTH_SHORT).show();
             }
         });
 
-        return rootView;
+        binding.btnCancel.setOnClickListener(v -> dismiss());
     }
 
-    private boolean isPinValid(String pin) {
-        return pin.equals("1234");  // Ví dụ đơn giản
+    private void savePinToFirebase(String pin) {
+        if (user == null) {
+            Toast.makeText(requireContext(), R.string.user_not_found, Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        FirebaseDatabase database = FirebaseDatabase.getInstance();
+        DatabaseReference userRef = database.getReference("users").child(user.getId());
+
+        userRef.child("pin").setValue(pin)
+                .addOnSuccessListener(aVoid -> {
+                    Toast.makeText(requireContext(), R.string.pin_saved, Toast.LENGTH_SHORT).show();
+                    navigateToMainActivity();
+                })
+                .addOnFailureListener(e -> Toast.makeText(requireContext(), R.string.error_saving_pin, Toast.LENGTH_SHORT).show());
     }
 
-    private void openPrivateAlbumFragment() {
-        // Chuyển sang fragment PrivateAlbumFragment khi xác thực thành công
-        getActivity().getSupportFragmentManager().beginTransaction()
-                .replace(R.id.nav_host_fragment, new PrivateAlbumFragment())
-                .addToBackStack(null)
-                .commit();
+    private void navigateToMainActivity() {
+        Intent intent = new Intent(requireActivity(), MainActivity.class);
+        intent.putExtra("user", user);
+        startActivity(intent);
+        requireActivity().finish();
+    }
+
+    @Override
+    public void onDestroyView() {
+        super.onDestroyView();
+        binding = null;
     }
 }
