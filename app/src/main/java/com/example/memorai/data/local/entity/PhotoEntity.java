@@ -16,6 +16,9 @@ public class PhotoEntity {
     @ColumnInfo(name = "file_path")
     public String filePath;
 
+    @ColumnInfo(name = "is_private", defaultValue = "0")
+    public boolean isPrivate;
+
     @ColumnInfo(name = "tags")
     public String tags; // comma-separated
 
@@ -24,4 +27,6 @@ public class PhotoEntity {
 
     @ColumnInfo(name = "updated_at")
     public long updatedAt;
+
+
 }

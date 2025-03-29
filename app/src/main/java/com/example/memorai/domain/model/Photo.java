@@ -11,6 +11,7 @@ public final class Photo {
     final private String id;
     private String filePath;
     private Bitmap bitmap;
+    private boolean isPrivate;
     final private List<String> tags;
     final private long createdAt;
     final private long updatedAt;
@@ -21,17 +22,22 @@ public final class Photo {
         this.tags = Collections.emptyList();
         this.createdAt = 0;
         this.updatedAt = 0;
+        this.isPrivate = false;
     }
 
-    public Photo(String id, String filePath, List<String> tags, long createdAt, long updatedAt) {
+    public Photo(String id, String filePath, List<String> tags, long createdAt, long updatedAt, boolean isPrivate) {
         this.id = id;
         this.filePath = filePath;
         // Ensure immutability of the tags list
         this.tags = tags != null ? Collections.unmodifiableList(tags) : Collections.emptyList();
         this.createdAt = createdAt;
         this.updatedAt = updatedAt;
+        this.isPrivate = isPrivate;
     }
 
+    public Photo(String id, String filePath, List<String> tags, long createdAt, long updatedAt) {
+        this(id, filePath, tags, createdAt, updatedAt, false);
+    }
 
     public Photo(String id, String filePath, List<String> tags) {
         this(id, filePath, tags, System.currentTimeMillis(), System.currentTimeMillis());
@@ -56,6 +62,7 @@ public final class Photo {
     public void setBitmap(Bitmap bitmap) {
         this.bitmap = bitmap;
     }
+
     public void setFilePath(String filePath) {
         this.filePath = filePath;
     }
@@ -72,14 +79,22 @@ public final class Photo {
         return updatedAt;
     }
 
+    public boolean getIsPrivate() {
+        return isPrivate;
+    }
+
+    public void seIsPrivate(boolean state) {
+        this.isPrivate = state;
+    }
+
     @Override
     public boolean equals(Object o) {
-
         if (this == o) return true;
         if (!(o instanceof Photo)) return false;
         Photo photo = (Photo) o;
         return createdAt == photo.createdAt &&
                 updatedAt == photo.updatedAt &&
+                isPrivate == photo.isPrivate &&
                 Objects.equals(id, photo.id) &&
                 Objects.equals(filePath, photo.filePath) &&
                 Objects.equals(tags, photo.tags);
@@ -87,7 +102,7 @@ public final class Photo {
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, filePath, tags, createdAt, updatedAt);
+        return Objects.hash(id, filePath, tags, createdAt, updatedAt, isPrivate);
     }
 
     @Override
@@ -98,6 +113,7 @@ public final class Photo {
                 ", tags=" + tags +
                 ", createdAt=" + createdAt +
                 ", updatedAt=" + updatedAt +
+                ", isPrivate=" + isPrivate +
                 '}';
     }
 }

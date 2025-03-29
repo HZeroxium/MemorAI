@@ -1,38 +1,43 @@
-<?xml version="1.0" encoding="utf-8"?><!-- res/layout/fragment_photo_detail.xml -->
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    android:fitsSystemWindows="true">
 
-    <!-- Toolbar -->
+    <!-- Toolbar được cải tiến -->
     <com.google.android.material.appbar.MaterialToolbar
         android:id="@+id/toolbar"
         android:layout_width="0dp"
         android:layout_height="?attr/actionBarSize"
         android:background="?attr/colorSurface"
-        android:theme="@style/ThemeOverlay.MaterialComponents.Toolbar.Primary"
-        app:layout_constraintTop_toTopOf="parent"
-        app:navigationContentDescription="@string/back"
-        app:menu="@menu/menu_photo_detail"
-        app:navigationIcon="@drawable/ic_back"
-        app:title="@string/photo_detail"
+        android:elevation="4dp"
+        android:theme="@style/ThemeOverlay.Material3.Toolbar.Surface"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:menu="@menu/menu_photo_detail"
+        app:navigationContentDescription="@string/back"
+        app:navigationIcon="@drawable/ic_back"
+        app:title="@string/photo_detail"
         app:titleCentered="false" />
 
-
-    <!-- Image -->
     <ImageView
         android:id="@+id/imageViewDetailPhoto"
         android:layout_width="0dp"
         android:layout_height="0dp"
+        android:adjustViewBounds="true"
         android:contentDescription="@string/photo_detail"
+        android:importantForAccessibility="yes"
+        android:largeHeap="true"
         android:scaleType="fitCenter"
         android:transitionName="shared_photo_transition"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/toolbar" />
-
+        app:layout_constraintTop_toBottomOf="@id/toolbar"
+        tools:src="@tools:sample/backgrounds/scenic" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

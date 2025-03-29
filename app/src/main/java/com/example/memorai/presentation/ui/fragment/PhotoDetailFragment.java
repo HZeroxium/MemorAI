@@ -1,6 +1,7 @@
 // presentation/ui/fragment/PhotoDetailFragment.java
 package com.example.memorai.presentation.ui.fragment;
 
+import android.view.MenuItem;
 import android.app.AlertDialog;
 import android.content.Intent;
 import android.graphics.Bitmap;
@@ -42,6 +43,7 @@ public class PhotoDetailFragment extends Fragment {
     private PhotoViewModel photoViewModel;
     private byte[] photoUrl;
     private String photoId;
+    private boolean isPrivate = false;
 
     @Nullable
     @Override
@@ -73,6 +75,10 @@ public class PhotoDetailFragment extends Fragment {
 
         // Attach menu to toolbar
         binding.toolbar.setOnMenuItemClickListener(item -> {
+            if (item.getItemId() == R.id.action_private) {
+                togglePrivate();
+                return true;
+            }
 
             if (item.getItemId() == R.id.action_share_photo) {
                 sharePhoto(photoUrl);
@@ -104,7 +110,6 @@ public class PhotoDetailFragment extends Fragment {
         }
 
     }
-
 
     private void sharePhoto(byte[] photoByteArray) {
         if (photoByteArray == null) {
@@ -148,6 +153,35 @@ public class PhotoDetailFragment extends Fragment {
         super.onDestroyView();
         binding = null;
     }
+
+    // Thêm phương thức togglePrivate
+    private void togglePrivate() {
+        isPrivate = !isPrivate;
+
+        // Gọi ViewModel để cập nhật trạng thái
+        photoViewModel.setPhotoPrivacy(photoId, isPrivate);
+
+        // Hiển thị thông báo
+        Toast.makeText(requireContext(),
+                isPrivate ? "Photo set to private" : "Photo set to public",
+                Toast.LENGTH_SHORT).show();
+
+        // Cập nhật icon (nếu cần)
+        updatePrivateIcon();
+    }
+
+    // Thêm phương thức cập nhật icon
+    private void updatePrivateIcon() {
+        MenuItem privateItem = binding.toolbar.getMenu().findItem(R.id.action_private);
+        if (privateItem != null) {
+            privateItem.setIcon(isPrivate ?
+                    R.drawable.ic_lock :
+                    R.drawable.ic_lock_open);
+            privateItem.setTitle(isPrivate ?
+                    "Set Public" : "Set Private");
+        }
+    }
+
 
     private void showPopupMenu(View anchor) {
         PopupMenu popup = new PopupMenu(requireContext(), anchor, Gravity.END);
@@ -207,7 +241,4 @@ public class PhotoDetailFragment extends Fragment {
                 .setNegativeButton("No", null)
                 .show();
     }
-
-
-
 }
