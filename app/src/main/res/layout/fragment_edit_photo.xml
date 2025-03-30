@@ -4,7 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@android:color/black">
+    android:background="@color/black">
 
     <!-- Guideline giúp căn chỉnh UI tốt hơn -->
     <androidx.constraintlayout.widget.Guideline
@@ -14,17 +14,6 @@
         android:orientation="horizontal"
         app:layout_constraintGuide_end="?attr/actionBarSize" />
 
-    <!-- Đây là ảnh gốc để chỉnh sửa -->
-    <ImageView
-        android:id="@+id/imageViewEditPhoto"
-        android:layout_width="0dp"
-        android:layout_height="0dp"
-        android:scaleType="fitCenter"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintBottom_toTopOf="@+id/rvConstraintTools"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        tools:src="@drawable/placeholder_image" />
 
     <!-- PhotoEditorView dùng để chỉnh sửa ảnh -->
     <ja.burhanrashid52.photoeditor.PhotoEditorView
@@ -34,7 +23,11 @@
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintBottom_toTopOf="@+id/rvConstraintTools"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent" />
+        app:layout_constraintEnd_toEndOf="parent"
+        android:clickable="true"
+        android:focusable="true"
+        android:scaleType="centerCrop"
+        />
 
     <!-- Nút Undo -->
     <ImageView
@@ -64,26 +57,32 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_margin="8dp"
+        android:layout_marginStart="16dp"
+        android:layout_marginBottom="16dp"
+        android:padding="8dp"
         android:src="@drawable/ic_close"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/guideline" />
 
     <!-- RecyclerView chứa công cụ chỉnh sửa -->
+
+    <!-- RecyclerView chứa bộ lọc -->
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/rvConstraintTools"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
+        android:layout_marginBottom="4dp"
         android:background="@color/tool_bg"
         android:orientation="horizontal"
         android:paddingTop="4dp"
         android:paddingBottom="4dp"
         app:layout_constraintBottom_toTopOf="@+id/guideline"
         app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="1.0"
         app:layout_constraintStart_toStartOf="parent"
         tools:listitem="@layout/item_edit_tools" />
 
-    <!-- RecyclerView chứa bộ lọc -->
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/rvFilterView"
         android:layout_width="0dp"
@@ -119,6 +118,15 @@
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/guideline" />
+
+    <SeekBar
+        android:id="@+id/sizeSlider"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:max="100"
+        android:text="Scale"
+        android:progress="50" />
+
 
 </androidx.constraintlayout.widget.ConstraintLayout>
 

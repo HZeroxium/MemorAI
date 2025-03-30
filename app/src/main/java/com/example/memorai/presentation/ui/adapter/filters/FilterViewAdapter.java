@@ -1,15 +1,10 @@
-package com.example.memorai.presentation.ui.activity.filters;
+package com.example.memorai.presentation.ui.adapter.filters;
 
 import ja.burhanrashid52.photoeditor.PhotoFilter;
 
-import androidx.annotation.Nullable;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.annotation.NonNull;
 
-import android.content.Context;
-import android.content.res.AssetManager;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.view.LayoutInflater;
 import android.view.ViewGroup;
 import android.view.View;
@@ -19,8 +14,6 @@ import android.widget.ImageView;
 
 import com.example.memorai.R;
 
-import java.io.IOException;
-import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -30,6 +23,7 @@ public class FilterViewAdapter extends RecyclerView.Adapter<FilterViewAdapter.Vi
 
     public FilterViewAdapter(FilterListener mFilterListener) {
         this.mFilterListener = mFilterListener;
+        setupFilters(); // Gọi setupFilters trong constructor
     }
 
     private final List<Pair<Integer, PhotoFilter>> mPairList = new ArrayList<>();

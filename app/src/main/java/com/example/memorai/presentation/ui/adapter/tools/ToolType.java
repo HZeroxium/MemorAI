@@ -1,4 +1,4 @@
-package com.example.memorai.presentation.ui.activity.tools;
+package com.example.memorai.presentation.ui.adapter.tools;
 
 public enum ToolType {
     SHAPE,

@@ -1,4 +1,4 @@
-package com.example.memorai.presentation.ui.activity.tools;
+package com.example.memorai.presentation.ui.adapter.tools;
 
 import android.view.LayoutInflater;
 import android.view.View;

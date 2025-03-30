@@ -17,6 +17,8 @@ public class ColorPickerAdapter extends RecyclerView.Adapter<ColorPickerAdapter.
     private List<Integer> colorPickerColors;
     private OnColorPickerClickListener onColorPickerClickListener;
 
+    private int selectedColor = -1; // Màu được chọn
+
     public ColorPickerAdapter(Context context, List<Integer> colorPickerColors) {
         this.context = context;
         this.colorPickerColors = colorPickerColors;
@@ -41,6 +43,11 @@ public class ColorPickerAdapter extends RecyclerView.Adapter<ColorPickerAdapter.
     @Override
     public int getItemCount() {
         return colorPickerColors.size();
+    }
+
+    public void setSelectedColor(int color) {
+        this.selectedColor = color;
+        notifyDataSetChanged(); // Cập nhật lại giao diện để đánh dấu màu được chọn
     }
 
     public void setOnColorPickerClickListener(OnColorPickerClickListener listener) {

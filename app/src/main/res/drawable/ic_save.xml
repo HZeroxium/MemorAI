@@ -15,6 +15,7 @@
     <item
         android:left="10dp"
         android:right="10dp"
+
         android:top="5dp"
         android:bottom="15dp">
         <vector
