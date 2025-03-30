@@ -209,6 +209,7 @@ public class TakePhotoFragment extends Fragment {
             Map<String, Object> photoData = new HashMap<>();
             photoData.put("id", p.getId());
             photoData.put("filePath", base64Image);
+            photoData.put("isPrivate", false);
             photoData.put("tags", p.getTags());
             photoData.put("createdAt", p.getCreatedAt());
             photoData.put("updatedAt", System.currentTimeMillis());

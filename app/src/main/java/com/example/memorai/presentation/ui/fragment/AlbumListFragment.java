@@ -62,10 +62,9 @@ public class AlbumListFragment extends Fragment {
         });
 
         // ViewModel to observe albums
-        albumViewModel = new ViewModelProvider(this).get(AlbumViewModel.class);
+        albumViewModel = new ViewModelProvider(requireActivity()).get(AlbumViewModel.class);
 
         user = FirebaseAuth.getInstance().getCurrentUser();
-        albumViewModel.loadAlbums();
 
         albumViewModel.getAlbums().observe(getViewLifecycleOwner(), albums ->
                 albumAdapter.submitList(albums)

@@ -14,6 +14,7 @@ public interface PhotoRepository {
     void updatePhoto(Photo photo);
 
     void deletePhoto(String photoId);
+    void setPhotoPrivacy(String photoId, boolean isPrivate);
 
     // Search photos by keyword
     List<Photo> searchPhotos(String query);
