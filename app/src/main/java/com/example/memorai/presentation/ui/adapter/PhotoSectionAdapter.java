@@ -1,6 +1,8 @@
 // presentation/ui/adapter/PhotoSectionAdapter.java
 package com.example.memorai.presentation.ui.adapter;
 
+import android.graphics.Bitmap;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -253,10 +255,15 @@ public class PhotoSectionAdapter extends RecyclerView.Adapter<RecyclerView.ViewH
         }
 
         void bind(Photo photo) {
-            Glide.with(itemView.getContext())
-                    .load(photo.getFilePath())
-                    .placeholder(R.drawable.placeholder_image)
-                    .into(imageViewPhoto);
+            Bitmap bitmap = photo.getBitmap(); // Giả sử Photo có getBitmap()
+            if (bitmap != null) {
+                Glide.with(itemView.getContext())
+                        .load(bitmap)
+                        .placeholder(R.drawable.placeholder_image)
+                        .into(imageViewPhoto);
+            } else {
+                imageViewPhoto.setImageResource(R.drawable.placeholder_image);
+            }
 
             if (selectionMode) {
                 checkBoxItemSelect.setVisibility(View.VISIBLE);
@@ -265,6 +272,7 @@ public class PhotoSectionAdapter extends RecyclerView.Adapter<RecyclerView.ViewH
                 checkBoxItemSelect.setVisibility(View.GONE);
             }
         }
+
     }
 }
 

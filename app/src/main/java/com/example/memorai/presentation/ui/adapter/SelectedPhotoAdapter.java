@@ -1,6 +1,7 @@
 // presentation/ui/adapter/SelectedPhotoAdapter.java
 package com.example.memorai.presentation.ui.adapter;
 
+import android.graphics.Bitmap;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -53,11 +54,15 @@ public class SelectedPhotoAdapter extends ListAdapter<Photo, SelectedPhotoAdapte
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
         Photo photo = getItem(position);
 
-        Glide.with(holder.itemView.getContext())
-                .load(photo.getFilePath())
-                .placeholder(R.drawable.placeholder_image)
-                .into(holder.imageViewSelected);
-
+        Bitmap bitmap = photo.getBitmap(); // Giả sử Photo có getBitmap()
+        if (bitmap != null) {
+            Glide.with(holder.itemView.getContext())
+                    .load(bitmap)
+                    .placeholder(R.drawable.placeholder_image)
+                    .into(holder.imageViewSelected);
+        } else {
+            holder.imageViewSelected.setImageResource(R.drawable.placeholder_image);
+        }
         holder.buttonRemovePhoto.setOnClickListener(v -> {
             if (removeClickListener != null) {
                 removeClickListener.onRemoveClick(photo);

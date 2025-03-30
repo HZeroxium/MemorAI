@@ -1,20 +1,20 @@
-// presentation/ui/activity/MainActivity.java
 package com.example.memorai.presentation.ui.activity;
 
-import android.Manifest;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
+import android.content.res.Configuration;
+import android.content.res.Resources;
 import android.os.Build;
 import android.os.Bundle;
 import android.text.SpannableString;
 import android.text.style.ForegroundColorSpan;
+import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.PopupMenu;
 
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.appcompat.app.AppCompatDelegate;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.lifecycle.ViewModelProvider;
@@ -22,35 +22,75 @@ import androidx.navigation.NavController;
 import androidx.navigation.fragment.NavHostFragment;
 import androidx.navigation.ui.NavigationUI;
 
+import com.bumptech.glide.Glide;
+import android.Manifest;
 import com.example.memorai.R;
 import com.example.memorai.databinding.ActivityMainBinding;
 import com.example.memorai.presentation.ui.dialog.ModalBottomSheetAddMenu;
+import com.example.memorai.presentation.ui.fragment.LoginFragment;
 import com.example.memorai.presentation.viewmodel.AlbumViewModel;
+import com.example.memorai.presentation.viewmodel.UserViewModel;
+import com.example.memorai.presentation.viewmodel.PhotoViewModel;
+import com.google.android.gms.auth.api.signin.GoogleSignIn;
+import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
+import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
+import com.google.firebase.auth.AuthCredential;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
+import com.google.android.gms.auth.api.signin.GoogleSignInClient;
+import com.google.firebase.auth.GoogleAuthProvider;
+
+
+import java.util.Locale;
 
 import dagger.hilt.android.AndroidEntryPoint;
 
 @AndroidEntryPoint
 public class MainActivity extends AppCompatActivity {
     private ActivityMainBinding binding;
+    private GoogleSignInClient googleSignInClient;
+    private FirebaseAuth firebaseAuth;
+
+    private UserViewModel userViewModel;
+
     private NavController navController;
+
+    private PhotoViewModel photoViewModel;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        applyDarkMode();
         super.onCreate(savedInstanceState);
-
         binding = ActivityMainBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
-
+        SharedPreferences sharedPreferences = getSharedPreferences("Mode", Context.MODE_PRIVATE);
+        boolean darkMode = sharedPreferences.getBoolean("night", false);
         AlbumViewModel albumViewModel = new ViewModelProvider(this).get(AlbumViewModel.class);
-        albumViewModel.ensureDefaultAlbumExists();
 
+        userViewModel = new ViewModelProvider(this).get(UserViewModel.class);
+        photoViewModel = new ViewModelProvider(this).get(PhotoViewModel.class);
+        firebaseAuth = FirebaseAuth.getInstance();
+        FirebaseUser user = firebaseAuth.getCurrentUser();
+        if (user != null) {
+            photoViewModel.loadAllPhotos(user.getUid());
+        }
+        GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
+                .requestIdToken("619405178592-ml761krg19iac2ratge3eul9mdhg84pg.apps.googleusercontent.com") // Lấy ID Token để xác thực Firebase
+                .requestEmail()
+                .build();
+
+        googleSignInClient = GoogleSignIn.getClient(this, gso);
+
+
+        setupObservers();
         setupNavigation();
         setupProfileIcon();
         setupAddButton();
         setupNotificationButton();
         requestNotificationPermission();
     }
+
+
 
     private void requestNotificationPermission() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) { // Android 13+
@@ -61,22 +101,42 @@ public class MainActivity extends AppCompatActivity {
             }
         }
     }
+    private void setupObservers() {
+        if(userViewModel.getUserLiveData().getValue() == null) {
+            updateUI(null);
+        }
+        userViewModel.getUserLiveData().observe(this, user -> {
+            if (user != null) {
+                updateUI(user);
+            }
+        });
 
-
-    /**
-     * Apply Dark Mode based on SharedPreferences settings.
-     */
-    private void applyDarkMode() {
-        SharedPreferences sharedPreferences = getSharedPreferences("Mode", Context.MODE_PRIVATE);
-        boolean darkMode = sharedPreferences.getBoolean("night", false);
-        AppCompatDelegate.setDefaultNightMode(
-                darkMode ? AppCompatDelegate.MODE_NIGHT_YES : AppCompatDelegate.MODE_NIGHT_NO
-        );
     }
 
-    /**
-     * Setup Navigation Controller and Destination Change Listener.
-     */
+    @Override
+    protected void onResume() {
+        super.onResume();
+        updateUI(userViewModel.getUserLiveData().getValue());
+    }
+
+    @Override
+    protected void attachBaseContext(Context newBase) {
+        super.attachBaseContext(updateBaseContextLocale(newBase));
+    }
+
+    private Context updateBaseContextLocale(Context context) {
+        SharedPreferences prefs = context.getSharedPreferences("Settings", Context.MODE_PRIVATE);
+        String language = prefs.getString("Language", "en"); // Mặc định là English
+
+        Locale locale = new Locale(language);
+        Locale.setDefault(locale);
+
+        Resources resources = context.getResources();
+        Configuration configuration = resources.getConfiguration();
+        configuration.setLocale(locale);
+        return context.createConfigurationContext(configuration);
+    }
+
     private void setupNavigation() {
         try {
             NavHostFragment navHostFragment = (NavHostFragment) getSupportFragmentManager()
@@ -86,32 +146,43 @@ public class MainActivity extends AppCompatActivity {
             }
             navController = navHostFragment.getNavController();
             NavigationUI.setupWithNavController(binding.bottomNavigation, navController);
-
             navController.addOnDestinationChangedListener((controller, destination, arguments) -> {
                 boolean isHiddenScreen = destination.getId() == R.id.photoListFragment ||
                         destination.getId() == R.id.albumListFragment ||
                         destination.getId() == R.id.searchFragment;
 
                 toggleUIVisibility(isHiddenScreen);
-            });
 
+                MenuItem photosItem = binding.bottomNavigation.getMenu().findItem(R.id.photoListFragment);
+                MenuItem albumsItem = binding.bottomNavigation.getMenu().findItem(R.id.albumListFragment);
+                MenuItem searchItem = binding.bottomNavigation.getMenu().findItem(R.id.searchFragment);
+
+                if (photosItem != null) photosItem.setTitle(R.string.photos);
+                if (albumsItem != null) albumsItem.setTitle(R.string.albums);
+                if (searchItem != null) searchItem.setTitle(R.string.search);
+
+                userViewModel.getUserLiveData().observe(this, user -> {
+                    updateUI(user);
+                });
+
+            });
         } catch (IllegalStateException e) {
             throw new IllegalStateException("Failed to initialize NavHostFragment: " + e.getMessage());
         }
     }
 
-    /**
-     * Show/Hide UI elements based on navigation destination.
-     */
+    public PhotoViewModel getPhotoViewModel() {
+        return photoViewModel;
+    }
+
     private void toggleUIVisibility(boolean isVisible) {
         int visibility = isVisible ? View.VISIBLE : View.GONE;
         binding.bottomNavigation.setVisibility(visibility);
-        binding.toolbar.setVisibility(visibility);
+        binding.header.setVisibility(visibility);
+        binding.searchBar.setVisibility(visibility);
     }
 
-    /**
-     * Setup Profile Icon to show PopupMenu for navigation.
-     */
+
     private void setupProfileIcon() {
         binding.profileIcon.setOnClickListener(this::showProfileMenu);
     }
@@ -119,6 +190,13 @@ public class MainActivity extends AppCompatActivity {
     private void showProfileMenu(View anchor) {
         PopupMenu popupMenu = new PopupMenu(this, anchor);
         popupMenu.getMenuInflater().inflate(R.menu.profile_menu, popupMenu.getMenu());
+        FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+        boolean isLoggedIn = (user != null);
+
+        MenuItem loginMenuItem = popupMenu.getMenu().findItem(R.id.menu_login);
+        if (loginMenuItem != null) {
+            loginMenuItem.setTitle(isLoggedIn ? R.string.logout : R.string.login);
+        }
 
         for (int i = 0; i < popupMenu.getMenu().size(); i++) {
             setTitleSpan(popupMenu.getMenu().getItem(i));
@@ -143,6 +221,7 @@ public class MainActivity extends AppCompatActivity {
      */
     private boolean handleProfileMenuClick(MenuItem item) {
         if (navController == null) return false;
+        FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
 
         int itemId = item.getItemId();
         if (itemId == R.id.menu_profile) {
@@ -151,12 +230,19 @@ public class MainActivity extends AppCompatActivity {
             navController.navigate(R.id.settingsFragment);
             toggleUIVisibility(false);
         } else if (itemId == R.id.menu_login) {
-            navController.navigate(R.id.loginFragment);
+            if (user != null) {
+                logout();
+            } else {
+                LoginFragment loginFragment = new LoginFragment();
+                loginFragment.show(getSupportFragmentManager(), "LoginFragment");
+            }
+            return true;
         } else {
             return false;
         }
         return true;
     }
+
 
 
     /**
@@ -189,5 +275,67 @@ public class MainActivity extends AppCompatActivity {
         });
 
         bottomSheet.show(getSupportFragmentManager(), "ModalBottomSheetAddMenu");
+    }
+
+
+    private void logout() {
+        FirebaseAuth.getInstance().signOut();
+        GoogleSignIn.getClient(this, new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN).build()).signOut()
+                .addOnCompleteListener(this, task -> {
+                    binding.headerText.setText(getString(R.string.hi, getString(R.string.you)));
+                    binding.profileIcon.setImageResource(R.drawable.ic_profile);
+                    userViewModel.clearUser();
+                    updateUI(null);
+                    setupProfileIcon();
+                });
+    }
+
+
+    private void firebaseAuthWithGoogle(GoogleSignInAccount account) {
+        AuthCredential credential = GoogleAuthProvider.getCredential(account.getIdToken(), null);
+        firebaseAuth.signInWithCredential(credential)
+                .addOnCompleteListener(this, task -> {
+                    if (task.isSuccessful()) {
+                        FirebaseUser user = firebaseAuth.getCurrentUser();
+                        userViewModel.setUser(user);
+                        updateUI(user);
+                    } else {
+                        updateUI(null);
+                        Log.w("GoogleSignIn", "Đăng nhập thất bại", task.getException());
+                    }
+                });
+    }
+
+
+    private void updateUI(FirebaseUser user) {
+        if (user != null) {
+            String userName = user.getDisplayName();
+            if (userName != null && !userName.trim().isEmpty()) {
+                String[] nameParts = userName.trim().split("\\s+");
+                userName = nameParts[nameParts.length - 1];
+            } else {
+                userName = getString(R.string.you); // Sử dụng chuỗi bản địa hóa
+            }
+            String profilePic = (user.getPhotoUrl() != null) ? user.getPhotoUrl().toString() : "";
+            binding.headerText.setText(getString(R.string.hi, userName));
+            Glide.with(this)
+                    .load(profilePic)
+                    .circleCrop()
+                    .error(R.drawable.ic_profile)
+                    .into(binding.profileIcon);
+        } else {
+            binding.headerText.setText(getString(R.string.hi, getString(R.string.you))); // Sử dụng chuỗi bản địa hóa
+            Glide.with(this)
+                    .load(R.drawable.ic_profile)
+                    .circleCrop()
+                    .error(R.drawable.ic_profile)
+                    .into(binding.profileIcon);
+        }
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        binding = null;
     }
 }

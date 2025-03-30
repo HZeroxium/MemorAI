@@ -1,6 +1,10 @@
 // presentation/ui/fragment/AlbumUpdateFragment.java
 package com.example.memorai.presentation.ui.fragment;
 
+import static com.example.memorai.utils.ImageUtils.convertImageToBase64;
+
+import android.graphics.Bitmap;
+import android.net.Uri;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.view.View;
@@ -22,8 +26,13 @@ import com.example.memorai.presentation.viewmodel.AlbumCreationViewModel;
 import com.example.memorai.presentation.viewmodel.AlbumViewModel;
 import com.example.memorai.presentation.viewmodel.PhotoViewModel;
 import com.google.android.material.snackbar.Snackbar;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import dagger.hilt.android.AndroidEntryPoint;
 
@@ -39,6 +48,9 @@ public class AlbumUpdateFragment extends Fragment {
     private AlbumCreationViewModel albumCreationViewModel;
     private SelectedPhotoAdapter selectedPhotoAdapter;
     private String albumId;
+
+    private FirebaseUser user;
+
     private Album currentAlbum;
 
     @Nullable
@@ -67,8 +79,8 @@ public class AlbumUpdateFragment extends Fragment {
         setupRecyclerView();
         setupObservers();
         setupButtons(view);
-
-        loadAlbumAndPhotos();
+        user = FirebaseAuth.getInstance().getCurrentUser();
+        loadAlbumAndPhotos(user.getUid());
     }
 
     private void setupToolbar(View view) {
@@ -119,33 +131,93 @@ public class AlbumUpdateFragment extends Fragment {
         binding.buttonUpdateAlbum.setEnabled(isValid);
     }
 
+    private void loadAlbumAndPhotos(String userId) {
+        if (userId == null || albumId == null) return;
+
+        // Load album details
+        albumViewModel.loadAlbumById(albumId);
+        albumViewModel.getAlbumLiveData().observe(getViewLifecycleOwner(), album -> {
+            if (album == null) return;
+            currentAlbum = album;
+            binding.editTextAlbumTitle.setText(album.getName());
+
+            // Load photos for this album
+            if (album.getPhotos() != null && !album.getPhotos().isEmpty()) {
+                albumViewModel.loadPhotosFromAlbum(userId, albumId);
+            }
+        });
+
+        // Observe photos
+        albumViewModel.getPhotosLiveData().observe(getViewLifecycleOwner(), photos -> {
+            if (photos != null && !photos.isEmpty()) {
+                albumCreationViewModel.setPhotos(photos);
+            }
+        });
+    }
+
     private void setupButtons(View view) {
         binding.buttonSelectPhotos.setOnClickListener(v -> {
-            Navigation.findNavController(view).navigate(R.id.albumAddPhotosFragment);
+            // Pass the current album ID to the photo selection fragment
+            Bundle args = new Bundle();
+            args.putString("album_id", albumId);
+            Navigation.findNavController(view).navigate(R.id.albumAddPhotosFragment, args);
         });
 
         binding.buttonUpdateAlbum.setOnClickListener(v -> {
             String title = binding.editTextAlbumTitle.getText().toString().trim();
+            String description = "";
+
+            // Validation
             if (TextUtils.isEmpty(title)) {
                 Toast.makeText(requireContext(), "Enter a valid title", Toast.LENGTH_SHORT).show();
                 return;
             }
+
             List<Photo> selected = albumCreationViewModel.getSelectedPhotos().getValue();
             if (selected == null || selected.isEmpty()) {
                 Toast.makeText(requireContext(), "No photos selected for album!", Toast.LENGTH_SHORT).show();
                 return;
             }
 
-            // Actually do the update
-            currentAlbum = new Album(albumId, title, "", selected.get(0).getFilePath(),
-                    System.currentTimeMillis(), System.currentTimeMillis());
-            albumViewModel.updateAlbumWithPhotos(currentAlbum, selected);
-            Toast.makeText(requireContext(), "Album updated!", Toast.LENGTH_SHORT).show();
+            // Extract photo IDs
+            List<String> photoIds = new ArrayList<>();
+            for (Photo photo : selected) {
+                photoIds.add(photo.getId());
+            }
 
-            // Clear creationViewModel and go back
-            albumCreationViewModel.clear();
-            Navigation.findNavController(view).popBackStack();
+            Uri contentUri = Uri.parse(selected.get(0).getFilePath());
+
+            String base64 = convertImageToBase64(requireContext(), contentUri);
+
+            // Update album
+            user = FirebaseAuth.getInstance().getCurrentUser();
+            String userId = user.getUid();
+            if (userId != null) {
+
+                Map<String, Object> updatedAlbum = new HashMap<>();
+                updatedAlbum.put("id", albumId);
+                updatedAlbum.put("title", title);
+                updatedAlbum.put("description", "");
+                updatedAlbum.put("photos", photoIds);
+                updatedAlbum.put("coverPhotoUrl", base64);
+                updatedAlbum.put("createdAt", System.currentTimeMillis());
+                updatedAlbum.put("updatedAt", System.currentTimeMillis());
+                // Update in Firestore
+                albumViewModel.updateAlbumWithPhotos(userId, albumId, photoIds);
+                Toast.makeText(requireContext(), "Album updated!", Toast.LENGTH_SHORT).show();
+
+                // Clear selection and go back
+                albumCreationViewModel.clear();
+                Navigation.findNavController(view).popBackStack();
+            }
         });
+    }
+
+    // Helper method to get Bitmap from Photo (implement according to your storage)
+    private Bitmap getBitmapFromPhoto(Photo photo) {
+        // Implement your logic to get Bitmap from photo
+        // This could be loading from file, decoding from base64, etc.
+        return null; // placeholder
     }
 
     private void showSnackbar(String message) {

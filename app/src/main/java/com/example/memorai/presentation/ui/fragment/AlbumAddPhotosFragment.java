@@ -20,6 +20,8 @@ import com.example.memorai.domain.model.Photo;
 import com.example.memorai.presentation.ui.adapter.PhotoAdapter;
 import com.example.memorai.presentation.viewmodel.AlbumCreationViewModel;
 import com.example.memorai.presentation.viewmodel.PhotoViewModel;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -40,6 +42,8 @@ public class AlbumAddPhotosFragment extends Fragment {
     private AlbumCreationViewModel albumCreationViewModel;
     private PhotoAdapter photoAdapter;
 
+    private FirebaseUser user;
+
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater,
@@ -59,8 +63,13 @@ public class AlbumAddPhotosFragment extends Fragment {
         setupToolbar();
         setupRecyclerView();
         setupSearch();
+        user = FirebaseAuth.getInstance().getCurrentUser();
+        if (user == null) {
+            Toast.makeText(requireContext(), "User not authenticated", Toast.LENGTH_SHORT).show();
+            return;
+        }
 
-        photoViewModel.loadAllPhotos();
+        photoViewModel.loadAllPhotos(user.getUid());
 
         photoViewModel.observeAllPhotos().observe(getViewLifecycleOwner(), photos -> {
             // 1) get old selections
@@ -135,7 +144,7 @@ public class AlbumAddPhotosFragment extends Fragment {
             if (!TextUtils.isEmpty(query)) {
                 photoViewModel.searchPhotos(query);
             } else {
-                photoViewModel.loadAllPhotos();
+                photoViewModel.loadAllPhotos(user.getUid());
             }
             return true;
         });
@@ -144,6 +153,7 @@ public class AlbumAddPhotosFragment extends Fragment {
     @Override
     public void onDestroyView() {
         super.onDestroyView();
+        binding.recyclerViewAllPhotosForSelection.setAdapter(null);
         binding = null;
     }
 }

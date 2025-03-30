@@ -2,6 +2,7 @@ package com.example.memorai.presentation.ui.fragment;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.res.Configuration;
 import android.content.res.Resources;
@@ -17,6 +18,8 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatDelegate;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
+import androidx.navigation.NavController;
+import androidx.navigation.fragment.NavHostFragment;
 
 import com.example.memorai.R;
 import com.example.memorai.databinding.FragmentSettingsBinding;
@@ -99,9 +102,6 @@ public class SettingsFragment extends Fragment {
         SettingsViewModel settingsViewModel = new ViewModelProvider(this).get(SettingsViewModel.class);
         settingsViewModel.getSettings().observe(getViewLifecycleOwner(), this::updateUI);
         settingsViewModel.loadSettings();
-        Log.d("SettingsFragment", "Fragment is created");
-        Log.d("SettingsFragment", "Binding initialized: " + (binding != null));
-
 
         SharedPreferences prefs = requireContext().getSharedPreferences("Settings", Context.MODE_PRIVATE);
         String savedLanguage = prefs.getString("Language", "en"); // Mặc định là English
@@ -157,7 +157,11 @@ public class SettingsFragment extends Fragment {
             }
         });
 
-        binding.btnExit.setOnClickListener(v -> requireActivity().getSupportFragmentManager().popBackStack());
+        binding.btnExit.setOnClickListener(v -> {
+            NavController navController = NavHostFragment.findNavController(this);
+            navController.popBackStack();
+        }
+);
 
 
         // Similar listeners for cloud sync and biometric auth can be added here

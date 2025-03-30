@@ -1,9 +1,11 @@
-// domain/model/User.java
 package com.example.memorai.domain.model;
+
+import android.os.Parcel;
+import android.os.Parcelable;
 
 import java.util.Objects;
 
-public final class User {
+public final class User implements Parcelable {
     private final String id;
     private final String name;
     private final String email;
@@ -16,6 +18,42 @@ public final class User {
         this.profilePictureUrl = profilePictureUrl;
     }
 
+    // Constructor để khôi phục dữ liệu từ Parcel
+    protected User(Parcel in) {
+        id = in.readString();
+        name = in.readString();
+        email = in.readString();
+        profilePictureUrl = in.readString();
+    }
+
+    // Ghi dữ liệu vào Parcel
+    @Override
+    public void writeToParcel(Parcel dest, int flags) {
+        dest.writeString(id);
+        dest.writeString(name);
+        dest.writeString(email);
+        dest.writeString(profilePictureUrl);
+    }
+
+    @Override
+    public int describeContents() {
+        return 0;
+    }
+
+    // CREATOR để tạo User từ Parcel
+    public static final Creator<User> CREATOR = new Creator<User>() {
+        @Override
+        public User createFromParcel(Parcel in) {
+            return new User(in);
+        }
+
+        @Override
+        public User[] newArray(int size) {
+            return new User[size];
+        }
+    };
+
+    // Getter methods
     public String getId() {
         return id;
     }
