@@ -346,8 +346,34 @@ public class PhotoViewModel extends ViewModel {
     }
 
     public void setPhotoPrivacy(String photoId, boolean isPrivate) {
-        if (photoId != null) {
-            photoRepository.setPhotoPrivacy(photoId, isPrivate);
+        String userId = FirebaseAuth.getInstance().getCurrentUser().getUid();
+        if (userId == null) {
+            Log.w("PhotoViewModel", "User not authenticated");
+            return;
         }
+
+        DocumentReference photoRef = firestore.collection("photos")
+                .document(userId)
+                .collection("user_photos")
+                .document(photoId);
+
+        Map<String, Object> updates = new HashMap<>();
+        updates.put("private", isPrivate);
+
+        photoRef.update(updates)
+                .addOnSuccessListener(aVoid -> {
+                    List<Photo> currentPhotos = allPhotos.getValue();
+                    if (currentPhotos != null) {
+                        for (Photo photo : currentPhotos) {
+                            if (photo.getId().equals(photoId)) {
+                                photo.seIsPrivate(isPrivate);
+                                break;
+                            }
+                        }
+                        allPhotos.setValue(new ArrayList<>(currentPhotos));
+                    }
+                })
+                .addOnFailureListener(e -> Log.e("PhotoViewModel", "Failed to update photo privacy", e));
     }
+
 }
