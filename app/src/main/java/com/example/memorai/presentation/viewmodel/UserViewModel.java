@@ -6,18 +6,20 @@ import androidx.lifecycle.ViewModel;
 
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.firestore.FirebaseFirestore;
 
 public class UserViewModel extends ViewModel {
-    private final FirebaseAuth firebaseAuth;
-    private final MutableLiveData<FirebaseUser> userLiveData;
-    private final MutableLiveData<Boolean> isAuthenticated;
+    private final FirebaseAuth firebaseAuth = FirebaseAuth.getInstance();
+    private final FirebaseFirestore firestore = FirebaseFirestore.getInstance();
+    private final MutableLiveData<FirebaseUser> userLiveData = new MutableLiveData<>();
+    private final MutableLiveData<Boolean> isAuthenticated = new MutableLiveData<>(false);
+    private final MutableLiveData<String> errorMessage = new MutableLiveData<>();
 
     public UserViewModel() {
-        firebaseAuth = FirebaseAuth.getInstance();
-        userLiveData = new MutableLiveData<>();
-        isAuthenticated = new MutableLiveData<>(false);
+        checkAuthState();
+    }
 
-        // Kiểm tra trạng thái đăng nhập
+    private void checkAuthState() {
         FirebaseUser user = firebaseAuth.getCurrentUser();
         if (user != null) {
             userLiveData.setValue(user);
@@ -25,26 +27,17 @@ public class UserViewModel extends ViewModel {
         }
     }
 
-    public void setUser(FirebaseUser user) {
-        userLiveData.setValue(user);
-    }
-
-    public void clearUser() {
-        userLiveData.setValue(null);
-    }
-
-    public LiveData<FirebaseUser> getUserLiveData() {
-        return userLiveData;
-    }
-
-
-    public LiveData<Boolean> getIsAuthenticated() {
-        return isAuthenticated;
-    }
 
     public void signOut() {
         firebaseAuth.signOut();
         userLiveData.setValue(null);
         isAuthenticated.setValue(false);
+
     }
+
+    // Getters
+    public LiveData<FirebaseUser> getUserLiveData() { return userLiveData; }
+    public LiveData<Boolean> getIsAuthenticated() { return isAuthenticated; }
+    public LiveData<String> getErrorMessage() { return errorMessage; }
+
 }

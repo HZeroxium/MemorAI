@@ -30,6 +30,7 @@ public class PhotoMapper {
         entity.tags = String.join(",", photo.getTags());
         entity.createdAt = photo.getCreatedAt();
         entity.updatedAt = photo.getUpdatedAt();
+        entity.isPrivate = photo.getIsPrivate();
         return entity;
     }
 }

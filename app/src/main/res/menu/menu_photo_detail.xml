@@ -16,4 +16,9 @@
         android:icon="@drawable/ic_delete"
         app:showAsAction="ifRoom"
         android:title="@string/delete" />
+    <item
+        android:id="@+id/action_private"
+        android:icon="@drawable/ic_lock_open"
+        android:title="Set Private"
+        app:showAsAction="ifRoom" />
 </menu>

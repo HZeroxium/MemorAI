@@ -8,6 +8,7 @@ public class PhotoDto {
     public String albumId;
     public String filePath;
     public List<String> tags;
+    public boolean isPrivate;
     public long createdAt;
     public long updatedAt;
 }

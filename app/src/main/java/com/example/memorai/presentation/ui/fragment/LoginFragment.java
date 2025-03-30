@@ -12,7 +12,6 @@ import androidx.annotation.Nullable;
 
 import com.example.memorai.databinding.FragmentLoginBinding;
 import com.example.memorai.domain.model.User;
-import com.example.memorai.presentation.ui.activity.MainActivity;
 import com.google.android.gms.auth.api.signin.GoogleSignIn;
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
 import com.google.android.gms.auth.api.signin.GoogleSignInClient;
@@ -99,11 +98,12 @@ public class LoginFragment extends BottomSheetDialogFragment {
                                     user.getEmail(),
                                     user.getPhotoUrl() != null ?user.getPhotoUrl().toString() : null
                             );
+                            PinFragment pinFragment = new PinFragment();
+                            Bundle bundle = new Bundle();
+                            bundle.putParcelable("user", authUser);
+                            pinFragment.setArguments(bundle);
+                            pinFragment.show(getParentFragmentManager(), "PinFragment");
 
-                            Intent intent = new Intent(requireActivity(), MainActivity.class);
-                            intent.putExtra("user", authUser);
-                            startActivity(intent);
-                            requireActivity().finish();
                         }
                     } else {
                         Log.w("LoginFragment", "Đăng nhập Firebase thất bại", task.getException());
@@ -115,19 +115,25 @@ public class LoginFragment extends BottomSheetDialogFragment {
         FirebaseDatabase database = FirebaseDatabase.getInstance();
         DatabaseReference usersRef = database.getReference("users").child(firebaseUser.getUid());
 
-        // Tạo đối tượng User từ model
-        User user = new User(
-                firebaseUser.getUid(),
-                firebaseUser.getDisplayName(),
-                firebaseUser.getEmail(),
-                firebaseUser.getPhotoUrl() != null ? firebaseUser.getPhotoUrl().toString() : null
-        );
+        usersRef.get().addOnCompleteListener(task -> {
+            if (task.isSuccessful() && !task.getResult().exists()) {
+                // Nếu chưa tồn tại, tạo đối tượng User từ model
+                User user = new User(
+                        firebaseUser.getUid(),
+                        firebaseUser.getDisplayName(),
+                        firebaseUser.getEmail(),
+                        firebaseUser.getPhotoUrl() != null ? firebaseUser.getPhotoUrl().toString() : null
+                );
 
-        // Lưu User vào Firebase
-        usersRef.setValue(user)
-                .addOnSuccessListener(aVoid -> Log.d("LoginFragment", "Lưu dữ liệu thành công"))
-                .addOnFailureListener(e -> Log.w("LoginFragment", "Lưu dữ liệu thất bại", e));
+                usersRef.setValue(user)
+                        .addOnSuccessListener(aVoid -> Log.d("LoginFragment", "Lưu dữ liệu thành công"))
+                        .addOnFailureListener(e -> Log.w("LoginFragment", "Lưu dữ liệu thất bại", e));
+            } else {
+                Log.d("LoginFragment", "Người dùng đã tồn tại, không cần lưu");
+            }
+        });
     }
+
 
     @Override
     public void onDestroyView() {

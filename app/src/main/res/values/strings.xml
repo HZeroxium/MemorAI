@@ -77,4 +77,9 @@
     <string name="login">Login</string>
     <string name="logout">Logout</string>
     <string name="you">you</string>
+    <string name="cancel">Cancel</string>
+    <string name="pin_length_error">PIN must be 6 digits!</string>
+    <string name="user_not_found">Error: User information not found!</string>
+    <string name="pin_saved">PIN saved!</string>
+    <string name="error_saving_pin">PIN save failed!</string>
 </resources>

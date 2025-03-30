@@ -77,4 +77,9 @@
     <string name="network_channel_id">网络频道</string>
     <string name="logout">退出登录</string>
     <string name="you">你</string>
+    <string name="cancel">取消</string>
+    <string name="pin_length_error">PIN 必须是 6 位数字！</string>
+    <string name="user_not_found">错误：未找到用户信息！</string>
+    <string name="pin_saved">PIN 已保存！</string>
+    <string name="error_saving_pin">PIN 保存失败！</string>
 </resources>
