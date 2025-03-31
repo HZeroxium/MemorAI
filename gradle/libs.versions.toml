@@ -16,6 +16,10 @@ room = "2.6.1"
 glide = "4.15.1"
 cameraX = "1.4.1"
 firebaseBom = "33.8.0"
+tensorflowLite = "2.9.0"
+tensorflowLiteMetadata = "0.4.2"
+tensorflowLiteSupport = "0.4.2"
+tensorflowLiteTaskVisionVersion = "0.4.4"
 workManager = "2.10.0"
 junit = "4.13.2"
 junitVersion = "1.2.1"
@@ -30,6 +34,7 @@ credentials = "1.5.0-rc01"
 credentialsPlayServicesAuth = "1.3.0"
 googleid = "1.1.1"
 firebaseAppDistribution = "4.0.0"
+litertSupportApi = "1.2.0"
 
 [libraries]
 # AndroidX Core Libraries
@@ -70,6 +75,10 @@ firebase-firestore = { group = "com.google.firebase", name = "firebase-firestore
 firebase-storage = { group = "com.google.firebase", name = "firebase-storage" }
 
 # WorkManager
+tensorflow-lite = { module = "org.tensorflow:tensorflow-lite", version.ref = "tensorflowLite" }
+tensorflow-lite-metadata = { module = "org.tensorflow:tensorflow-lite-metadata", version.ref = "tensorflowLiteMetadata" }
+tensorflow-lite-support = { module = "org.tensorflow:tensorflow-lite-support", version.ref = "tensorflowLiteSupport" }
+tensorflow-tensorflow-lite-task-vision = { module = "org.tensorflow:tensorflow-lite-task-vision", version.ref = "tensorflowLiteTaskVisionVersion" }
 work-runtime-ktx = { group = "androidx.work", name = "work-runtime-ktx", version.ref = "workManager" }
 
 # Testing Libraries
@@ -89,6 +98,7 @@ androidx-credentials = { group = "androidx.credentials", name = "credentials", v
 androidx-credentials-play-services-auth = { group = "androidx.credentials", name = "credentials-play-services-auth", version.ref = "credentialsPlayServicesAuth" }
 googleid = { group = "com.google.android.libraries.identity.googleid", name = "googleid", version.ref = "googleid" }
 firebase-database = { group = "com.google.firebase", name = "firebase-database", version.ref = "firebaseDatabase" }
+litert-support-api = { group = "com.google.ai.edge.litert", name = "litert-support-api", version.ref = "litertSupportApi" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

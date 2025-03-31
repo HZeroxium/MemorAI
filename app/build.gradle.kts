@@ -73,6 +73,7 @@ dependencies {
     implementation(libs.androidx.credentials.play.services.auth)
     implementation(libs.googleid)
     implementation(libs.firebase.database)
+    implementation(libs.litert.support.api)
     kapt(libs.hilt.compiler)
 
     // Room Database
@@ -113,8 +114,7 @@ dependencies {
     implementation(libs.navigation.fragment.ktx)
     implementation(libs.navigation.ui.ktx)
 
-
-// Google Sign-In
+    // Google Sign-In
     implementation("com.google.android.gms:play-services-auth:20.7.0")
     implementation("androidx.credentials:credentials-play-services-auth:1.3.0")
     implementation("com.google.android.gms:play-services-base:18.2.0")
@@ -122,23 +122,32 @@ dependencies {
     implementation("com.squareup.retrofit2:retrofit:2.11.0")
     implementation("com.squareup.retrofit2:converter-gson:2.11.0")
 
-    //Picasso
+    // Picasso
     implementation("com.squareup.picasso:picasso:2.8")
 
-    //firebase
+    // Firebase
     implementation("com.google.firebase:firebase-storage:20.2.1")
     implementation("com.google.firebase:firebase-appcheck-debug:17.0.1")
-
 
     // DataStore
     implementation(libs.androidx.datastore.preferences)
 
     // Edit Image
-    //implementation("com.github.mukeshsolanki:photofilter:1.0.2")
-    //implementation("com.github.")
+    // implementation("com.github.mukeshsolanki:photofilter:1.0.2")
+    // implementation("com.github.")
     implementation(libs.photoeditor)
 
     implementation(libs.androidx.biometric)
+
+    // Comment out or remove these TensorFlow Lite dependencies
+    // implementation(libs.tensorflow.lite)
+    // implementation(libs.tensorflow.tensorflow.lite.task.vision)
+    // implementation(libs.tensorflow.lite.support)
+    // implementation(libs.tensorflow.lite.metadata)
+
+    // Ensure we only use Google Edge LiteRT libraries which already include TensorFlow Lite functionality
+    implementation(libs.litert)
+    implementation(libs.litert.support.api)
 }
 
 kapt {

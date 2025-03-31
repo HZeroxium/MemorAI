@@ -1,3 +1,4 @@
+// presentation/ui/fragment/TakePhotoFragment.java
 package com.example.memorai.presentation.ui.fragment;
 
 import android.Manifest;
@@ -31,6 +32,7 @@ import com.example.memorai.domain.model.Photo;
 import com.example.memorai.presentation.ui.adapter.SelectedPhotoAdapter;
 import com.example.memorai.presentation.viewmodel.PhotoViewModel;
 import com.example.memorai.utils.ImageUtils;
+import com.example.memorai.utils.ImageClassifierHelper;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.CollectionReference;
@@ -52,15 +54,17 @@ public class TakePhotoFragment extends Fragment {
     private PhotoViewModel photoViewModel;
     private SelectedPhotoAdapter selectedPhotoAdapter;
     private Uri currentPhotoUri;
+    private ImageClassifierHelper imageClassifier;
 
     private final List<Photo> tempPhotoList = new ArrayList<>();
 
-    private final ActivityResultLauncher<Uri> cameraLauncher =
-            registerForActivityResult(new ActivityResultContracts.TakePicture(), success -> {
+    private final ActivityResultLauncher<Uri> cameraLauncher = registerForActivityResult(
+            new ActivityResultContracts.TakePicture(), success -> {
                 if (success && currentPhotoUri != null) {
                     Bitmap bitmap = getBitmapFromUri(currentPhotoUri);
                     if (bitmap != null) {
-                        Photo photo = new Photo(UUID.randomUUID().toString(), currentPhotoUri.toString(), new ArrayList<>(), System.currentTimeMillis(), System.currentTimeMillis());
+                        Photo photo = new Photo(UUID.randomUUID().toString(), currentPhotoUri.toString(),
+                                new ArrayList<>(), System.currentTimeMillis(), System.currentTimeMillis());
                         photo.setBitmap(bitmap);
                         tempPhotoList.add(photo); // Lưu vào danh sách tạm
                         selectedPhotoAdapter.submitList(new ArrayList<>(tempPhotoList));
@@ -69,6 +73,7 @@ public class TakePhotoFragment extends Fragment {
                     Toast.makeText(requireContext(), "Failed to capture photo", Toast.LENGTH_SHORT).show();
                 }
             });
+
     private Bitmap getBitmapFromUri(Uri uri) {
         try (InputStream inputStream = requireContext().getContentResolver().openInputStream(uri)) {
             Bitmap bitmap = BitmapFactory.decodeStream(inputStream);
@@ -78,6 +83,7 @@ public class TakePhotoFragment extends Fragment {
             return null;
         }
     }
+
     private Bitmap rotateBitmapIfNeeded(Bitmap bitmap, Uri uri) {
         try (InputStream inputStream = requireContext().getContentResolver().openInputStream(uri)) {
             ExifInterface exif = new ExifInterface(inputStream);
@@ -97,16 +103,19 @@ public class TakePhotoFragment extends Fragment {
 
     private int exifToDegrees(int exifOrientation) {
         switch (exifOrientation) {
-            case ExifInterface.ORIENTATION_ROTATE_90: return 90;
-            case ExifInterface.ORIENTATION_ROTATE_180: return 180;
-            case ExifInterface.ORIENTATION_ROTATE_270: return 270;
-            default: return 0;
+            case ExifInterface.ORIENTATION_ROTATE_90:
+                return 90;
+            case ExifInterface.ORIENTATION_ROTATE_180:
+                return 180;
+            case ExifInterface.ORIENTATION_ROTATE_270:
+                return 270;
+            default:
+                return 0;
         }
     }
 
-
-    private final ActivityResultLauncher<String> permissionLauncher =
-            registerForActivityResult(new ActivityResultContracts.RequestPermission(), isGranted -> {
+    private final ActivityResultLauncher<String> permissionLauncher = registerForActivityResult(
+            new ActivityResultContracts.RequestPermission(), isGranted -> {
                 if (isGranted) {
                     openCamera();
                 } else {
@@ -117,7 +126,7 @@ public class TakePhotoFragment extends Fragment {
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container,
-                             @Nullable Bundle savedInstanceState) {
+            @Nullable Bundle savedInstanceState) {
         binding = FragmentTakePhotoBinding.inflate(inflater, container, false);
         return binding.getRoot();
     }
@@ -130,7 +139,8 @@ public class TakePhotoFragment extends Fragment {
         binding.buttonConfirm.setOnClickListener(v -> confirmPhotos());
         binding.toolbarTakePhoto.setNavigationOnClickListener(v -> requireActivity().onBackPressed());
 
-
+        // Initialize the image classifier
+        imageClassifier = new ImageClassifierHelper(requireContext());
     }
 
     private void setupRecyclerView() {
@@ -152,9 +162,11 @@ public class TakePhotoFragment extends Fragment {
     }
 
     private void openCamera() {
-        if (ContextCompat.checkSelfPermission(requireContext(), Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED) {
+        if (ContextCompat.checkSelfPermission(requireContext(),
+                Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED) {
             File imageFile = createImageFile();
-            currentPhotoUri = FileProvider.getUriForFile(requireContext(), "com.example.memorai.fileprovider", imageFile);
+            currentPhotoUri = FileProvider.getUriForFile(requireContext(), "com.example.memorai.fileprovider",
+                    imageFile);
             cameraLauncher.launch(currentPhotoUri);
         } else {
             permissionLauncher.launch(Manifest.permission.CAMERA);
@@ -171,19 +183,33 @@ public class TakePhotoFragment extends Fragment {
             photoViewModel.addPhoto(photo); // Đảm bảo ViewModel lưu ảnh
         }
 
-
         new androidx.appcompat.app.AlertDialog.Builder(requireContext())
                 .setTitle("Confirm")
                 .setMessage("Upload " + tempPhotoList.size() + " photo(s) to Firestore?")
                 .setPositiveButton("Confirm", (dialog, which) -> {
                     List<Photo> photosToUpload = new ArrayList<>(tempPhotoList); // Copy list để tránh bị clear()
-                    uploadPhotos(photosToUpload);
+                    classifyAndUploadPhotos(photosToUpload);
                     tempPhotoList.clear(); // Chỉ xóa sau khi lấy danh sách xong
                 })
                 .setNegativeButton("Cancel", null)
                 .show();
     }
 
+    private void classifyAndUploadPhotos(List<Photo> photos) {
+        // Show a loading message
+        Toast.makeText(requireContext(), "Analyzing photos...", Toast.LENGTH_SHORT).show();
+
+        for (Photo photo : photos) {
+            Bitmap bitmap = photo.getBitmap();
+            if (bitmap != null) {
+                // Classify image to get tags
+                List<String> tags = imageClassifier.classify(bitmap);
+                photo.setTags(tags);
+                Log.d("TakePhotoFragment", "Photo tagged with: " + tags);
+            }
+        }
+        uploadPhotos(photos);
+    }
 
     private void uploadPhotos(List<Photo> photos) {
         FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
@@ -234,6 +260,12 @@ public class TakePhotoFragment extends Fragment {
         if (binding != null) {
             binding.recyclerViewCapturedPhotos.setAdapter(null);
             binding = null;
+        }
+
+        // Clean up TensorFlow resources
+        if (imageClassifier != null) {
+            imageClassifier.close();
+            imageClassifier = null;
         }
     }
 

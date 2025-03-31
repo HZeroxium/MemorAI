@@ -30,6 +30,7 @@ import com.example.memorai.domain.model.Photo;
 import com.example.memorai.presentation.ui.adapter.SelectedPhotoAdapter;
 import com.example.memorai.presentation.viewmodel.PhotoViewModel;
 import com.example.memorai.utils.ImageUtils;
+import com.example.memorai.utils.ImageClassifierHelper;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.CollectionReference;
@@ -55,18 +56,21 @@ public class ImportPhotoFragment extends Fragment {
     private FragmentImportPhotoBinding binding;
     private PhotoViewModel photoViewModel;
     private SelectedPhotoAdapter selectedPhotoAdapter;
-    private final ActivityResultLauncher<String> galleryLauncher =
-            registerForActivityResult(new ActivityResultContracts.GetMultipleContents(), uris -> {
+    private ImageClassifierHelper imageClassifier;
+    private final ActivityResultLauncher<String> galleryLauncher = registerForActivityResult(
+            new ActivityResultContracts.GetMultipleContents(), uris -> {
                 if (uris != null && !uris.isEmpty()) {
                     for (Uri uri : uris) {
                         try {
-                            int takeFlags = Intent.FLAG_GRANT_READ_URI_PERMISSION | Intent.FLAG_GRANT_WRITE_URI_PERMISSION;
+                            int takeFlags = Intent.FLAG_GRANT_READ_URI_PERMISSION
+                                    | Intent.FLAG_GRANT_WRITE_URI_PERMISSION;
                             requireContext().getContentResolver().takePersistableUriPermission(uri, takeFlags);
                         } catch (SecurityException e) {
                             uri = copyImageToAppStorage(uri);
                         }
                         Bitmap bitmap = getBitmapFromUri(uri);
-                        Photo photo = new Photo(UUID.randomUUID().toString(), uri.toString(), new ArrayList<>(), System.currentTimeMillis(), System.currentTimeMillis());
+                        Photo photo = new Photo(UUID.randomUUID().toString(), uri.toString(), new ArrayList<>(),
+                                System.currentTimeMillis(), System.currentTimeMillis());
                         photo.setBitmap(bitmap);
                         importedPhotos.add(photo);
                     }
@@ -85,6 +89,7 @@ public class ImportPhotoFragment extends Fragment {
             return null;
         }
     }
+
     private Bitmap rotateBitmapIfNeeded(Bitmap bitmap, Uri uri) {
         try (InputStream inputStream = requireContext().getContentResolver().openInputStream(uri)) {
             ExifInterface exif = new ExifInterface(inputStream);
@@ -104,18 +109,21 @@ public class ImportPhotoFragment extends Fragment {
 
     private int exifToDegrees(int exifOrientation) {
         switch (exifOrientation) {
-            case ExifInterface.ORIENTATION_ROTATE_90: return 90;
-            case ExifInterface.ORIENTATION_ROTATE_180: return 180;
-            case ExifInterface.ORIENTATION_ROTATE_270: return 270;
-            default: return 0;
+            case ExifInterface.ORIENTATION_ROTATE_90:
+                return 90;
+            case ExifInterface.ORIENTATION_ROTATE_180:
+                return 180;
+            case ExifInterface.ORIENTATION_ROTATE_270:
+                return 270;
+            default:
+                return 0;
         }
     }
-
 
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container,
-                             @Nullable Bundle savedInstanceState) {
+            @Nullable Bundle savedInstanceState) {
         binding = FragmentImportPhotoBinding.inflate(inflater, container, false);
         return binding.getRoot();
     }
@@ -127,6 +135,9 @@ public class ImportPhotoFragment extends Fragment {
         binding.buttonSelectFromGallery.setOnClickListener(v -> galleryLauncher.launch("image/*"));
         binding.buttonConfirmImport.setOnClickListener(v -> confirmImport());
         binding.toolbarImportPhoto.setNavigationOnClickListener(v -> requireActivity().onBackPressed());
+
+        // Initialize the image classifier
+        imageClassifier = new ImageClassifierHelper(requireContext());
     }
 
     private void setupRecyclerView() {
@@ -141,12 +152,25 @@ public class ImportPhotoFragment extends Fragment {
         });
     }
 
-
     private void confirmImport() {
         if (importedPhotos.isEmpty()) {
             Toast.makeText(requireContext(), "No photos imported", Toast.LENGTH_SHORT).show();
             return;
         }
+
+        // Show a dialog to let the user know photos are being processed
+        AlertDialog processingDialog = new AlertDialog.Builder(requireContext())
+                .setTitle("Processing Photos")
+                .setMessage("Analyzing and tagging photos...")
+                .setCancelable(false)
+                .create();
+        processingDialog.show();
+
+        // Classify photos to get tags
+        classifyPhotos(importedPhotos);
+
+        // Dismiss the dialog after processing
+        processingDialog.dismiss();
 
         FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
         if (user == null) {
@@ -171,7 +195,7 @@ public class ImportPhotoFragment extends Fragment {
             photoData.put("id", p.getId());
             photoData.put("filePath", base64Image);
             photoData.put("isPrivate", false);
-            photoData.put("tags", p.getTags());
+            photoData.put("tags", p.getTags()); // Now includes tags from classification
             photoData.put("createdAt", p.getCreatedAt());
             photoData.put("updatedAt", System.currentTimeMillis());
 
@@ -188,16 +212,35 @@ public class ImportPhotoFragment extends Fragment {
         }
     }
 
+    private void classifyPhotos(List<Photo> photos) {
+        for (Photo photo : photos) {
+            Bitmap bitmap = photo.getBitmap();
+            if (bitmap != null) {
+                // Classify image to get tags
+                List<String> tags = imageClassifier.classify(bitmap);
+                photo.setTags(tags);
+                Log.d("ImportPhotoFragment", "Photo tagged with: " + tags);
+            }
+        }
+    }
+
     @Override
     public void onDestroyView() {
         super.onDestroyView();
         binding = null;
+
+        // Clean up TensorFlow resources
+        if (imageClassifier != null) {
+            imageClassifier.close();
+            imageClassifier = null;
+        }
     }
 
     private Uri copyImageToAppStorage(Uri sourceUri) {
         try {
             InputStream inputStream = requireContext().getContentResolver().openInputStream(sourceUri);
-            if (inputStream == null) return sourceUri;
+            if (inputStream == null)
+                return sourceUri;
 
             File storageDir = requireContext().getExternalFilesDir(Environment.DIRECTORY_PICTURES);
             File newFile = new File(storageDir, "IMG_" + System.currentTimeMillis() + ".jpg");
