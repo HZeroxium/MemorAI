@@ -34,6 +34,10 @@ android {
         }
         debug {
             isDebuggable = true
+            firebaseAppDistribution {
+                releaseNotes="Debug build"
+                groups="testers"
+            }
         }
     }
 
