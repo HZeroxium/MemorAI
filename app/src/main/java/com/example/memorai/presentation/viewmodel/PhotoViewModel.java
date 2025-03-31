@@ -400,4 +400,72 @@ public class PhotoViewModel extends ViewModel {
         return photoLiveData;
     }
 
+    public LiveData<List<Photo>> getSearchResults() {
+        return searchResults;
+    }
+
+    public void searchPhotosByTag(String tag) {
+        String userId = FirebaseAuth.getInstance().getCurrentUser().getUid();
+        if (userId == null) {
+            Log.w("PhotoViewModel", "User not authenticated");
+            searchResults.setValue(new ArrayList<>());
+            return;
+        }
+
+        CollectionReference userPhotosRef = firestore.collection("photos")
+                .document(userId)
+                .collection("user_photos");
+
+        // Firestore query to find documents where tags array contains the search tag
+        userPhotosRef.whereArrayContains("tags", tag)
+                .get()
+                .addOnCompleteListener(task -> {
+                    if (task.isSuccessful() && task.getResult() != null) {
+                        List<Photo> photos = new ArrayList<>();
+
+                        // Process photos in background
+                        ExecutorService executor = Executors.newFixedThreadPool(4);
+                        AtomicInteger processedCount = new AtomicInteger(0);
+                        int totalCount = task.getResult().size();
+
+                        if (totalCount == 0) {
+                            searchResults.setValue(new ArrayList<>());
+                            return;
+                        }
+
+                        for (DocumentSnapshot doc : task.getResult()) {
+                            Photo photo = doc.toObject(Photo.class);
+                            if (photo != null) {
+                                photos.add(photo);
+
+                                // Process image in background
+                                executor.execute(() -> {
+                                    try {
+                                        createBitmap(photo);
+                                    } catch (Exception e) {
+                                        Log.e("PhotoViewModel", "Error processing image", e);
+                                    }
+
+                                    // Update UI when all photos are processed
+                                    if (processedCount.incrementAndGet() == totalCount) {
+                                        mainHandler.post(() -> searchResults.setValue(photos));
+                                    }
+                                });
+                            } else {
+                                processedCount.incrementAndGet();
+                            }
+                        }
+
+                        // Handle case where all photos are processed immediately
+                        if (processedCount.get() == totalCount) {
+                            searchResults.setValue(photos);
+                        }
+
+                        executor.shutdown();
+                    } else {
+                        Log.e("PhotoViewModel", "Error searching photos by tag", task.getException());
+                        searchResults.setValue(new ArrayList<>());
+                    }
+                });
+    }
 }

@@ -1,49 +1,30 @@
 <?xml version="1.0" encoding="utf-8"?><!--res/layout/fragment_search.xml-->
 <androidx.coordinatorlayout.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    xmlns:app="http://schemas.android.com/apk/res-auto" android:layout_width="match_parent" android:layout_height="match_parent">
 
     <!-- Material Search Bar -->
-    <com.google.android.material.search.SearchBar
-        android:id="@+id/searchBar"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:backgroundTint="?attr/colorSurface"
-        android:hint="@string/search_your_photos"
-        android:paddingHorizontal="16dp"
-        app:menu="@menu/menu_search" />
+    <com.google.android.material.search.SearchBar android:id="@+id/searchBar" android:layout_width="match_parent" android:layout_height="wrap_content" android:backgroundTint="?attr/colorSurface" android:hint="@string/search_your_photos" android:paddingHorizontal="16dp" app:menu="@menu/menu_search" />
 
     <!-- Material Search View -->
-    <com.google.android.material.search.SearchView
-        android:id="@+id/searchView"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:hint="@string/search_your_photos"
-        app:autoShowKeyboard="true"
-        app:hideNavigationIcon="true"
-        app:layout_anchor="@id/searchBar"
-        app:searchPrefixText=""
-        app:useDrawerArrowDrawable="false">
+    <com.google.android.material.search.SearchView android:id="@+id/searchView" android:layout_width="match_parent" android:layout_height="match_parent" android:hint="@string/search_your_photos" app:autoShowKeyboard="true" app:hideNavigationIcon="true" app:layout_anchor="@id/searchBar" app:searchPrefixText="" app:useDrawerArrowDrawable="false">
 
-        <!-- "No Results" text -->
-        <TextView
-            android:id="@+id/textViewNoResults"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center"
-            android:text="@string/no_search_results"
-            android:textAppearance="@style/TextAppearance.Material3.TitleMedium"
-            android:visibility="gone" />
+        <LinearLayout android:layout_width="match_parent" android:layout_height="match_parent" android:orientation="vertical" android:padding="16dp">
 
-        <!-- RecyclerView for search results -->
-        <androidx.recyclerview.widget.RecyclerView
-            android:id="@+id/recyclerViewSearchResults"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:clipToPadding="false"
-            android:paddingHorizontal="16dp"
-            android:scrollbars="vertical" />
+            <!-- Results count -->
+            <TextView android:id="@+id/textViewResultCount" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginBottom="8dp" android:textAppearance="@style/TextAppearance.Material3.TitleMedium" android:visibility="gone" />
+
+            <!-- "No Results" text -->
+            <TextView android:id="@+id/textViewNoResults" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginBottom="8dp" android:textAppearance="@style/TextAppearance.Material3.TitleMedium" android:visibility="gone" />
+
+            <!-- Clear search button -->
+            <Button android:id="@+id/buttonClearSearch" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Clear Search" android:visibility="gone" style="@style/Widget.Material3.Button.TextButton" android:layout_marginBottom="8dp" />
+
+            <!-- Progress Bar -->
+            <ProgressBar android:id="@+id/progressBar" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_gravity="center" android:visibility="gone" android:layout_marginBottom="16dp" />
+
+            <!-- RecyclerView for search results -->
+            <androidx.recyclerview.widget.RecyclerView android:id="@+id/recyclerViewSearchResults" android:layout_width="match_parent" android:layout_height="match_parent" android:clipToPadding="false" android:scrollbars="vertical" android:visibility="gone" />
+        </LinearLayout>
     </com.google.android.material.search.SearchView>
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>
