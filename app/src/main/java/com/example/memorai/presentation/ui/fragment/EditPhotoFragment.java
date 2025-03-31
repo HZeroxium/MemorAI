@@ -2,10 +2,12 @@ package com.example.memorai.presentation.ui.fragment;
 
 import android.annotation.SuppressLint;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.net.Uri;
 import android.os.Bundle;
 import android.text.InputType;
+import android.util.Base64;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
@@ -181,9 +183,11 @@ public class EditPhotoFragment extends Fragment {
 
         // Nếu có ảnh được truyền vào Fragment
         if (getArguments() != null) {
-            String photoUrl = getArguments().getString("photo_url", "");
-            if (!photoUrl.isEmpty()) {
-                currentPhoto = new Photo("id", photoUrl, null, System.currentTimeMillis(), System.currentTimeMillis());
+            byte[]  photoUrl = getArguments().getByteArray("photo_bitmap");
+            if (photoUrl!= null) {
+                currentPhoto = new Photo("id", "ok", null, System.currentTimeMillis(), System.currentTimeMillis());
+                Bitmap bitmap = BitmapFactory.decodeByteArray(photoUrl, 0, photoUrl.length);
+                currentPhoto.setBitmap(bitmap);
                 updatePhotoUI(currentPhoto);
             }
         }
@@ -247,44 +251,7 @@ public class EditPhotoFragment extends Fragment {
             }
         });
 
-        // Handle back press
-        requireActivity().getOnBackPressedDispatcher().addCallback(getViewLifecycleOwner(), new OnBackPressedCallback(true) {
-            @Override
-            public void handleOnBackPressed() {
-                // Check if a tool is active
-                if (currentTool != null) {
-                    switch (currentTool) {
-                        case "Brush":
-                            photoEditor.setBrushDrawingMode(false); // Disable brush mode
-                            break;
-                        case "Eraser":
-                            photoEditor.setBrushDrawingMode(false); // Disable eraser mode
-                            break;
-                        case "Filter":
-                            showFilter(false); // Hide the filter view
-                            break;
-                        case "Text":
-                            // No specific action needed for Text since the dialog closes itself
-                            break;
-                        default:
-                            // Handle other tools if needed
-                            break;
-                    }
-                    // Reset the current tool and UI
-                    currentTool = null;
-                    binding.txtCurrentTool.setText(R.string.app_name);
-                }
-                // If no tool is active, check for unsaved changes
-                else if (!photoEditor.isCacheEmpty()) {
-                    showSaveDialog();
-                }
-                // If no tool is active and no unsaved changes, proceed with back press
-                else {
-                    setEnabled(false); // Disable this callback to allow default back press behavior
-                    requireActivity().getOnBackPressedDispatcher().onBackPressed(); // Trigger default back press
-                }
-            }
-        });
+
 
         // Set up click listener for ic_close
         binding.imgClose.setOnClickListener(v -> {
@@ -310,6 +277,10 @@ public class EditPhotoFragment extends Fragment {
                 currentTool = null;
                 binding.txtCurrentTool.setText(R.string.app_name);
             }
+            else {
+                showSaveDialog();
+            }
+
         });
 
         updateUndoRedoButtons();
@@ -567,11 +538,10 @@ public class EditPhotoFragment extends Fragment {
                 .show();
     }
     private void updatePhotoUI(Photo photo) {
-        currentPhoto = photo;
         if (photo != null && photo.getFilePath() != null) {
             // Dùng Glide để tải ảnh vào PhotoEditorView
             Glide.with(this)
-                    .load(photo.getFilePath())
+                    .load(photo.getBitmap())
                     .placeholder(R.drawable.placeholder_image)
                     .error(R.drawable.error_image)
                     .into(binding.photoEditorView.getSource());
@@ -585,7 +555,15 @@ public class EditPhotoFragment extends Fragment {
 
         updateUndoRedoButtons();
     }
-
+    public static Bitmap decodeBase64ToImage(String base64) {
+        try {
+            byte[] decodedBytes = Base64.decode(base64, Base64.DEFAULT);
+            return BitmapFactory.decodeByteArray(decodedBytes, 0, decodedBytes.length);
+        } catch (Exception e) {
+            Log.e("Photo", "Error decoding Base64 to image", e);
+            return null;
+        }
+    }
     /**
      * Cập nhật trạng thái nút Undo/Redo
      */
