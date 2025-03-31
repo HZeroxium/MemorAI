@@ -106,7 +106,6 @@ public class PhotoViewModel extends ViewModel {
                 });
     }
 
-
     public String encodeBase64(String rawString) {
         if (rawString == null || rawString.isEmpty()) {
             return rawString;
@@ -114,8 +113,6 @@ public class PhotoViewModel extends ViewModel {
         byte[] encodedBytes = Base64.encode(rawString.getBytes(), Base64.DEFAULT);
         return new String(encodedBytes);
     }
-
-
 
     public void loadPhotosByAlbum(String albumId) {
         String userId = FirebaseAuth.getInstance().getCurrentUser().getUid();
@@ -254,10 +251,9 @@ public class PhotoViewModel extends ViewModel {
 
                         // Cập nhật album trong Firestore
                         albumDoc.getReference().update("photos", photoIds)
-                                .addOnSuccessListener(aVoid1 ->
-                                        Log.d("PhotoViewModel", "Photo ID removed from album: " + albumDoc.getId()))
-                                .addOnFailureListener(e ->
-                                        Log.e("PhotoViewModel", "Failed to update album", e));
+                                .addOnSuccessListener(aVoid1 -> Log.d("PhotoViewModel",
+                                        "Photo ID removed from album: " + albumDoc.getId()))
+                                .addOnFailureListener(e -> Log.e("PhotoViewModel", "Failed to update album", e));
                     }
                 }
             }).addOnFailureListener(e -> Log.e("PhotoViewModel", "Failed to fetch albums", e));
@@ -285,8 +281,6 @@ public class PhotoViewModel extends ViewModel {
         }
     }
 
-
-
     public void createBitmap(Photo photo) {
         Bitmap bitmap = decodeBase64ToImage(photo.getFilePath());
         photo.setBitmap(bitmap);
@@ -301,6 +295,7 @@ public class PhotoViewModel extends ViewModel {
             return null;
         }
     }
+
     public LiveData<List<Photo>> observePhotosByAlbum(String albumId) {
         // Kiểm tra xem album đã có trong map chưa, nếu chưa thì tạo mới
         if (!albumPhotosMap.containsKey(albumId)) {
@@ -314,7 +309,6 @@ public class PhotoViewModel extends ViewModel {
     public int getPhotoCount() {
         return allPhotos.getValue() != null ? allPhotos.getValue().size() : 0;
     }
-
 
     public void searchPhotos(String query) {
         String userId = FirebaseAuth.getInstance().getCurrentUser().getUid();
@@ -376,4 +370,102 @@ public class PhotoViewModel extends ViewModel {
                 .addOnFailureListener(e -> Log.e("PhotoViewModel", "Failed to update photo privacy", e));
     }
 
+    public LiveData<Photo> getPhotoById(String photoId) {
+        MutableLiveData<Photo> photoLiveData = new MutableLiveData<>();
+
+        String userId = FirebaseAuth.getInstance().getCurrentUser().getUid();
+        if (userId == null) {
+            Log.w("PhotoViewModel", "User not authenticated");
+            return photoLiveData;
+        }
+
+        firestore.collection("photos")
+                .document(userId)
+                .collection("user_photos")
+                .document(photoId)
+                .get()
+                .addOnSuccessListener(documentSnapshot -> {
+                    if (documentSnapshot.exists()) {
+                        Photo photo = documentSnapshot.toObject(Photo.class);
+                        if (photo != null) {
+                            createBitmap(photo); // Convert base64 to bitmap
+                            photoLiveData.setValue(photo);
+                        }
+                    }
+                })
+                .addOnFailureListener(e -> {
+                    Log.e("PhotoViewModel", "Error fetching photo", e);
+                });
+
+        return photoLiveData;
+    }
+
+    public LiveData<List<Photo>> getSearchResults() {
+        return searchResults;
+    }
+
+    public void searchPhotosByTag(String tag) {
+        String userId = FirebaseAuth.getInstance().getCurrentUser().getUid();
+        if (userId == null) {
+            Log.w("PhotoViewModel", "User not authenticated");
+            searchResults.setValue(new ArrayList<>());
+            return;
+        }
+
+        CollectionReference userPhotosRef = firestore.collection("photos")
+                .document(userId)
+                .collection("user_photos");
+
+        // Firestore query to find documents where tags array contains the search tag
+        userPhotosRef.whereArrayContains("tags", tag)
+                .get()
+                .addOnCompleteListener(task -> {
+                    if (task.isSuccessful() && task.getResult() != null) {
+                        List<Photo> photos = new ArrayList<>();
+
+                        // Process photos in background
+                        ExecutorService executor = Executors.newFixedThreadPool(4);
+                        AtomicInteger processedCount = new AtomicInteger(0);
+                        int totalCount = task.getResult().size();
+
+                        if (totalCount == 0) {
+                            searchResults.setValue(new ArrayList<>());
+                            return;
+                        }
+
+                        for (DocumentSnapshot doc : task.getResult()) {
+                            Photo photo = doc.toObject(Photo.class);
+                            if (photo != null) {
+                                photos.add(photo);
+
+                                // Process image in background
+                                executor.execute(() -> {
+                                    try {
+                                        createBitmap(photo);
+                                    } catch (Exception e) {
+                                        Log.e("PhotoViewModel", "Error processing image", e);
+                                    }
+
+                                    // Update UI when all photos are processed
+                                    if (processedCount.incrementAndGet() == totalCount) {
+                                        mainHandler.post(() -> searchResults.setValue(photos));
+                                    }
+                                });
+                            } else {
+                                processedCount.incrementAndGet();
+                            }
+                        }
+
+                        // Handle case where all photos are processed immediately
+                        if (processedCount.get() == totalCount) {
+                            searchResults.setValue(photos);
+                        }
+
+                        executor.shutdown();
+                    } else {
+                        Log.e("PhotoViewModel", "Error searching photos by tag", task.getException());
+                        searchResults.setValue(new ArrayList<>());
+                    }
+                });
+    }
 }
