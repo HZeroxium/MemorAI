@@ -40,7 +40,7 @@ public class LoginFragment extends BottomSheetDialogFragment {
 
         // Cấu hình Google Sign-In
         GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
-                .requestIdToken("619405178592-ml761krg19iac2ratge3eul9mdhg84pg.apps.googleusercontent.com")
+                .requestIdToken("619405178592-9epq2tcvvj06i1njlthtt72h3kckk79b.apps.googleusercontent.com")
                 .requestEmail()
                 .build();
 

@@ -2,6 +2,7 @@ package com.example.memorai.presentation.ui.fragment;
 
 import android.annotation.SuppressLint;
 import android.graphics.Bitmap;
+import android.graphics.Color;
 import android.net.Uri;
 import android.os.Bundle;
 import android.text.InputType;
@@ -44,6 +45,7 @@ import com.example.memorai.presentation.viewmodel.EditPhotoViewModel;
 import com.example.memorai.presentation.ui.adapter.ToolIconAdapter;
 import com.example.memorai.presentation.viewmodel.PhotoViewModel;
 import com.example.memorai.presentation.ui.dialog.ShapeBSFragment;
+import com.example.memorai.presentation.ui.dialog.EmojiBSFragment;
 import com.example.memorai.utils.ShapeTypeWrapper;
 
 import java.util.ArrayList;
@@ -446,6 +448,13 @@ public class EditPhotoFragment extends Fragment {
                         }
                     });
                     rvFilterView.setAdapter(filterAdapter);
+                    break;
+                case "Emoji":
+                    EmojiBSFragment emojiBSFragment = new EmojiBSFragment();
+                    emojiBSFragment.setEmojiListener(emojiUnicode -> {
+                        photoEditor.addText(emojiUnicode, Color.BLACK);
+                    });
+                    emojiBSFragment.show(getParentFragmentManager(), "EmojiBSFragment");
                     break;
                 case "Sticker":
                     showStickerFragment();

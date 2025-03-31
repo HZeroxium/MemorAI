@@ -55,7 +55,7 @@
             android:value="@integer/google_play_services_version"/>
         <meta-data
             android:name="com.google.android.gms.auth.api.signin"
-            android:value="619405178592-ml761krg19iac2ratge3eul9mdhg84pg.apps.googleusercontent.com"/>
+            android:value="619405178592-9epq2tcvvj06i1njlthtt72h3kckk79b.apps.googleusercontent.com"/>
 
         <receiver
             android:name=".utils.notification.NetworkReceiver"

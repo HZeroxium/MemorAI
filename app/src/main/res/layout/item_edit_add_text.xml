@@ -30,7 +30,8 @@
         android:inputType="textMultiLine"
         android:textSize="40sp"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"/>
+        android:layout_height="match_parent"
+        android:imeOptions="actionDone"/>
     <RelativeLayout
         android:id="@+id/add_text_color_picker_relative_layout"
         android:layout_alignParentBottom="true"
@@ -44,6 +45,8 @@
             app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
             tools:background="color/black"
             tools:listitem="@layout/item_list_color_picker"
+            android:overScrollMode="never"
+
             />
 
     </RelativeLayout>
