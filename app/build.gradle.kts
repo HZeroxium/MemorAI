@@ -74,6 +74,7 @@ dependencies {
     implementation(libs.googleid)
     implementation(libs.firebase.database)
     implementation(libs.litert.support.api)
+    implementation(libs.litert.gpu)
     kapt(libs.hilt.compiler)
 
     // Room Database
@@ -144,9 +145,9 @@ dependencies {
     // implementation(libs.tensorflow.tensorflow.lite.task.vision)
     // implementation(libs.tensorflow.lite.support)
     // implementation(libs.tensorflow.lite.metadata)
+    implementation(libs.litert)
 
     // Ensure we only use Google Edge LiteRT libraries which already include TensorFlow Lite functionality
-    implementation(libs.litert)
     implementation(libs.litert.support.api)
 }
 
