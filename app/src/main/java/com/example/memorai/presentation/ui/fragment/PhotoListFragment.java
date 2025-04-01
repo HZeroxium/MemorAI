@@ -102,7 +102,6 @@ public class PhotoListFragment extends Fragment {
                 // Pass photoId & photoUrl for the detail
                 Bundle args = new Bundle();
                 args.putString("photo_id", photo.getId());
-                args.putByteArray("photo_url", convertBitmapToByteArray(photo.getBitmap()));
                 Navigation.findNavController(view).navigate(R.id.photoDetailFragment, args);
             }
         });

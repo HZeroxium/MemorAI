@@ -34,6 +34,7 @@ import com.example.memorai.presentation.viewmodel.PhotoViewModel;
 import com.google.android.material.chip.Chip;
 import com.google.android.material.chip.ChipGroup;
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -51,7 +52,7 @@ public class PhotoDetailFragment extends Fragment {
 
     private FragmentPhotoDetailBinding binding;
     private PhotoViewModel photoViewModel;
-    private byte[] photoUrl;
+    private Bitmap photoUrl;
     private String photoId;
     private boolean isPrivate = false;
     private Photo currentPhoto;
@@ -74,7 +75,6 @@ public class PhotoDetailFragment extends Fragment {
         photoViewModel = new ViewModelProvider(requireActivity()).get(PhotoViewModel.class);
 
         if (getArguments() != null) {
-            photoUrl = getArguments().getByteArray("photo_url");
             photoId = getArguments().getString("photo_id", "");
 
             // Load the complete photo details
@@ -82,6 +82,13 @@ public class PhotoDetailFragment extends Fragment {
                 photoViewModel.getPhotoById(photoId).observe(getViewLifecycleOwner(), photo -> {
                     if (photo != null) {
                         currentPhoto = photo;
+                        if (photo.getBitmap() != null) {
+                            Glide.with(this)
+                                    .load(photo.getBitmap())
+                                    .placeholder(R.drawable.placeholder_image)
+                                    .error(R.drawable.error_image)
+                                    .into(binding.imageViewDetailPhoto);
+                        }
                         updateUI(photo);
                         isPrivate = photo.getIsPrivate(); // Update the isPrivate state
                         updatePrivateIcon(); // Update the privacy icon
@@ -107,9 +114,8 @@ public class PhotoDetailFragment extends Fragment {
             }
 
             if (item.getItemId() == R.id.action_edit_photo) {
-                Bundle args = new Bundle();
-                args.putByteArray("photo_bitmap", photoUrl);
-                Navigation.findNavController(requireView()).navigate(R.id.editPhotoFragment, args);
+
+                Navigation.findNavController(requireView()).navigate(R.id.editPhotoFragment);
                 return true;
             }
 
@@ -121,15 +127,6 @@ public class PhotoDetailFragment extends Fragment {
             return false;
         });
 
-        // Display the photo
-        if (photoUrl != null) {
-            Bitmap bitmap = BitmapFactory.decodeByteArray(photoUrl, 0, photoUrl.length);
-            Glide.with(this)
-                    .load(bitmap)
-                    .placeholder(R.drawable.placeholder_image)
-                    .error(R.drawable.error_image)
-                    .into(binding.imageViewDetailPhoto);
-        }
     }
 
     private void updateUI(Photo photo) {
@@ -168,8 +165,8 @@ public class PhotoDetailFragment extends Fragment {
         binding.containerPhotoDetails.setVisibility(View.VISIBLE);
     }
 
-    private void sharePhoto(byte[] photoByteArray) {
-        if (photoByteArray == null) {
+    private void sharePhoto(Bitmap bitmap) {
+        if (bitmap == null) {
             Toast.makeText(requireContext(), "No photo to share", Toast.LENGTH_SHORT).show();
             return;
         }
@@ -177,7 +174,13 @@ public class PhotoDetailFragment extends Fragment {
         try {
             File file = new File(requireContext().getCacheDir(), "shared_photo.png");
             FileOutputStream fos = new FileOutputStream(file);
-            fos.write(photoByteArray);
+
+            // Chuyển Bitmap thành ByteArrayOutputStream
+            ByteArrayOutputStream bos = new ByteArrayOutputStream();
+            bitmap.compress(Bitmap.CompressFormat.PNG, 100, bos);
+            byte[] bitmapData = bos.toByteArray();
+
+            fos.write(bitmapData);
             fos.flush();
             fos.close();
 
@@ -194,6 +197,7 @@ public class PhotoDetailFragment extends Fragment {
             Toast.makeText(requireContext(), "Failed to share photo", Toast.LENGTH_SHORT).show();
         }
     }
+
 
     private void setSharedElementTransition() {
         setSharedElementEnterTransition(
@@ -263,9 +267,8 @@ public class PhotoDetailFragment extends Fragment {
                 return true;
             }
             if (item.getItemId() == R.id.action_edit_photo) {
-                Bundle args = new Bundle();
-                args.putByteArray("photo_bitmap", photoUrl);
-                Navigation.findNavController(requireView()).navigate(R.id.editPhotoFragment, args);
+
+                Navigation.findNavController(requireView()).navigate(R.id.editPhotoFragment);
                 return true;
             }
             if (item.getItemId() == R.id.action_delete_photo) {

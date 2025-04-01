@@ -4,38 +4,34 @@ import android.content.Context;
 import android.graphics.Bitmap;
 import android.os.SystemClock;
 import android.util.Log;
-
 import org.tensorflow.lite.Interpreter;
+import org.tensorflow.lite.gpu.GpuDelegate;
+import org.tensorflow.lite.nnapi.NnApiDelegate;
 import org.tensorflow.lite.support.common.FileUtil;
-import org.tensorflow.lite.support.image.TensorImage;
-
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.MappedByteBuffer;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.PriorityQueue;
 
 public class ImageClassifierHelper {
   private static final String TAG = "ImageClassifierHelper";
-  private static final int MAX_RESULTS = 5; // Top 5 tags
-
-  // Model parameters - FIXED THE IMAGE SIZE
-  private static final int IMAGE_SIZE = 128; // Changed from 224 to 128 based on model requirements
-  private static final int NUM_CLASSES = 1001; // MobileNet classes
+  private static final int MAX_RESULTS = 5;
+  private static final int IMAGE_SIZE = 224; // MobileNet V2 yêu cầu 224x224
+  private static final int NUM_CLASSES = 1001;
   private static final int BATCH_SIZE = 1;
-  private static final int PIXEL_SIZE = 3; // RGB channels
-  private static final float IMAGE_MEAN = 127.5f;
-  private static final float IMAGE_STD = 127.5f;
+  private static final int PIXEL_SIZE = 3;
 
   private Interpreter interpreter;
   private final Context context;
-  private final String modelPath = "mobilenet_v1.tflite"; // Model file should be in assets folder
-  private final String labelPath = "labels.txt"; // Labels file in assets
+  private final String modelPath = "mobilenet_v2_1.0_224.tflite"; // MobileNet V2
+  private final String labelPath = "labels.txt";
   private List<String> labels;
   private ByteBuffer inputBuffer;
+  private GpuDelegate gpuDelegate;
+  private NnApiDelegate nnApiDelegate;
 
   public ImageClassifierHelper(Context context) {
     this.context = context;
@@ -51,6 +47,13 @@ public class ImageClassifierHelper {
   private void setupInterpreter() throws IOException {
     MappedByteBuffer modelBuffer = FileUtil.loadMappedFile(context, modelPath);
     Interpreter.Options options = new Interpreter.Options();
+
+    // ⚡ Dùng GPU hoặc NNAPI để tăng tốc độ nhận diện
+    gpuDelegate = new GpuDelegate();
+    nnApiDelegate = new NnApiDelegate();
+    options.addDelegate(gpuDelegate);
+    options.addDelegate(nnApiDelegate);
+
     interpreter = new Interpreter(modelBuffer, options);
   }
 
@@ -59,7 +62,6 @@ public class ImageClassifierHelper {
   }
 
   private void createInputBuffer() {
-    // Verify the buffer size matches what the model expects
     int bufferSize = BATCH_SIZE * IMAGE_SIZE * IMAGE_SIZE * PIXEL_SIZE * 4;
     Log.d(TAG, "Creating input buffer of size: " + bufferSize + " bytes");
     inputBuffer = ByteBuffer.allocateDirect(bufferSize);
@@ -72,18 +74,13 @@ public class ImageClassifierHelper {
       return new ArrayList<>();
     }
 
-    // Preprocess the bitmap to fit the model input
     Bitmap resizedBitmap = Bitmap.createScaledBitmap(bitmap, IMAGE_SIZE, IMAGE_SIZE, true);
-
-    // Clear the input buffer and load the bitmap
     inputBuffer.rewind();
     loadBitmapIntoBuffer(resizedBitmap);
 
-    // Create output buffer
     float[][] outputBuffer = new float[1][NUM_CLASSES];
 
     try {
-      // Run inference
       long startTime = SystemClock.uptimeMillis();
       interpreter.run(inputBuffer, outputBuffer);
       long endTime = SystemClock.uptimeMillis();
@@ -93,7 +90,6 @@ public class ImageClassifierHelper {
       return new ArrayList<>();
     }
 
-    // Process results
     return getTopKTags(outputBuffer[0]);
   }
 
@@ -104,17 +100,10 @@ public class ImageClassifierHelper {
     for (int i = 0; i < pixels.length; i++) {
       int pixel = pixels[i];
 
-      // Extract RGB values
-      float r = ((pixel >> 16) & 0xFF);
-      float g = ((pixel >> 8) & 0xFF);
-      float b = (pixel & 0xFF);
+      float r = ((pixel >> 16) & 0xFF) / 255.0f;
+      float g = ((pixel >> 8) & 0xFF) / 255.0f;
+      float b = (pixel & 0xFF) / 255.0f;
 
-      // Normalize pixel values
-      r = (r - IMAGE_MEAN) / IMAGE_STD;
-      g = (g - IMAGE_MEAN) / IMAGE_STD;
-      b = (b - IMAGE_MEAN) / IMAGE_STD;
-
-      // Add to input buffer
       inputBuffer.putFloat(r);
       inputBuffer.putFloat(g);
       inputBuffer.putFloat(b);
@@ -123,20 +112,14 @@ public class ImageClassifierHelper {
 
   private List<String> getTopKTags(float[] confidences) {
     List<String> tags = new ArrayList<>();
+    PriorityQueue<Recognition> queue = new PriorityQueue<>(MAX_RESULTS, (a, b) -> Float.compare(b.confidence, a.confidence));
 
-    // Using a priority queue to find top-K results
-    PriorityQueue<Recognition> queue = new PriorityQueue<>(
-        MAX_RESULTS,
-        (a, b) -> Float.compare(b.confidence, a.confidence));
-
-    // Add classifications to the queue
     for (int i = 0; i < confidences.length; i++) {
-      if (confidences[i] > 0.0f) { // Consider only if confidence > 0.3
+      if (confidences[i] > 0.0f) {
         queue.add(new Recognition(labels.size() > i ? labels.get(i) : "Unknown", confidences[i]));
       }
     }
 
-    // Get the top classifications
     int recognitionsSize = Math.min(queue.size(), MAX_RESULTS);
     for (int i = 0; i < recognitionsSize; i++) {
       Recognition r = queue.poll();
@@ -145,10 +128,17 @@ public class ImageClassifierHelper {
       }
     }
 
+    for (String tag : tags) {
+      if (tag.toLowerCase().contains("wig")) {
+        tags.add("You look handsome! 🥳✨");
+        break;
+      }
+    }
+
+
     return tags;
   }
 
-  // Internal class to hold recognition results
   private static class Recognition {
     final String label;
     final float confidence;
@@ -163,6 +153,12 @@ public class ImageClassifierHelper {
     if (interpreter != null) {
       interpreter.close();
       interpreter = null;
+    }
+    if (gpuDelegate != null) {
+      gpuDelegate.close();
+    }
+    if (nnApiDelegate != null) {
+      nnApiDelegate.close();
     }
   }
 }
