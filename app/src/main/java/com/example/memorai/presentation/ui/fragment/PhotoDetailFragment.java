@@ -73,7 +73,6 @@ public class PhotoDetailFragment extends Fragment {
 
         // ViewModel
         photoViewModel = new ViewModelProvider(requireActivity()).get(PhotoViewModel.class);
-
         if (getArguments() != null) {
             photoId = getArguments().getString("photo_id", "");
 
@@ -114,8 +113,9 @@ public class PhotoDetailFragment extends Fragment {
             }
 
             if (item.getItemId() == R.id.action_edit_photo) {
-
-                Navigation.findNavController(requireView()).navigate(R.id.editPhotoFragment);
+                Bundle args = new Bundle();
+                args.putString("photo_id", photoId);
+                Navigation.findNavController(requireView()).navigate(R.id.editPhotoFragment, args);
                 return true;
             }
 
@@ -130,14 +130,11 @@ public class PhotoDetailFragment extends Fragment {
     }
 
     private void updateUI(Photo photo) {
-        // Set photo created date
-        binding.textViewCreatedDate.setText("Created: " + dateFormat.format(new Date(photo.getCreatedAt())));
-
-        // Set photo last modified date
-        binding.textViewModifiedDate.setText("Modified: " + dateFormat.format(new Date(photo.getUpdatedAt())));
+        binding.textViewCreatedDate.setText(getString(R.string.created) + " " + dateFormat.format(new Date(photo.getCreatedAt())));
+        binding.textViewCreatedDate.setText(getString(R.string.modified) + " " + dateFormat.format(new Date(photo.getUpdatedAt())));
 
         // Set privacy status
-        binding.textViewPrivacyStatus.setText(photo.getIsPrivate() ? "Private" : "Public");
+        binding.textViewPrivacyStatus.setText(photo.getIsPrivate() ? R.string.private_photo : R.string.public_photo);
         binding.textViewPrivacyStatus.setCompoundDrawablesWithIntrinsicBounds(
                 photo.getIsPrivate() ? R.drawable.ic_lock : R.drawable.ic_lock_open,
                 0, 0, 0);
@@ -152,7 +149,7 @@ public class PhotoDetailFragment extends Fragment {
                 Chip chip = new Chip(requireContext());
                 chip.setText(tag);
                 chip.setClickable(false);
-                chip.setChipBackgroundColorResource(R.color.colorAccent);
+                chip.setChipBackgroundColorResource(R.color.blue_color_picker);
                 chip.setTextColor(getResources().getColor(R.color.white, null));
                 binding.chipGroupTags.addView(chip);
             }
@@ -267,8 +264,10 @@ public class PhotoDetailFragment extends Fragment {
                 return true;
             }
             if (item.getItemId() == R.id.action_edit_photo) {
-
-                Navigation.findNavController(requireView()).navigate(R.id.editPhotoFragment);
+                Bundle args = new Bundle();
+                photoId = getArguments().getString("photo_id", "");
+                args.putString("photo_id", photoId);
+                Navigation.findNavController(requireView()).navigate(R.id.editPhotoFragment, args);
                 return true;
             }
             if (item.getItemId() == R.id.action_delete_photo) {

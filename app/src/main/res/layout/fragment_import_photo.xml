@@ -9,6 +9,7 @@
         android:id="@+id/toolbarImportPhoto"
         android:layout_width="0dp"
         android:layout_height="?attr/actionBarSize"
+        style="@style/CustomToolbarStyle"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"

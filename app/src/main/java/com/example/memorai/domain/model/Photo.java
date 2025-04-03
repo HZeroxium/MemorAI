@@ -60,10 +60,15 @@ public final class Photo {
         return bitmap;
     }
 
-    public void setBitmap(Bitmap bitmap) {
-        this.bitmap = bitmap;
-    }
+    public synchronized void setBitmap(Bitmap newBitmap) {
+        Bitmap oldBitmap = this.bitmap;
 
+        this.bitmap = newBitmap;
+
+        if (oldBitmap != null && !oldBitmap.isRecycled()) {
+            oldBitmap.recycle();
+        }
+    }
     public void setFilePath(String filePath) {
         this.filePath = filePath;
     }

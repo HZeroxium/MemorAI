@@ -1,11 +1,15 @@
 package com.example.memorai.presentation.ui.fragment;
 
 import android.annotation.SuppressLint;
+import android.app.ProgressDialog;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
+import android.graphics.Matrix;
+import android.media.ExifInterface;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Environment;
 import android.text.InputType;
 import android.util.Base64;
 import android.util.Log;
@@ -32,7 +36,8 @@ import androidx.transition.ChangeBounds;
 import androidx.transition.TransitionManager;
 import androidx.activity.OnBackPressedCallback;
 import androidx.appcompat.app.AlertDialog;
-
+import ja.burhanrashid52.photoeditor.PhotoEditor;
+import ja.burhanrashid52.photoeditor.SaveSettings;
 import com.bumptech.glide.Glide;
 import com.example.memorai.R;
 import com.example.memorai.databinding.FragmentEditPhotoBinding;
@@ -49,10 +54,22 @@ import com.example.memorai.presentation.viewmodel.PhotoViewModel;
 import com.example.memorai.presentation.ui.dialog.ShapeBSFragment;
 import com.example.memorai.presentation.ui.dialog.EmojiBSFragment;
 import com.example.memorai.utils.ShapeTypeWrapper;
+import com.google.android.gms.tasks.Tasks;
 
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 import java.util.Objects;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import ja.burhanrashid52.photoeditor.OnPhotoEditorListener;
 import ja.burhanrashid52.photoeditor.PhotoEditor;
@@ -84,6 +101,8 @@ public class EditPhotoFragment extends Fragment {
     private float brushSize = 10f; // Kích thước mặc định cho Brush
     private int brushOpacity = 100; // Độ trong suốt mặc định cho Brush
     private Uri photoUri;
+
+    private String photoId;
     private int undoCount = 0;
     private int redoCount = 0;
     private String currentTool = null;
@@ -131,6 +150,7 @@ public class EditPhotoFragment extends Fragment {
 
         // Lắng nghe thay đổi từ ViewModel khi ảnh được chỉnh sửa
         editPhotoViewModel.getEditedPhoto().observe(getViewLifecycleOwner(), this::updatePhotoUI);
+        photoViewModel = new ViewModelProvider(requireActivity()).get(PhotoViewModel.class);
 
         // Thiết lập OnPhotoEditorListener để theo dõi hành động vẽ
         photoEditor.setOnPhotoEditorListener(new OnPhotoEditorListener() {
@@ -183,12 +203,14 @@ public class EditPhotoFragment extends Fragment {
 
         // Nếu có ảnh được truyền vào Fragment
         if (getArguments() != null) {
-            byte[]  photoUrl = getArguments().getByteArray("photo_bitmap");
-            if (photoUrl!= null) {
-                currentPhoto = new Photo("id", "ok", null, System.currentTimeMillis(), System.currentTimeMillis());
-                Bitmap bitmap = BitmapFactory.decodeByteArray(photoUrl, 0, photoUrl.length);
-                currentPhoto.setBitmap(bitmap);
-                updatePhotoUI(currentPhoto);
+            photoId = getArguments().getString("photo_id","");
+            if (!photoId.isEmpty()) {
+                photoViewModel.getPhotoById(photoId).observe(getViewLifecycleOwner(), photo -> {
+                    if (photo != null) {
+                        currentPhoto = photo;
+                        updatePhotoUI(currentPhoto);
+                    }
+                });
             }
         }
         SeekBar sizeSlider = binding.sizeSlider;
@@ -236,20 +258,10 @@ public class EditPhotoFragment extends Fragment {
             }
         });
 
-        // Xử lý sự kiện Lưu ảnh cuối cùng
-        // Tích hợp savePhotoToDatabase vào imgSave
         binding.imgSave.setOnClickListener(v -> {
-            Photo photo = new Photo(
-                    String.valueOf(System.currentTimeMillis()),
-                    photoUri.toString()
-            );
-            if (photo.getFilePath() != null) {
-                photoViewModel.addPhoto(photo);
-                Toast.makeText(requireContext(), "Photo added successfully", Toast.LENGTH_SHORT).show();
-            } else {
-                Toast.makeText(requireContext(), "Failed to save photo", Toast.LENGTH_SHORT).show();
-            }
+            showSaveDialog();
         });
+
 
 
 
@@ -286,23 +298,151 @@ public class EditPhotoFragment extends Fragment {
         updateUndoRedoButtons();
     }
 
+    private void showError(String message) {
+        if (isAdded() && !isDetached()) { // Kiểm tra Fragment còn tồn tại
+            Toast.makeText(requireContext(), message, Toast.LENGTH_LONG).show();
+        }
+    }
+
+    private File createTempFile() {
+        try {
+            String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss", Locale.getDefault()).format(new Date());
+            String fileName = "EDIT_" + timeStamp + ".jpg";
+            File storageDir = requireContext().getExternalFilesDir(Environment.DIRECTORY_PICTURES);
+            return File.createTempFile(fileName, ".jpg", storageDir);
+        } catch (IOException e) {
+            Log.e("FileError", "Cannot create temp file", e);
+            return null;
+        }
+    }
+
+    // Xử lý khi lưu thành công
+    private void handleSaveSuccess(String imagePath, ProgressDialog progressDialog) {
+        requireActivity().runOnUiThread(() -> {
+            try {
+                progressDialog.dismiss();
+
+                File savedFile = new File(imagePath);
+                if (!savedFile.exists()) {
+                    throw new IOException("File không tồn tại");
+                }
+
+                BitmapFactory.Options options = new BitmapFactory.Options();
+                options.inSampleSize = calculateInSampleSize(savedFile);
+                Bitmap bitmap = BitmapFactory.decodeFile(imagePath, options);
+
+                if (bitmap != null) {
+                    Bitmap safeBitmap = bitmap.copy(bitmap.getConfig(), true);
+
+                    bitmap.recycle();
+
+                    photoViewModel.getPhotoById(photoId).observe(getViewLifecycleOwner(), photo -> {
+                        if (photo != null) {
+                            photoViewModel.saveNewPhoto(safeBitmap, photo.getTags());
+                            requireActivity().getOnBackPressedDispatcher().onBackPressed();
+                        }
+                    });
+                }
+            } catch (Exception e) {
+                Log.e("SaveError", "Xử lý ảnh lỗi", e);
+                showError(R.string.error_processing + e.getMessage());
+            }
+        });
+    }
+
+    // Xử lý khi lưu thất bại
+    private void handleSaveFailure(Exception exception, ProgressDialog progressDialog) {
+        requireActivity().runOnUiThread(() -> {
+            progressDialog.dismiss();
+            Log.e("SaveError", "Lưu thất bại", exception);
+            showRetryDialog(exception);
+        });
+    }
+
+    // Tính toán kích thước ảnh phù hợp
+    private int calculateInSampleSize(File imageFile) {
+        BitmapFactory.Options options = new BitmapFactory.Options();
+        options.inJustDecodeBounds = true;
+        BitmapFactory.decodeFile(imageFile.getAbsolutePath(), options);
+
+        // Giảm kích thước ảnh nếu lớn hơn 2048px
+        int inSampleSize = 1;
+        while (options.outWidth / inSampleSize > 2048 || options.outHeight / inSampleSize > 2048) {
+            inSampleSize *= 2;
+        }
+        return inSampleSize;
+    }
+
+    // Hiển thị dialog thử lại
+    private void showRetryDialog(Exception exception) {
+        new AlertDialog.Builder(requireContext())
+                .setTitle(R.string.error_saving)
+                .setMessage(exception.getMessage())
+                .setPositiveButton(R.string.retry_button, (dialog, which) -> {
+                    binding.imgSave.performClick();
+                })
+                .setNegativeButton(R.string.cancel_button, null)
+                .show();
+    }
+
+
     private void showScaleDialog() {
         AlertDialog.Builder builder = new AlertDialog.Builder(requireContext());
-        builder.setTitle("Scale Image");
+        builder.setTitle(R.string.scale_dialog_title);
 
         final EditText input = new EditText(requireContext());
         input.setInputType(InputType.TYPE_CLASS_NUMBER);
         builder.setView(input);
 
-        builder.setPositiveButton("OK", (dialog, which) -> {
+        builder.setPositiveButton(R.string.scale_dialog_ok, (dialog, which) -> {
             int scalePercentage = Integer.parseInt(input.getText().toString());
             float scale = scalePercentage / 100.0f;
             binding.photoEditorView.getSource().setScaleX(scale);
             binding.photoEditorView.getSource().setScaleY(scale);
         });
-        builder.setNegativeButton("Cancel", (dialog, which) -> dialog.cancel());
+        builder.setNegativeButton(R.string.scale_dialog_cancel, (dialog, which) -> dialog.cancel());
 
         builder.show();
+    }
+
+    private Bitmap getBitmapFromUri(Uri uri) {
+        try (InputStream inputStream = requireContext().getContentResolver().openInputStream(uri)) {
+            Bitmap bitmap = BitmapFactory.decodeStream(inputStream);
+            return rotateBitmapIfNeeded(bitmap, uri);
+        } catch (Exception e) {
+            Log.e("TakePhotoFragment", "Error loading bitmap", e);
+            return null;
+        }
+    }
+
+    private Bitmap rotateBitmapIfNeeded(Bitmap bitmap, Uri uri) {
+        try (InputStream inputStream = requireContext().getContentResolver().openInputStream(uri)) {
+            ExifInterface exif = new ExifInterface(inputStream);
+            int rotation = exif.getAttributeInt(ExifInterface.TAG_ORIENTATION, ExifInterface.ORIENTATION_NORMAL);
+            int rotationInDegrees = exifToDegrees(rotation);
+
+            if (rotationInDegrees != 0) {
+                Matrix matrix = new Matrix();
+                matrix.postRotate(rotationInDegrees);
+                return Bitmap.createBitmap(bitmap, 0, 0, bitmap.getWidth(), bitmap.getHeight(), matrix, true);
+            }
+        } catch (Exception e) {
+            Log.e("TakePhotoFragment", "Error rotating bitmap", e);
+        }
+        return bitmap;
+    }
+
+    private int exifToDegrees(int exifOrientation) {
+        switch (exifOrientation) {
+            case ExifInterface.ORIENTATION_ROTATE_90:
+                return 90;
+            case ExifInterface.ORIENTATION_ROTATE_180:
+                return 180;
+            case ExifInterface.ORIENTATION_ROTATE_270:
+                return 270;
+            default:
+                return 0;
+        }
     }
 
     /**
@@ -310,12 +450,12 @@ public class EditPhotoFragment extends Fragment {
      */
     private void initToolIcons() {
         toolIcons = new ArrayList<>();
-        toolIcons.add(new ToolIcon(R.drawable.ic_brush, "Brush"));
-        toolIcons.add(new ToolIcon(R.drawable.ic_text, "Text"));
-        toolIcons.add(new ToolIcon(R.drawable.ic_eraser, "Eraser"));
-        toolIcons.add(new ToolIcon(R.drawable.ic_photo_filter, "Filter"));
-        toolIcons.add(new ToolIcon(R.drawable.ic_emoji, "Emoji"));
-        toolIcons.add(new ToolIcon(R.drawable.ic_sticker, "Sticker"));
+        toolIcons.add(new ToolIcon(R.drawable.ic_brush, getString(R.string.label_brush)));
+        toolIcons.add(new ToolIcon(R.drawable.ic_text, getString(R.string.label_text)));
+        toolIcons.add(new ToolIcon(R.drawable.ic_eraser, getString(R.string.label_eraser)));
+        toolIcons.add(new ToolIcon(R.drawable.ic_photo_filter, getString(R.string.label_filter)));
+        toolIcons.add(new ToolIcon(R.drawable.ic_emoji, getString(R.string.label_emoji)));
+        toolIcons.add(new ToolIcon(R.drawable.ic_sticker, getString(R.string.label_sticker)));
     }
 
     /**
@@ -432,7 +572,7 @@ public class EditPhotoFragment extends Fragment {
                     binding.txtCurrentTool.setText(R.string.label_sticker);
                     break;
                 default:
-                    Toast.makeText(getContext(), "Unknown Tool", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(getContext(), R.string.error_unknown_tool, Toast.LENGTH_SHORT).show();
                     break;
             }
 
@@ -448,11 +588,8 @@ public class EditPhotoFragment extends Fragment {
         stickerFragment.setStickerListener(new StickerBSFragment.StickerListener() {
             @Override
             public void onStickerClick(Bitmap bitmap) {
-                // Thêm sticker vào ảnh bằng PhotoEditor
                 Bitmap resizedBitmap = resizeBitmap(bitmap, 0.2f);
                 photoEditor.addImage(resizedBitmap);
-                Log.d("EditPhotoFragment","Sticker upload image successfully");
-                // Cập nhật số lượng undo/redo (nếu bạn đang quản lý thủ công)
 
                 undoCount++;
                 redoCount = 0;
@@ -495,10 +632,8 @@ public class EditPhotoFragment extends Fragment {
         constraintSet.applyTo(rootView);
     }
     private void addTextToPhoto(String text, int color) {
-        // Thêm text qua PhotoEditor – đối tượng text sẽ có khả năng di chuyển, thay đổi kích thước
         photoEditor.addText(text, color);
 
-        // Sau khi thêm text, cập nhật state ảnh (ví dụ: cập nhật thời gian) để lưu vào undoStack
         if (currentPhoto != null) {
             currentPhoto = new Photo(
                     currentPhoto.getId(),
@@ -519,22 +654,50 @@ public class EditPhotoFragment extends Fragment {
      */
     private void showSaveDialog() {
         new AlertDialog.Builder(requireContext())
-                .setTitle("Save Changes")
-                .setMessage("Do you want to save your changes before exiting?")
-                .setPositiveButton("Save", (dialog, which) -> {
-                    // Save the photo (you can call your existing save logic here)
-                    binding.imgSave.performClick(); // Simulate clicking the save button
-                    requireActivity().getOnBackPressedDispatcher().onBackPressed(); // Proceed with back press
+                .setTitle(R.string.save_dialog_title)
+                .setMessage(R.string.save_dialog_message)
+                .setPositiveButton(R.string.save_button, (dialog, which) -> {
+                    ProgressDialog progressDialog = new ProgressDialog(requireContext());
+                    progressDialog.setMessage(getString(R.string.saving_progress));
+                    progressDialog.setCancelable(false);
+                    progressDialog.show();
+
+                    Executors.newSingleThreadExecutor().execute(() -> {
+                        try {
+                            File tempFile = createTempFile();
+                            if (tempFile == null) {
+                                requireActivity().runOnUiThread(() -> {
+                                    progressDialog.dismiss();
+                                    showError(getString(R.string.error_temp_file));
+                                });
+                                return;
+                            }
+
+                            photoEditor.saveAsFile(tempFile.getAbsolutePath(), new PhotoEditor.OnSaveListener() {
+                                @Override
+                                public void onSuccess(String imagePath) {
+                                    handleSaveSuccess(imagePath, progressDialog);
+                                }
+
+                                @Override
+                                public void onFailure(Exception exception) {
+                                    handleSaveFailure(exception, progressDialog);
+                                }
+                            });
+
+                        } catch (Exception e) {
+                            requireActivity().runOnUiThread(() -> {
+                                progressDialog.dismiss();
+                                showError(R.string.error_saving + e.getMessage());
+                            });
+                        }
+                    });
                 })
-                .setNegativeButton("Discard", (dialog, which) -> {
-                    // Discard changes and proceed with back press
-                    photoEditor.clearAllViews(); // Clear any unsaved changes
+                .setNegativeButton(R.string.discard_button, (dialog, which) -> {
+                    photoEditor.clearAllViews();
                     requireActivity().getOnBackPressedDispatcher().onBackPressed();
                 })
-                .setNeutralButton("Cancel", (dialog, which) -> {
-                    // Do nothing, stay in the fragment
-                    dialog.dismiss();
-                })
+                .setNeutralButton(R.string.exit_button, (dialog, which) -> dialog.dismiss())
                 .show();
     }
     private void updatePhotoUI(Photo photo) {

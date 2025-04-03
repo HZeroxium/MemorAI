@@ -1,11 +1,17 @@
 package com.example.memorai.presentation.viewmodel;
 
+import static androidx.core.content.ContentProviderCompat.requireContext;
+
+import static com.example.memorai.utils.ImageUtils.convertImageToBase64;
+
+import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.Handler;
 import android.os.Looper;
 import android.util.Base64;
 import android.util.Log;
+import android.widget.Toast;
 
 import androidx.dynamicanimation.animation.FloatValueHolder;
 import androidx.lifecycle.LiveData;
@@ -13,6 +19,7 @@ import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.ViewModel;
 
 import com.example.memorai.domain.model.Photo;
+import com.example.memorai.utils.ImageUtils;
 import com.example.memorai.domain.repository.PhotoRepository;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.CollectionReference;
@@ -23,11 +30,13 @@ import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.Query;
 import com.google.firebase.firestore.QuerySnapshot;
 
+import java.io.ByteArrayOutputStream;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -35,6 +44,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import javax.inject.Inject;
 
 import dagger.hilt.android.lifecycle.HiltViewModel;
+import dagger.hilt.android.qualifiers.ApplicationContext;
 
 @HiltViewModel
 public class PhotoViewModel extends ViewModel {
@@ -49,12 +59,14 @@ public class PhotoViewModel extends ViewModel {
     private final Handler mainHandler = new Handler(Looper.getMainLooper());
 
     private final PhotoRepository photoRepository;
+    private final Context context;
 
     public static final String ROOT_ALBUM_ID = "1";
 
     @Inject
-    public PhotoViewModel(PhotoRepository photoRepository) {
+    public PhotoViewModel(PhotoRepository photoRepository, @ApplicationContext Context context) {
         this.photoRepository = photoRepository;
+        this.context = context.getApplicationContext();
     }
 
     public LiveData<List<Photo>> observeAllPhotos() {
@@ -205,20 +217,23 @@ public class PhotoViewModel extends ViewModel {
             currentPhotos = new ArrayList<>();
         }
 
-        // Kiểm tra xem ảnh đã tồn tại chưa (dựa vào ID)
-        boolean exists = false;
-        for (Photo p : currentPhotos) {
-            if (p.getId().equals(photo.getId())) {
-                exists = true;
+        boolean updated = false;
+
+        for (int i = 0; i < currentPhotos.size(); i++) {
+            if (currentPhotos.get(i).getId().equals(photo.getId())) {
+                currentPhotos.set(i, photo);
+                updated = true;
                 break;
             }
         }
 
-        if (!exists) {
+        if (!updated) {
             currentPhotos.add(photo);
-            allPhotos.setValue(currentPhotos);
         }
+
+        allPhotos.setValue(currentPhotos);
     }
+
 
     public void deletePhoto(String photoId) {
         String userId = FirebaseAuth.getInstance().getCurrentUser().getUid();
@@ -467,5 +482,149 @@ public class PhotoViewModel extends ViewModel {
                         searchResults.setValue(new ArrayList<>());
                     }
                 });
+    }
+    private String convertBitmapToBase64(Bitmap bitmap) {
+        ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+        bitmap.compress(Bitmap.CompressFormat.JPEG, 80, byteArrayOutputStream);
+        byte[] byteArray = byteArrayOutputStream.toByteArray();
+        return Base64.encodeToString(byteArray, Base64.DEFAULT);
+    }
+    public void saveEditedPhoto(Bitmap editedBitmap, String originalPhotoId) {
+        executorService.execute(() -> {
+            try {
+                // 1. Chuyển bitmap thành base64
+                String base64Image = convertBitmapToBase64(editedBitmap);
+
+                // 2. Lấy thông tin ảnh gốc từ Firestore
+                String userId = FirebaseAuth.getInstance().getCurrentUser().getUid();
+                DocumentReference photoRef = firestore.collection("photos")
+                        .document(userId)
+                        .collection("user_photos")
+                        .document(originalPhotoId);
+
+                photoRef.get().addOnCompleteListener(task -> {
+                    if (task.isSuccessful() && task.getResult() != null) {
+                        Photo originalPhoto = task.getResult().toObject(Photo.class);
+                        if (originalPhoto != null) {
+                            // 3. Tạo photo mới với dữ liệu đã cập nhật
+                            Photo editedPhoto = new Photo(
+                                    originalPhotoId, // Giữ nguyên ID để ghi đè
+                                    base64Image,
+                                    originalPhoto.getTags(), // Giữ nguyên tags
+                                    originalPhoto.getCreatedAt(), // Giữ nguyên thời gian tạo
+                                    System.currentTimeMillis() // Cập nhật thời gian sửa đổi
+                            );
+
+                            // 4. Lưu vào Firestore
+                            photoRef.set(editedPhoto)
+                                    .addOnSuccessListener(aVoid -> {
+                                        // 5. Cập nhật LiveData
+                                        updateLocalPhotos(editedPhoto);
+                                        mainHandler.post(() ->Toast.makeText(context, "Photo edited successfully", Toast.LENGTH_SHORT).show());
+                                    })
+                                    .addOnFailureListener(e -> {
+                                        Log.e("PhotoViewModel", "Error saving edited photo", e);
+                                        mainHandler.post(() ->Toast.makeText(context, "Error saving edited photo", Toast.LENGTH_SHORT).show()
+                                        );
+                                    });
+                        }
+                    }
+                });
+            } catch (Exception e) {
+                Log.e("PhotoViewModel", "Error processing edited photo", e);
+                mainHandler.post(() ->Toast.makeText(context, "Error processing edited photo", Toast.LENGTH_SHORT).show()
+                );
+            }
+        });
+    }
+
+
+    private void updateLocalPhotos(Photo updatedPhoto) {
+        // Cập nhật trong allPhotos
+        List<Photo> currentAllPhotos = allPhotos.getValue();
+        if (currentAllPhotos != null) {
+            List<Photo> updatedList = new ArrayList<>();
+            for (Photo photo : currentAllPhotos) {
+                if (photo.getId().equals(updatedPhoto.getId())) {
+                    updatedList.add(updatedPhoto);
+                } else {
+                    updatedList.add(photo);
+                }
+            }
+            allPhotos.postValue(updatedList);
+        }
+
+        // Cập nhật trong từng album
+        for (Map.Entry<String, MutableLiveData<List<Photo>>> entry : albumPhotosMap.entrySet()) {
+            List<Photo> albumPhotos = entry.getValue().getValue();
+            if (albumPhotos != null) {
+                List<Photo> updatedAlbumPhotos = new ArrayList<>();
+                for (Photo photo : albumPhotos) {
+                    if (photo.getId().equals(updatedPhoto.getId())) {
+                        updatedAlbumPhotos.add(updatedPhoto);
+                    } else {
+                        updatedAlbumPhotos.add(photo);
+                    }
+                }
+                entry.getValue().postValue(updatedAlbumPhotos);
+            }
+        }
+    }
+    public void saveNewPhoto(Bitmap newBitmap, List<String> tags) {
+        executorService.execute(() -> {
+            try {
+                // 1. Chuyển bitmap thành base64
+                String base64Image = convertBitmapToBase64(newBitmap);
+
+                // 2. Tạo ID mới
+                String photoId = UUID.randomUUID().toString();
+                String userId = FirebaseAuth.getInstance().getCurrentUser().getUid();
+                CollectionReference userPhotosRef = firestore.collection("photos").document(userId).collection("user_photos");
+
+                Map<String, Object> photoData = new HashMap<>();
+                photoData.put("id", photoId);
+                photoData.put("filePath", base64Image);
+                photoData.put("isPrivate", false);
+                photoData.put("tags", tags);
+                photoData.put("createdAt", System.currentTimeMillis());
+                photoData.put("updatedAt", System.currentTimeMillis());
+
+                userPhotosRef.document(photoId).set(photoData)
+                        .addOnSuccessListener(aVoid -> {
+                                Toast.makeText(context, "Upload complete!", Toast.LENGTH_SHORT).show();
+
+                        })
+                        .addOnFailureListener(e -> {
+                            Log.e("TakePhotoFragment", "Failed to upload to Firestore", e);
+                            Toast.makeText(context, "Upload failed", Toast.LENGTH_SHORT).show();
+                        });
+            } catch (Exception e) {
+                Log.e("PhotoViewModel", "Error processing new photo", e);
+                mainHandler.post(() ->
+                        Toast.makeText(context, "Error processing image", Toast.LENGTH_SHORT).show()
+                );
+            }
+        });
+    }
+
+    private void addPhotoToLiveData(Photo newPhoto) {
+        // Thêm vào allPhotos
+        List<Photo> currentPhotos = allPhotos.getValue();
+        if (currentPhotos == null) {
+            currentPhotos = new ArrayList<>();
+        }
+        currentPhotos.add(0, newPhoto); // Thêm vào đầu danh sách
+        allPhotos.postValue(currentPhotos);
+
+        // Thêm vào album gốc (nếu cần)
+        MutableLiveData<List<Photo>> rootAlbum = albumPhotosMap.get(ROOT_ALBUM_ID);
+        if (rootAlbum != null) {
+            List<Photo> albumPhotos = rootAlbum.getValue();
+            if (albumPhotos == null) {
+                albumPhotos = new ArrayList<>();
+            }
+            albumPhotos.add(0, newPhoto);
+            rootAlbum.postValue(albumPhotos);
+        }
     }
 }
