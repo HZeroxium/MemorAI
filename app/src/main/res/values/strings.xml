@@ -41,7 +41,33 @@
     <string name="edit_brush">Brush</string>
     <string name="edit_close">Close</string>
     <string name="edit_done">Done</string>
+    <string name="save_dialog_title">Save Changes</string>
+    <string name="save_dialog_message">Do you want to save changes before exiting?</string>
+    <string name="save_button">Save</string>
+    <string name="cancel_button">Cancel</string>
+    <string name="discard_button">Discard</string>
+    <string name="exit_button">Exit</string>
 
+    <!-- Error Messages -->
+    <string name="error_saving">Error saving image</string>
+    <string name="error_loading">Error loading image</string>
+    <string name="error_temp_file">Cannot create temporary file</string>
+    <string name="error_processing">Image processing error</string>
+    <string name="error_unknown_tool">Unknown Tool</string>
+
+    <!-- Progress Messages -->
+    <string name="saving_progress">Saving...</string>
+
+    <!-- Scale Dialog -->
+    <string name="scale_dialog_title">Scale Image</string>
+    <string name="scale_dialog_ok">OK</string>
+    <string name="scale_dialog_cancel">Cancel</string>
+    <string name="retry_dialog_title">Save Error</string>
+    <string name="retry_button">Retry</string>
+    <string name="created">Created: </string>
+    <string name="modified">Modified: </string>
+    <string name="private_photo">Private</string>
+    <string name="public_photo">Public</string>
     <string-array name="photo_editor_emoji">
 
         <!-- Smiles -->
@@ -513,4 +539,6 @@
     <string name="user_not_found">Error: User information not found!</string>
     <string name="pin_saved">PIN saved!</string>
     <string name="error_saving_pin">PIN save failed!</string>
+    <string name="photo_info">Photo Information</string>
+    <string name="tags">Tags</string>
 </resources>

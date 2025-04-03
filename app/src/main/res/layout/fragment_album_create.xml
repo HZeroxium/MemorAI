@@ -9,7 +9,7 @@
     <!-- Top App Bar -->
     <com.google.android.material.appbar.MaterialToolbar
         android:id="@+id/toolbarAlbumCreate"
-        style="@style/ThemeOverlay.Material3.Toolbar.Surface"
+        style="@style/CustomToolbarStyle"
         android:layout_height="?attr/actionBarSize"
         app:navigationIcon="@drawable/ic_back"
         android:layout_width="match_parent"

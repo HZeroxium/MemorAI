@@ -125,7 +125,6 @@ dependencies {
 
     // Picasso
     implementation("com.squareup.picasso:picasso:2.8")
-
     // Firebase
     implementation("com.google.firebase:firebase-storage:20.2.1")
     implementation("com.google.firebase:firebase-appcheck-debug:17.0.1")
