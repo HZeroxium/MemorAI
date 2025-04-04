@@ -5,160 +5,123 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    style="@style/SCREEN"
-    android:id="@+id/settingsLayout"
-    android:padding="16dp">
+    android:padding="16dp"
+    android:id="@+id/settingsLayout">
 
-    <!-- Header -->
+    <!-- Tiêu đề -->
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginBottom="16dp"
-        android:layout_marginTop="20dp">
+        android:layout_marginBottom="20dp">
 
-        <!-- Exit Button -->
-        <ImageButton
-            android:id="@+id/btnExit"
-            android:layout_width="48dp"
-            android:layout_height="48dp"
-            android:background="?attr/selectableItemBackgroundBorderless"
-            android:contentDescription="@string/exit"
-            android:src="@drawable/ic_exit"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
-
-        <!-- Title -->
         <com.google.android.material.textview.MaterialTextView
             android:id="@+id/tvSettings"
+            style="@style/TextAppearance.MaterialComponents.Headline5"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            style="@style/TextAppearance.MaterialComponents.Headline5"
+            android:layout_marginTop="15dp"
+            android:text="@string/settings"
+            android:drawableEnd="@drawable/ic_settings"
             android:drawablePadding="5dp"
             android:gravity="center"
-            android:drawableEnd="@drawable/ic_gear_icon"
-            android:text="@string/settings"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toEndOf="@+id/btnExit"
-            app:layout_constraintTop_toTopOf="parent" />
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintVertical_bias="1.0" />
     </androidx.constraintlayout.widget.ConstraintLayout>
 
-    <!-- Settings Box -->
-    <androidx.cardview.widget.CardView
+    <!-- Cài đặt Dark Mode -->
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_margin="16dp"
-        app:cardCornerRadius="12dp"
-        app:cardElevation="6dp">
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:paddingVertical="12dp">
 
-        <LinearLayout
-            android:layout_width="match_parent"
+        <com.google.android.material.textview.MaterialTextView
+            android:id="@+id/tvDarkMode"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:padding="24dp">
+            android:layout_weight="1"
+            android:text="@string/dark_mode"
+            android:textSize="18sp" />
 
-            <!-- Dark Mode Switch -->
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:gravity="center_vertical"
-                android:orientation="horizontal"
-                android:paddingBottom="16dp">
+        <com.google.android.material.switchmaterial.SwitchMaterial
+            android:id="@+id/switchDarkMode"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" />
+    </LinearLayout>
 
-                <com.google.android.material.textview.MaterialTextView
-                    android:id="@+id/tvDarkMode"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:text="@string/dark_mode"
-                    android:textSize="18sp" />
+    <!-- Cài đặt ngôn ngữ -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:paddingVertical="12dp">
 
-                <com.google.android.material.switchmaterial.SwitchMaterial
-                    android:id="@+id/switchDarkMode"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    tools:ignore="DuplicateSpeakableTextCheck" />
-            </LinearLayout>
+        <com.google.android.material.textview.MaterialTextView
+            android:id="@+id/tvLanguage"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="@string/language"
+            android:textSize="18sp" />
 
-            <!-- Language Selection -->
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:gravity="center_vertical"
-                android:orientation="horizontal"
-                android:paddingBottom="16dp">
+        <Spinner
+            android:id="@+id/spinnerLanguage"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:padding="8dp"
+            tools:ignore="TouchTargetSizeCheck" />
+    </LinearLayout>
 
-                <com.google.android.material.textview.MaterialTextView
-                    android:id="@+id/tvLanguage"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:text="@string/language"
-                    android:textSize="18sp" />
+    <!-- Cài đặt đồng bộ đám mây -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:paddingVertical="12dp">
 
-                <com.google.android.material.textfield.TextInputLayout
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    app:boxCornerRadiusTopEnd="8dp"
-                    app:boxCornerRadiusTopStart="8dp">
+        <com.google.android.material.textview.MaterialTextView
+            android:id="@+id/tvSync"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="@string/synchronize"
+            android:textSize="18sp" />
 
-                    <Spinner
-                        android:id="@+id/spinnerLanguage"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:background="?attr/selectableItemBackground"
-                        android:padding="8dp"
-                        tools:ignore="TouchTargetSizeCheck" />
-                </com.google.android.material.textfield.TextInputLayout>
-            </LinearLayout>
+        <com.google.android.material.switchmaterial.SwitchMaterial
+            android:id="@+id/switchCloudSync"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" />
+    </LinearLayout>
 
-            <!-- Cloud Sync Switch -->
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:gravity="center_vertical"
-                android:orientation="horizontal"
-                android:paddingBottom="16dp">
+    <!-- Nút Đổi PIN -->
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/btnChangePin"
+        android:layout_width="match_parent"
+        android:layout_height="48dp"
+        android:layout_marginTop="16dp"
+        android:text="@string/change_pin"
+        android:textAllCaps="false" />
 
-                <com.google.android.material.textview.MaterialTextView
-                    android:id="@+id/tvSync"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:text="@string/synchronize"
-                    android:textSize="18sp" />
-
-                <com.google.android.material.switchmaterial.SwitchMaterial
-                    android:id="@+id/switchCloudSync"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content" />
-            </LinearLayout>
-
-            <!-- Change PIN Button -->
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/btnChangePin"
-                style="@style/Widget.MaterialComponents.Button.OutlinedButton"
-                android:layout_width="match_parent"
-                android:layout_height="48dp"
-                android:layout_marginTop="16dp"
-                android:backgroundTint="@color/md_theme_error"
-                android:text="@string/change_pin"
-                android:textAllCaps="false"
-                android:textColor="#fff" />
-
-            <!-- Reset System Button -->
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/btnResetSystem"
-                style="@style/Widget.MaterialComponents.Button.OutlinedButton"
-                android:layout_width="match_parent"
-                android:layout_height="48dp"
-                android:layout_marginTop="16dp"
-                android:backgroundTint="@color/md_theme_error"
-                android:text="@string/reset_system"
-                android:textAllCaps="false"
-                android:textColor="#fff" />
-        </LinearLayout>
-    </androidx.cardview.widget.CardView>
-
+    <!-- Nút Reset Hệ Thống -->
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/btnResetSystem"
+        android:layout_width="match_parent"
+        android:layout_height="48dp"
+        android:layout_marginTop="16dp"
+        android:text="@string/reset_system"
+        android:textAllCaps="false" />
+    <!-- Thanh trượt với nút Apply -->
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/btnSave"
+        android:layout_width="match_parent"
+        android:layout_height="48dp"
+        android:layout_marginTop="16dp"
+        android:text="@string/exit_save"
+        android:textAllCaps="false" />
 </LinearLayout>

@@ -17,13 +17,13 @@
 
         <ImageView
             android:id="@+id/avatar"
-            android:layout_width="80dp"
-            android:layout_height="80dp"
-            android:layout_marginTop="20dp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
             android:layout_gravity="center"
-            android:src="@drawable/ic_profile"
+            android:layout_marginTop="20dp"
             android:background="@drawable/circle_background"
-            android:padding="10dp"/>
+            android:padding="10dp"
+            android:src="@drawable/ic_profile" />
 
         <TextView
             android:id="@+id/username"
@@ -58,9 +58,10 @@
                 android:textStyle="bold"
                 android:textSize="18sp"/>
             <TextView
-                android:text="Photos"
+                android:text="@string/photos"
                 android:layout_height="wrap_content"
                 android:layout_width="wrap_content"
+                style="@style/content"
                 />
         </LinearLayout>
 
@@ -80,7 +81,8 @@
             <TextView
                 android:layout_height="wrap_content"
                 android:layout_width="wrap_content"
-                android:text="Albums"/>
+                style="@style/content"
+                android:text="@string/albums"/>
         </LinearLayout>
 
         <LinearLayout
@@ -99,7 +101,8 @@
             <TextView
                 android:layout_height="wrap_content"
                 android:layout_width="wrap_content"
-                android:text="Videos"/>
+                style="@style/content"
+                android:text="@string/privates"/>
         </LinearLayout>
     </LinearLayout>
 
@@ -119,8 +122,8 @@
             android:layout_height="40dp"
             android:backgroundTint="@color/theme_night_theme"
             android:paddingHorizontal="20dp"
-            android:text="+ Add media"
-            android:textColor="@android:color/white"
+            android:text="@string/add_media"
+            android:textColor="@color/button"
             tools:ignore="TouchTargetSizeCheck" />
 
         <Button
@@ -128,10 +131,10 @@
             android:layout_width="wrap_content"
             android:layout_height="40dp"
             android:layout_marginStart="10dp"
-            android:backgroundTint="@android:color/darker_gray"
+            android:backgroundTint="@color/theme_night_theme"
             android:paddingHorizontal="20dp"
-            android:text="Edit Profile"
-            android:textColor="@android:color/white"
+            android:text="@string/edit_profile"
+            android:textColor="@color/button"
             tools:ignore="TouchTargetSizeCheck" />
     </LinearLayout>
 
@@ -161,11 +164,13 @@
         android:id="@+id/recyclerViewPhotos"
         android:layout_width="0dp"
         android:layout_height="0dp"
-        android:paddingTop="8dp"
         android:clipToPadding="false"
+        android:paddingTop="8dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/tv_category" />
+        app:layout_constraintTop_toBottomOf="@+id/tv_category"
+        app:layout_constraintVertical_bias="1.0" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

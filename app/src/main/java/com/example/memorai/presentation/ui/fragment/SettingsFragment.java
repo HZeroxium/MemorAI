@@ -6,6 +6,11 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.res.Configuration;
 import android.content.res.Resources;
+import android.graphics.Bitmap;
+import android.graphics.Canvas;
+import android.graphics.Color;
+import android.graphics.Paint;
+import android.graphics.drawable.BitmapDrawable;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -13,6 +18,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
+import android.widget.SeekBar;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatDelegate;
@@ -157,11 +163,6 @@ public class SettingsFragment extends Fragment {
             }
         });
 
-        binding.btnExit.setOnClickListener(v -> {
-            NavController navController = NavHostFragment.findNavController(this);
-            navController.popBackStack();
-        }
-);
 
 
         // Similar listeners for cloud sync and biometric auth can be added here
@@ -177,6 +178,9 @@ public class SettingsFragment extends Fragment {
 
         // Update other UI elements as needed
     }
+
+
+
 
     @Override
     public void onDestroyView() {
