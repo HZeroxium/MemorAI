@@ -1,5 +1,6 @@
 package com.example.memorai.utils
 
+import ja.burhanrashid52.photoeditor.shape.ArrowPointerLocation
 import ja.burhanrashid52.photoeditor.shape.ShapeType
 import ja.burhanrashid52.photoeditor.shape.ShapeType.Brush
 
@@ -20,6 +21,6 @@ class ShapeTypeWrapper {
         fun line(): ShapeType = ShapeType.Line
 
         @JvmStatic
-        fun arrow(): ShapeType = ShapeType.Arrow()
+        fun arrow(pointerLocation: ArrowPointerLocation): ShapeType = ShapeType.Arrow(pointerLocation)
     }
 }
