@@ -11,6 +11,7 @@ pluginManagement {
         gradlePluginPortal()
     }
     plugins {
+        //noinspection GradlePluginVersion
         id("com.android.application") version "<latest_version>"
         id("org.jetbrains.kotlin.android") version "<latest_version>"
         id("com.google.firebase.appdistribution") version "<latest_version>" // Thêm dòng này

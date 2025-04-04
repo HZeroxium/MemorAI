@@ -1,0 +1,33 @@
+<!-- res/drawable/seekbar_track.xml -->
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- Phần nền của track (background) -->
+    <item android:id="@android:id/background">
+        <shape android:shape="rectangle">
+            <corners android:radius="4dp" />
+            <solid android:color="#E0E0E0" /> <!-- Màu nền track -->
+            <stroke
+                android:width="1dp"
+                android:color="#BDBDBD" /> <!-- Màu border -->
+        </shape>
+    </item>
+
+    <!-- Phần progress đã đi qua (secondary progress) -->
+    <item android:id="@android:id/secondaryProgress">
+        <clip>
+            <shape android:shape="rectangle">
+                <corners android:radius="4dp" />
+                <solid android:color="#80CBC4" /> <!-- Màu secondary progress -->
+            </shape>
+        </clip>
+    </item>
+
+    <!-- Phần progress chính -->
+    <item android:id="@android:id/progress">
+        <clip>
+            <shape android:shape="rectangle">
+                <corners android:radius="4dp" />
+                <solid android:color="#009688" /> <!-- Màu primary progress -->
+            </shape>
+        </clip>
+    </item>
+</layer-list>

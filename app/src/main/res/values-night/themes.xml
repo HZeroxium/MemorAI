@@ -61,6 +61,7 @@
     </style>
     <style name="search">
         <item name="android:background">@drawable/search_view_border_night</item>">
+        <item name="android:textColorHint">#777</item>
     </style>
     <style name="bottom_menu">
         <item name="android:textColor">#D6E3FF</item>

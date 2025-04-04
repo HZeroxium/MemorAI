@@ -70,8 +70,9 @@
         android:layout_width="match_parent"
         android:layout_marginTop="16dp"
         android:enabled="false"
+        android:textColor="@color/theme_night_theme"
         android:text="@string/update_album"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:tooltipText="Enter album title and select photos" />
+        app:tooltipText="@string/tooltip_update_album" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

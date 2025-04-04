@@ -6,7 +6,7 @@ import com.example.memorai.domain.model.User;
 
 public class UserMapper {
     public static User toDomain(UserEntity entity) {
-        return new User(entity.id, entity.name, entity.email, entity.profilePictureUrl);
+        return new User(entity.id, entity.name, entity.email, entity.profilePictureUrl, entity.pin);
     }
 
     public static UserEntity fromDomain(User user) {

@@ -65,6 +65,7 @@
         android:layout_width="match_parent"
         android:text="@string/add_album"
         android:layout_marginTop="16dp"
+        android:textColor="@color/theme_night_theme"
         android:enabled="false"
         app:layout_constraintBottom_toBottomOf="parent"
         app:tooltipText="Enter album title and select photos" />
