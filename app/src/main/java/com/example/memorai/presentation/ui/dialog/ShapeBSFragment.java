@@ -119,6 +119,7 @@ import com.example.memorai.R;
 import com.example.memorai.presentation.ui.adapter.ColorPickerAdapter;
 import com.example.memorai.utils.ShapeTypeWrapper;
 
+import ja.burhanrashid52.photoeditor.shape.ArrowPointerLocation;
 import ja.burhanrashid52.photoeditor.shape.ShapeType;
 
 public class ShapeBSFragment extends BottomSheetDialogFragment implements SeekBar.OnSeekBarChangeListener {
@@ -129,11 +130,15 @@ public class ShapeBSFragment extends BottomSheetDialogFragment implements SeekBa
     private static int savedOpacity = 100; // 100% opacity mặc định
     private static int savedBrushSize = 10; // 10px brush size mặc định
 
+    private static ShapeType savedShapeType = ShapeTypeWrapper.brush(); // Mặc định là Brush
+
     public interface Properties {
         void onColorChanged(int colorCode);
         void onOpacityChanged(int opacity);
         void onShapeSizeChanged(int shapeSize);
         void onShapePicked(ShapeType shapeType);
+
+
     }
 
     @Nullable
@@ -152,19 +157,73 @@ public class ShapeBSFragment extends BottomSheetDialogFragment implements SeekBa
         SeekBar sbBrushSize = view.findViewById(R.id.shapeSize);
         RadioGroup shapeGroup = view.findViewById(R.id.shapeRadioGroup);
 
-        // Xử lý sự kiện chọn shape (sử dụng if-else thay vì switch-case để tránh lỗi constant expression)
+        // Đọc giá trị từ Bundle và cập nhật các trạng thái đã lưu
+        Bundle arguments = getArguments();
+        if (arguments != null) {
+            String shapeTypeString = arguments.getString("shapeType");
+            if (shapeTypeString != null) {
+                switch (shapeTypeString) {
+                    case "Brush":
+                        savedShapeType = ShapeTypeWrapper.brush();
+                        break;
+                    case "Line":
+                        savedShapeType = ShapeTypeWrapper.line();
+                        break;
+                    case "Oval":
+                        savedShapeType = ShapeTypeWrapper.oval();
+                        break;
+                    case "Rectangle":
+                        savedShapeType = ShapeTypeWrapper.rectangle();
+                        break;
+                    case "Arrow":
+                        String pointerLocationString = arguments.getString("arrowPointerLocation", ArrowPointerLocation.START.toString());
+                        ArrowPointerLocation pointerLocation = ArrowPointerLocation.valueOf(pointerLocationString);
+                        savedShapeType = ShapeTypeWrapper.arrow(pointerLocation);
+                        break;
+                    default:
+                        savedShapeType = ShapeTypeWrapper.brush();
+                        break;
+                }
+            }
+
+            // Cập nhật savedOpacity và savedBrushSize từ Bundle
+            savedOpacity = arguments.getInt("opacity", savedOpacity);
+            savedBrushSize = (int) arguments.getFloat("size", savedBrushSize);
+        }
+
+        // Thiết lập trạng thái của RadioGroup dựa trên savedShapeType
+        if (savedShapeType == ShapeTypeWrapper.line()) {
+            shapeGroup.check(R.id.lineRadioButton);
+        } else if (savedShapeType instanceof ShapeType.Arrow) {
+            shapeGroup.check(R.id.arrowRadioButton);
+        } else if (savedShapeType == ShapeTypeWrapper.oval()) {
+            shapeGroup.check(R.id.ovalRadioButton);
+        } else if (savedShapeType == ShapeTypeWrapper.rectangle()) {
+            shapeGroup.check(R.id.rectRadioButton);
+        } else {
+            shapeGroup.check(R.id.brushRadioButton); // Mặc định là Brush
+        }
+
+        // Xử lý sự kiện chọn shape
         shapeGroup.setOnCheckedChangeListener((group, checkedId) -> {
             if (mProperties != null) {
                 if (checkedId == R.id.lineRadioButton) {
-                    mProperties.onShapePicked(ShapeTypeWrapper.line());
+                    savedShapeType = ShapeTypeWrapper.line();
+                    mProperties.onShapePicked(savedShapeType);
                 } else if (checkedId == R.id.arrowRadioButton) {
-                    mProperties.onShapePicked(ShapeTypeWrapper.arrow());
+                    // Mặc định sử dụng Arrow với pointerLocation là START
+                    // Nếu bạn có UI để chọn pointerLocation, hãy cập nhật giá trị này
+                    savedShapeType = ShapeTypeWrapper.arrow(ArrowPointerLocation.START);
+                    mProperties.onShapePicked(savedShapeType);
                 } else if (checkedId == R.id.ovalRadioButton) {
-                    mProperties.onShapePicked(ShapeTypeWrapper.oval());
+                    savedShapeType = ShapeTypeWrapper.oval();
+                    mProperties.onShapePicked(savedShapeType);
                 } else if (checkedId == R.id.rectRadioButton) {
-                    mProperties.onShapePicked(ShapeTypeWrapper.rectangle());
+                    savedShapeType = ShapeTypeWrapper.rectangle();
+                    mProperties.onShapePicked(savedShapeType);
                 } else {
-                    mProperties.onShapePicked(ShapeTypeWrapper.brush());
+                    savedShapeType = ShapeTypeWrapper.brush();
+                    mProperties.onShapePicked(savedShapeType);
                 }
             }
         });
