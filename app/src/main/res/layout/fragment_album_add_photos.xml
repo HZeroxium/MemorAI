@@ -12,7 +12,8 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
         app:navigationIcon="@drawable/ic_back"
-        app:title="Add Photos To Album" />
+        style="@style/CustomToolbarStyle"
+        app:title="@string/add_photo_album" />
 
     <!-- Search or filter text if you want -->
     <com.google.android.material.textfield.TextInputLayout
@@ -20,6 +21,7 @@
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_margin="8dp"
+        style="@style/search"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/toolbarAddPhotos">
@@ -28,6 +30,7 @@
             android:id="@+id/editTextSearchPhotos"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            style="@style/search"
             android:hint="@string/search_your_photos" />
     </com.google.android.material.textfield.TextInputLayout>
 

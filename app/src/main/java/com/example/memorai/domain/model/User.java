@@ -11,11 +11,14 @@ public final class User implements Parcelable {
     private final String email;
     private final String profilePictureUrl;
 
-    public User(String id, String name, String email, String profilePictureUrl) {
+    private String pin;
+
+    public User(String id, String name, String email, String profilePictureUrl, String pin) {
         this.id = id;
         this.name = name;
         this.email = email;
         this.profilePictureUrl = profilePictureUrl;
+        this.pin = pin;
     }
 
     // Constructor để khôi phục dữ liệu từ Parcel
@@ -24,6 +27,7 @@ public final class User implements Parcelable {
         name = in.readString();
         email = in.readString();
         profilePictureUrl = in.readString();
+        pin = in.readString();
     }
 
     // Ghi dữ liệu vào Parcel
@@ -33,6 +37,7 @@ public final class User implements Parcelable {
         dest.writeString(name);
         dest.writeString(email);
         dest.writeString(profilePictureUrl);
+        dest.writeString(pin);
     }
 
     @Override
@@ -68,6 +73,10 @@ public final class User implements Parcelable {
 
     public String getProfilePictureUrl() {
         return profilePictureUrl;
+    }
+
+    public String getPin() {
+        return pin;
     }
 
     @Override

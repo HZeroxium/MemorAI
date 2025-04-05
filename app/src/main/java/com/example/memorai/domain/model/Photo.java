@@ -3,6 +3,7 @@ package com.example.memorai.domain.model;
 import android.graphics.Bitmap;
 import android.util.Base64;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
@@ -12,14 +13,14 @@ public final class Photo {
     private String filePath;
     private Bitmap bitmap;
     private boolean isPrivate;
-    final private List<String> tags;
+    private List<String> tags; // Removed the final modifier
     final private long createdAt;
     final private long updatedAt;
 
     public Photo() {
         this.id = "";
         this.filePath = "";
-        this.tags = Collections.emptyList();
+        this.tags = new ArrayList<>(); // Use ArrayList instead of Collections.emptyList()
         this.createdAt = 0;
         this.updatedAt = 0;
         this.isPrivate = false;
@@ -28,8 +29,8 @@ public final class Photo {
     public Photo(String id, String filePath, List<String> tags, long createdAt, long updatedAt, boolean isPrivate) {
         this.id = id;
         this.filePath = filePath;
-        // Ensure immutability of the tags list
-        this.tags = tags != null ? Collections.unmodifiableList(tags) : Collections.emptyList();
+        // Store a copy of the tags list instead of making it immutable
+        this.tags = tags != null ? new ArrayList<>(tags) : new ArrayList<>();
         this.createdAt = createdAt;
         this.updatedAt = updatedAt;
         this.isPrivate = isPrivate;
@@ -59,16 +60,26 @@ public final class Photo {
         return bitmap;
     }
 
-    public void setBitmap(Bitmap bitmap) {
-        this.bitmap = bitmap;
-    }
+    public synchronized void setBitmap(Bitmap newBitmap) {
+        Bitmap oldBitmap = this.bitmap;
 
+        this.bitmap = newBitmap;
+
+        if (oldBitmap != null && !oldBitmap.isRecycled()) {
+            oldBitmap.recycle();
+        }
+    }
     public void setFilePath(String filePath) {
         this.filePath = filePath;
     }
 
     public List<String> getTags() {
         return tags;
+    }
+
+    // Add a new method to set tags
+    public void setTags(List<String> tags) {
+        this.tags = tags != null ? new ArrayList<>(tags) : new ArrayList<>();
     }
 
     public long getCreatedAt() {
@@ -89,8 +100,10 @@ public final class Photo {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (!(o instanceof Photo)) return false;
+        if (this == o)
+            return true;
+        if (!(o instanceof Photo))
+            return false;
         Photo photo = (Photo) o;
         return createdAt == photo.createdAt &&
                 updatedAt == photo.updatedAt &&

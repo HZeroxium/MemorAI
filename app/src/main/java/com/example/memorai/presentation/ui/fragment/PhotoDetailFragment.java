@@ -8,6 +8,7 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.Bundle;
+import android.text.TextUtils;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.LayoutInflater;
@@ -22,17 +23,27 @@ import androidx.core.content.FileProvider;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.navigation.Navigation;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
 import com.example.memorai.R;
 import com.example.memorai.databinding.FragmentPhotoDetailBinding;
+import com.example.memorai.domain.model.Photo;
 import com.example.memorai.presentation.viewmodel.PhotoViewModel;
+import com.google.android.material.chip.Chip;
+import com.google.android.material.chip.ChipGroup;
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.List;
+import java.util.Locale;
 
 import dagger.hilt.android.AndroidEntryPoint;
 
@@ -41,15 +52,17 @@ public class PhotoDetailFragment extends Fragment {
 
     private FragmentPhotoDetailBinding binding;
     private PhotoViewModel photoViewModel;
-    private byte[] photoUrl;
+    private Bitmap photoUrl;
     private String photoId;
     private boolean isPrivate = false;
+    private Photo currentPhoto;
+    private SimpleDateFormat dateFormat = new SimpleDateFormat("dd MMM yyyy, HH:mm", Locale.getDefault());
 
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater,
-                             @Nullable ViewGroup container,
-                             @Nullable Bundle savedInstanceState) {
+            @Nullable ViewGroup container,
+            @Nullable Bundle savedInstanceState) {
         binding = FragmentPhotoDetailBinding.inflate(inflater, container, false);
         return binding.getRoot();
     }
@@ -58,16 +71,30 @@ public class PhotoDetailFragment extends Fragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        if (getArguments() != null) {
-            photoUrl = getArguments().getByteArray("photo_url");
-            if (photoUrl != null) {
-                Bitmap bitmap = BitmapFactory.decodeByteArray(photoUrl, 0, photoUrl.length);
-            }
-            photoId = getArguments().getString("photo_id", "");
-        }
-
         // ViewModel
         photoViewModel = new ViewModelProvider(requireActivity()).get(PhotoViewModel.class);
+        if (getArguments() != null) {
+            photoId = getArguments().getString("photo_id", "");
+
+            // Load the complete photo details
+            if (!photoId.isEmpty()) {
+                photoViewModel.getPhotoById(photoId).observe(getViewLifecycleOwner(), photo -> {
+                    if (photo != null) {
+                        currentPhoto = photo;
+                        if (photo.getBitmap() != null) {
+                            Glide.with(this)
+                                    .load(photo.getBitmap())
+                                    .placeholder(R.drawable.placeholder_image)
+                                    .error(R.drawable.error_image)
+                                    .into(binding.imageViewDetailPhoto);
+                        }
+                        updateUI(photo);
+                        isPrivate = photo.getIsPrivate(); // Update the isPrivate state
+                        updatePrivateIcon(); // Update the privacy icon
+                    }
+                });
+            }
+        }
 
         binding.toolbar.setNavigationOnClickListener(v -> Navigation.findNavController(view).popBackStack());
 
@@ -87,7 +114,7 @@ public class PhotoDetailFragment extends Fragment {
 
             if (item.getItemId() == R.id.action_edit_photo) {
                 Bundle args = new Bundle();
-                args.putByteArray("photo_bitmap", photoUrl);  // Đúng kiểu dữ liệu
+                args.putString("photo_id", photoId);
                 Navigation.findNavController(requireView()).navigate(R.id.editPhotoFragment, args);
                 return true;
             }
@@ -100,19 +127,43 @@ public class PhotoDetailFragment extends Fragment {
             return false;
         });
 
-        if (photoUrl != null) {
-            Bitmap bitmap = BitmapFactory.decodeByteArray(photoUrl, 0, photoUrl.length);
-            Glide.with(this)
-                    .load(bitmap) // Load bằng Bitmap
-                    .placeholder(R.drawable.placeholder_image)
-                    .error(R.drawable.error_image)
-                    .into(binding.imageViewDetailPhoto);
-        }
-
     }
 
-    private void sharePhoto(byte[] photoByteArray) {
-        if (photoByteArray == null) {
+    private void updateUI(Photo photo) {
+        binding.textViewCreatedDate.setText(getString(R.string.created) + " " + dateFormat.format(new Date(photo.getCreatedAt())));
+        binding.textViewCreatedDate.setText(getString(R.string.modified) + " " + dateFormat.format(new Date(photo.getUpdatedAt())));
+
+        // Set privacy status
+        binding.textViewPrivacyStatus.setText(photo.getIsPrivate() ? R.string.private_photo : R.string.public_photo);
+        binding.textViewPrivacyStatus.setCompoundDrawablesWithIntrinsicBounds(
+                photo.getIsPrivate() ? R.drawable.ic_lock : R.drawable.ic_lock_open,
+                0, 0, 0);
+
+        // Update tags
+        binding.chipGroupTags.removeAllViews();
+        if (photo.getTags() != null && !photo.getTags().isEmpty()) {
+            binding.textViewNoTags.setVisibility(View.GONE);
+            binding.chipGroupTags.setVisibility(View.VISIBLE);
+
+            for (String tag : photo.getTags()) {
+                Chip chip = new Chip(requireContext());
+                chip.setText(tag);
+                chip.setClickable(false);
+                chip.setChipBackgroundColorResource(R.color.blue_color_picker);
+                chip.setTextColor(getResources().getColor(R.color.white, null));
+                binding.chipGroupTags.addView(chip);
+            }
+        } else {
+            binding.textViewNoTags.setVisibility(View.VISIBLE);
+            binding.chipGroupTags.setVisibility(View.GONE);
+        }
+
+        // Show the details container now that we have data
+        binding.containerPhotoDetails.setVisibility(View.VISIBLE);
+    }
+
+    private void sharePhoto(Bitmap bitmap) {
+        if (bitmap == null) {
             Toast.makeText(requireContext(), "No photo to share", Toast.LENGTH_SHORT).show();
             return;
         }
@@ -120,7 +171,13 @@ public class PhotoDetailFragment extends Fragment {
         try {
             File file = new File(requireContext().getCacheDir(), "shared_photo.png");
             FileOutputStream fos = new FileOutputStream(file);
-            fos.write(photoByteArray);
+
+            // Chuyển Bitmap thành ByteArrayOutputStream
+            ByteArrayOutputStream bos = new ByteArrayOutputStream();
+            bitmap.compress(Bitmap.CompressFormat.PNG, 100, bos);
+            byte[] bitmapData = bos.toByteArray();
+
+            fos.write(bitmapData);
             fos.flush();
             fos.close();
 
@@ -144,8 +201,7 @@ public class PhotoDetailFragment extends Fragment {
                 new androidx.transition.TransitionSet()
                         .addTransition(new androidx.transition.ChangeBounds())
                         .addTransition(new androidx.transition.ChangeTransform())
-                        .addTransition(new androidx.transition.ChangeImageTransform())
-        );
+                        .addTransition(new androidx.transition.ChangeImageTransform()));
     }
 
     @Override
@@ -154,34 +210,32 @@ public class PhotoDetailFragment extends Fragment {
         binding = null;
     }
 
-    // Thêm phương thức togglePrivate
     private void togglePrivate() {
         isPrivate = !isPrivate;
 
-        // Gọi ViewModel để cập nhật trạng thái
+        // Call ViewModel to update status
         photoViewModel.setPhotoPrivacy(photoId, isPrivate);
 
-        // Hiển thị thông báo
+        // Show notification
         Toast.makeText(requireContext(),
                 isPrivate ? "Photo set to private" : "Photo set to public",
                 Toast.LENGTH_SHORT).show();
 
-        // Cập nhật icon (nếu cần)
+        // Update icon and text
         updatePrivateIcon();
+        binding.textViewPrivacyStatus.setText(isPrivate ? "Private" : "Public");
+        binding.textViewPrivacyStatus.setCompoundDrawablesWithIntrinsicBounds(
+                isPrivate ? R.drawable.ic_lock : R.drawable.ic_lock_open,
+                0, 0, 0);
     }
 
-    // Thêm phương thức cập nhật icon
     private void updatePrivateIcon() {
         MenuItem privateItem = binding.toolbar.getMenu().findItem(R.id.action_private);
         if (privateItem != null) {
-            privateItem.setIcon(isPrivate ?
-                    R.drawable.ic_lock :
-                    R.drawable.ic_lock_open);
-            privateItem.setTitle(isPrivate ?
-                    "Set Public" : "Set Private");
+            privateItem.setIcon(isPrivate ? R.drawable.ic_lock : R.drawable.ic_lock_open);
+            privateItem.setTitle(isPrivate ? "Set Public" : "Set Private");
         }
     }
-
 
     private void showPopupMenu(View anchor) {
         PopupMenu popup = new PopupMenu(requireContext(), anchor, Gravity.END);
@@ -211,7 +265,8 @@ public class PhotoDetailFragment extends Fragment {
             }
             if (item.getItemId() == R.id.action_edit_photo) {
                 Bundle args = new Bundle();
-                args.putByteArray("photo_bitmap", photoUrl);  // Đúng kiểu dữ liệu
+                photoId = getArguments().getString("photo_id", "");
+                args.putString("photo_id", photoId);
                 Navigation.findNavController(requireView()).navigate(R.id.editPhotoFragment, args);
                 return true;
             }

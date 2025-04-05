@@ -82,4 +82,57 @@
     <string name="user_not_found">错误：未找到用户信息！</string>
     <string name="pin_saved">PIN 已保存！</string>
     <string name="error_saving_pin">PIN 保存失败！</string>
+    <string name="label_brush">画笔</string>
+    <string name="label_shape">形状</string>
+    <string name="label_oval">椭圆形</string>
+    <string name="label_rectangle">矩形</string>
+    <string name="label_line">直线</string>
+    <string name="label_arrow">箭头</string>
+    <string name="label_emoji">表情符号</string>
+    <string name="label_sticker">贴纸</string>
+    <string name="label_eraser">橡皮擦</string>
+    <string name="label_eraser_mode">橡皮擦模式</string>
+    <string name="label_text">文字</string>
+    <string name="label_filter">滤镜</string>
+    <string name="label_adjust">调整</string>
+    <string name="msg_save_image">是否不保存图片直接退出？</string>
+    <string name="app_intent_name">照片编辑器</string>
+    <string name="msg_save_image_to_share">请先保存图片再分享</string>
+    <string name="msg_share_image">分享图片</string>
+    <string name="add_text">完成</string>
+    <string name="edit_rotation">旋转</string>
+    <string name="edit_opacity">不透明度</string>
+    <string name="edit_brush">画笔</string>
+    <string name="edit_close">关闭</string>
+    <string name="edit_done">完成</string>
+    <!-- Save Dialog -->
+    <string name="save_dialog_title">保存更改</string>
+    <string name="save_dialog_message">退出前是否保存更改？</string>
+    <string name="save_button">保存</string>
+    <string name="cancel_button">取消</string>
+    <string name="discard_button">放弃</string>
+    <string name="exit_button">退出</string>
+
+    <!-- Error Messages -->
+    <string name="error_saving">保存图片错误</string>
+    <string name="error_loading">加载图片错误</string>
+    <string name="error_temp_file">无法创建临时文件</string>
+    <string name="error_processing">图片处理错误</string>
+    <string name="error_unknown_tool">未知工具</string>
+
+    <!-- Progress Messages -->
+    <string name="saving_progress">保存中...</string>
+
+    <!-- Scale Dialog -->
+    <string name="scale_dialog_title">图片缩放</string>
+    <string name="scale_dialog_ok">确定</string>
+    <string name="scale_dialog_cancel">取消</string>
+    <string name="retry_dialog_title">保存错误</string>
+    <string name="retry_button">重试</string>
+    <string name="created">创建时间：</string>
+    <string name="modified">修改时间：</string>
+    <string name="private_photo">私密</string>
+    <string name="public_photo">公开</string>
+    <string name="photo_info">照片信息</string>
+    <string name="tags">标签</string>
 </resources>

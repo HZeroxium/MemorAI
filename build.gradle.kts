@@ -17,6 +17,6 @@ buildscript {
         classpath("org.jetbrains.kotlin:kotlin-gradle-plugin:1.9.0") // Kotlin plugin
         classpath("com.google.gms:google-services:4.4.2") // Google Services plugin
         classpath("com.google.firebase:firebase-crashlytics-gradle:3.0.1")
-
+        classpath("com.google.firebase:firebase-appdistribution-gradle:4.0.0")
     }
 }

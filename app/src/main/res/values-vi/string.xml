@@ -83,4 +83,57 @@
     <string name="user_not_found">Lỗi: Không tìm thấy thông tin người dùng!</string>
     <string name="pin_saved">Mã PIN đã được lưu!</string>
     <string name="error_saving_pin">Lưu mã PIN thất bại!</string>
+    <string name="label_brush">Cọ vẽ</string>
+    <string name="label_shape">Hình dạng</string>
+    <string name="label_oval">Hình oval</string>
+    <string name="label_rectangle">Hình chữ nhật</string>
+    <string name="label_line">Đường thẳng</string>
+    <string name="label_arrow">Mũi tên</string>
+    <string name="label_emoji">Biểu tượng</string>
+    <string name="label_sticker">Nhãn dán</string>
+    <string name="label_eraser">Tẩy</string>
+    <string name="label_eraser_mode">Chế độ tẩy</string>
+    <string name="label_text">Chữ</string>
+    <string name="label_filter">Bộ lọc</string>
+    <string name="label_adjust">Điều chỉnh</string>
+    <string name="msg_save_image">Bạn có muốn thoát mà không lưu ảnh?</string>
+    <string name="app_intent_name">Trình chỉnh sửa ảnh</string>
+    <string name="msg_save_image_to_share">Vui lòng lưu ảnh để chia sẻ</string>
+    <string name="msg_share_image">Chia sẻ ảnh</string>
+    <string name="add_text">Xong</string>
+    <string name="edit_rotation">Xoay</string>
+    <string name="edit_opacity">Độ mờ</string>
+    <string name="edit_brush">Cọ</string>
+    <string name="edit_close">Đóng</string>
+    <string name="edit_done">Hoàn tất</string>
+    <!-- Save Dialog -->
+    <string name="save_dialog_title">Lưu thay đổi</string>
+    <string name="save_dialog_message">Bạn có muốn lưu thay đổi trước khi thoát?</string>
+    <string name="save_button">Lưu</string>
+    <string name="cancel_button">Hủy</string>
+    <string name="discard_button">Hủy bỏ</string>
+    <string name="exit_button">Thoát</string>
+
+    <!-- Error Messages -->
+    <string name="error_saving">Lỗi khi lưu ảnh</string>
+    <string name="error_loading">Lỗi khi tải ảnh</string>
+    <string name="error_temp_file">Không thể tạo file tạm</string>
+    <string name="error_processing">Lỗi xử lý ảnh</string>
+    <string name="error_unknown_tool">Công cụ không xác định</string>
+
+    <!-- Progress Messages -->
+    <string name="saving_progress">Đang lưu...</string>
+
+    <!-- Scale Dialog -->
+    <string name="scale_dialog_title">Tỷ lệ ảnh</string>
+    <string name="scale_dialog_ok">Đồng ý</string>
+    <string name="scale_dialog_cancel">Hủy</string>
+    <string name="retry_dialog_title">Lỗi lưu</string>
+    <string name="retry_button">Thử lại</string>
+    <string name="created">Đã tạo: </string>
+    <string name="modified">Đã sửa: </string>
+    <string name="private_photo">Riêng tư</string>
+    <string name="public_photo">Công khai</string>
+    <string name="photo_info">Thông tin ảnh</string>
+    <string name="tags">Nhãn</string>
 </resources>

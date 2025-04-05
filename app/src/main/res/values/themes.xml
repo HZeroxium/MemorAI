@@ -48,6 +48,13 @@
         <item name="colorSurfaceContainerHigh">@color/md_theme_surfaceContainerHigh</item>
         <item name="colorSurfaceContainerHighest">@color/md_theme_surfaceContainerHighest</item>
     </style>
+    <style name="EditText">
+        <item name="android:singleLine">true</item>
+        <item name="colorControlNormal">#FFFFFF</item>
+        <item name="colorControlActivated">#FFFFFF</item>
+        <item name="android:textColorPrimary">#FFFFFF</item>
+        <item name="android:textSize">14sp</item>
+    </style>
 
     <!-- Light mode -->
     <!-- Screen background when light mode on -->
@@ -72,5 +79,21 @@
         <item name="android:background">?attr/colorSurface</item>
         <item name="titleTextColor">?attr/colorOnSurface</item>
         <item name="navigationIconTint">?attr/colorOnSurface</item>
+        <item name="android:navigationIcon">?attr/colorOnSurface</item>
     </style>
+
+    <style name="TransparentDialogTheme" parent="@style/Theme.AppCompat.Dialog">
+        <!-- Nền của Dialog trong suốt -->
+        <item name="android:windowBackground">@android:color/transparent</item>
+
+        <!-- Tắt bóng mờ đằng sau Dialog (nếu muốn) -->
+        <item name="android:backgroundDimEnabled">false</item>
+
+        <!-- Cho phép chạm bên ngoài để đóng (nếu muốn) -->
+        <item name="android:windowCloseOnTouchOutside">true</item>
+
+        <!-- Duy trì tính chất trong suốt -->
+        <item name="android:windowIsTranslucent">true</item>
+    </style>
+
 </resources>

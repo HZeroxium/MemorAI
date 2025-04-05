@@ -9,7 +9,7 @@
     <!-- Top App Bar -->
     <com.google.android.material.appbar.MaterialToolbar
         android:id="@+id/toolbarAlbumCreate"
-        style="@style/ThemeOverlay.Material3.Toolbar.Surface"
+        style="@style/CustomToolbarStyle"
         android:layout_height="?attr/actionBarSize"
         app:navigationIcon="@drawable/ic_back"
         android:layout_width="match_parent"
@@ -65,6 +65,7 @@
         android:layout_width="match_parent"
         android:text="@string/add_album"
         android:layout_marginTop="16dp"
+        android:textColor="@color/theme_night_theme"
         android:enabled="false"
         app:layout_constraintBottom_toBottomOf="parent"
         app:tooltipText="Enter album title and select photos" />

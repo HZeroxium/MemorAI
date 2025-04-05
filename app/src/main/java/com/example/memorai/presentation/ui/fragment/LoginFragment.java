@@ -12,6 +12,7 @@ import androidx.annotation.Nullable;
 
 import com.example.memorai.databinding.FragmentLoginBinding;
 import com.example.memorai.domain.model.User;
+import com.example.memorai.presentation.ui.activity.MainActivity;
 import com.google.android.gms.auth.api.signin.GoogleSignIn;
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
 import com.google.android.gms.auth.api.signin.GoogleSignInClient;
@@ -40,7 +41,7 @@ public class LoginFragment extends BottomSheetDialogFragment {
 
         // Cấu hình Google Sign-In
         GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
-                .requestIdToken("619405178592-ml761krg19iac2ratge3eul9mdhg84pg.apps.googleusercontent.com")
+                .requestIdToken("619405178592-3ri6lcne9ejli7bt6dt6elj3vo0132t0.apps.googleusercontent.com")
                 .requestEmail()
                 .build();
 
@@ -91,19 +92,6 @@ public class LoginFragment extends BottomSheetDialogFragment {
                         if (user != null) {
                             // Lưu thông tin vào Firebase
                             saveUserToFirestore(user);
-
-                            User authUser = new User(
-                                    user.getUid(),
-                                    user.getDisplayName(),
-                                    user.getEmail(),
-                                    user.getPhotoUrl() != null ?user.getPhotoUrl().toString() : null
-                            );
-                            PinFragment pinFragment = new PinFragment();
-                            Bundle bundle = new Bundle();
-                            bundle.putParcelable("user", authUser);
-                            pinFragment.setArguments(bundle);
-                            pinFragment.show(getParentFragmentManager(), "PinFragment");
-
                         }
                     } else {
                         Log.w("LoginFragment", "Đăng nhập Firebase thất bại", task.getException());
@@ -116,23 +104,37 @@ public class LoginFragment extends BottomSheetDialogFragment {
         DatabaseReference usersRef = database.getReference("users").child(firebaseUser.getUid());
 
         usersRef.get().addOnCompleteListener(task -> {
-            if (task.isSuccessful() && !task.getResult().exists()) {
-                // Nếu chưa tồn tại, tạo đối tượng User từ model
-                User user = new User(
-                        firebaseUser.getUid(),
-                        firebaseUser.getDisplayName(),
-                        firebaseUser.getEmail(),
-                        firebaseUser.getPhotoUrl() != null ? firebaseUser.getPhotoUrl().toString() : null
-                );
+            if (task.isSuccessful()) {
+                if (!task.getResult().exists()) {
+                    // Nếu người dùng chưa tồn tại, lưu vào Firebase và mở PinFragment
+                    User user = new User(
+                            firebaseUser.getUid(),
+                            firebaseUser.getDisplayName(),
+                            firebaseUser.getEmail(),
+                            firebaseUser.getPhotoUrl() != null ? firebaseUser.getPhotoUrl().toString() : null,
+                            "123456"
+                    );
 
-                usersRef.setValue(user)
-                        .addOnSuccessListener(aVoid -> Log.d("LoginFragment", "Lưu dữ liệu thành công"))
-                        .addOnFailureListener(e -> Log.w("LoginFragment", "Lưu dữ liệu thất bại", e));
+                    PinFragment pinFragment = new PinFragment();
+                    Bundle bundle = new Bundle();
+                    bundle.putParcelable("user", user);
+                    pinFragment.setArguments(bundle);
+                    pinFragment.show(getParentFragmentManager(), "PinFragment");
+
+                    usersRef.setValue(user)
+                            .addOnSuccessListener(aVoid -> Log.d("LoginFragment", "Lưu dữ liệu thành công"))
+                            .addOnFailureListener(e -> Log.w("LoginFragment", "Lưu dữ liệu thất bại", e));
+                } else {
+                    Intent intent = new Intent(getActivity(), MainActivity.class);
+                    intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK); // Xóa backstack
+                    startActivity(intent);
+                }
             } else {
-                Log.d("LoginFragment", "Người dùng đã tồn tại, không cần lưu");
+                Log.e("LoginFragment", "Lỗi khi kiểm tra người dùng", task.getException());
             }
         });
     }
+
 
 
     @Override

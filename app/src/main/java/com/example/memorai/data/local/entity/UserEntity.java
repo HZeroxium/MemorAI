@@ -21,6 +21,9 @@ public class UserEntity {
 
     @ColumnInfo(name = "profile_picture_url")
     public String profilePictureUrl;
+
+    @ColumnInfo(name = "pin")
+    public String pin;
 }
 
 
