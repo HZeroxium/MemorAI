@@ -18,7 +18,7 @@
     <string name="photos">Ảnh</string>
     <string name="albums">Album</string>
     <string name="root_album_id">1</string>
-    <string name="hi">Xin chào, chúc bạn một ngày vui vẻ!</string>
+    <string name="hi">Chào %1$s! \nChúc bạn một ngày tốt lành</string>
     <string name="comfortable">Thoải mái</string>
     <string name="day">Ngày</string>
     <string name="month">Tháng</string>
@@ -62,4 +62,25 @@
     <string name="dark_mode">Chế độ tối</string>
     <string name="settings">Cài đặt</string>
     <string name="exit">Thoát</string>
+    <string name="signin">Đăng nhập</string>
+    <string name="auth">Chúng tôi không chia sẻ dữ liệu của bạn với bên thứ ba.</string>
+    <string name="new_notification">Thông báo</string>
+    <string name="login">Đăng nhập</string>
+    <string name="memory_channel_id">memory_channel</string>
+    <string name="memory_channel_name">Thông báo về bộ nhớ</string>
+    <string name="memory_channel_description">Thông báo về bộ nhớ thấp</string>
+    <string name="memory_alert_title">Cảnh báo bộ nhớ</string>
+    <string name="memory_alert_message">Bộ nhớ thấp phát hiện, vui lòng làm sạch!</string>
+    <string name="network_channel_name">Thông báo về mạng</string>
+    <string name="network_channel_description">Thông báo về kết nối mạng yếu</string>
+    <string name="network_alert_title">Mạng yếu</string>
+    <string name="network_alert_message">Vui lòng kiểm tra kết nối mạng!</string>
+    <string name="network_channel_id">Network channel</string>
+    <string name="logout">Đăng xuất</string>
+    <string name="you">bạn</string>
+    <string name="cancel">Hủy</string>
+    <string name="pin_length_error">Mã PIN phải có 6 chữ số!</string>
+    <string name="user_not_found">Lỗi: Không tìm thấy thông tin người dùng!</string>
+    <string name="pin_saved">Mã PIN đã được lưu!</string>
+    <string name="error_saving_pin">Lưu mã PIN thất bại!</string>
 </resources>

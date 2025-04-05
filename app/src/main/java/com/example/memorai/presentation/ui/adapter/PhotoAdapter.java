@@ -2,6 +2,7 @@
 
 package com.example.memorai.presentation.ui.adapter;
 
+import android.graphics.Bitmap;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -34,10 +35,15 @@ public class PhotoAdapter extends ListAdapter<Photo, PhotoAdapter.PhotoViewHolde
     public void onBindViewHolder(@NonNull PhotoViewHolder holder, int position) {
         final Photo photo = getItem(position);
 
-        Glide.with(holder.itemView.getContext())
-                .load(photo.getFilePath())
-                .placeholder(R.drawable.placeholder_image)
-                .into(holder.imageViewPhoto);
+        Bitmap bitmap = photo.getBitmap(); // Giả sử Photo có getBitmap()
+        if (bitmap != null) {
+            Glide.with(holder.itemView.getContext())
+                    .load(bitmap)
+                    .placeholder(R.drawable.placeholder_image)
+                    .into(holder.imageViewPhoto);
+        } else {
+            holder.imageViewPhoto.setImageResource(R.drawable.placeholder_image);
+        }
 
         if (selectionMode) {
             holder.checkBox.setVisibility(View.VISIBLE);

@@ -1,4 +1,3 @@
-// data/repository/PhotoRepositoryImpl.java
 package com.example.memorai.data.repository;
 
 import com.example.memorai.data.local.dao.PhotoAlbumCrossRefDao;
@@ -25,6 +24,13 @@ public class PhotoRepositoryImpl implements PhotoRepository {
     public PhotoRepositoryImpl(PhotoDao photoDao, PhotoAlbumCrossRefDao crossRefDao) {
         this.photoDao = photoDao;
         this.crossRefDao = crossRefDao;
+    }
+
+    @Override
+    public void setPhotoPrivacy(String photoId, boolean isPrivate) {
+        new Thread(() -> {
+            photoDao.updatePhotoPrivacy(photoId, isPrivate);
+        }).start();
     }
 
     @Override

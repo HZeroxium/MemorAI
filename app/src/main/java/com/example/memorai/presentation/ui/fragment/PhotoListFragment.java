@@ -2,6 +2,7 @@
 package com.example.memorai.presentation.ui.fragment;
 
 import android.app.AlertDialog;
+import android.graphics.Bitmap;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
@@ -30,7 +31,10 @@ import com.example.memorai.presentation.ui.adapter.PhotoSection;
 import com.example.memorai.presentation.ui.adapter.PhotoSectionAdapter;
 import com.example.memorai.presentation.viewmodel.PhotoViewModel;
 import com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 
+import java.io.ByteArrayOutputStream;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.text.SimpleDateFormat;
@@ -47,6 +51,8 @@ public class PhotoListFragment extends Fragment {
     private FragmentPhotoListBinding binding;
     private PhotoViewModel photoViewModel;
 
+    private FirebaseUser user;
+
     private PhotoSectionAdapter adapter;
     private boolean isSelectionMode = false;
 
@@ -61,6 +67,7 @@ public class PhotoListFragment extends Fragment {
                              @Nullable ViewGroup container,
                              @Nullable Bundle savedInstanceState) {
         binding = FragmentPhotoListBinding.inflate(inflater, container, false);
+
         return binding.getRoot();
     }
 
@@ -95,7 +102,7 @@ public class PhotoListFragment extends Fragment {
                 // Pass photoId & photoUrl for the detail
                 Bundle args = new Bundle();
                 args.putString("photo_id", photo.getId());
-                args.putString("photo_url", photo.getFilePath());
+                args.putByteArray("photo_url", convertBitmapToByteArray(photo.getBitmap()));
                 Navigation.findNavController(view).navigate(R.id.photoDetailFragment, args);
             }
         });
@@ -112,7 +119,11 @@ public class PhotoListFragment extends Fragment {
         // Setup PhotoViewModel
         photoViewModel = new ViewModelProvider(requireActivity()).get(PhotoViewModel.class);
         photoViewModel.observeAllPhotos().observe(getViewLifecycleOwner(), this::handlePhotoList);
-        photoViewModel.loadAllPhotos();
+        user = FirebaseAuth.getInstance().getCurrentUser();
+        if (user == null) {
+            Toast.makeText(requireContext(), "User not authenticated", Toast.LENGTH_SHORT).show();
+            return;
+        }
 
         // Use MenuHost & MenuProvider to manage toolbar menu
         MenuHost menuHost = requireActivity();
@@ -217,6 +228,13 @@ public class PhotoListFragment extends Fragment {
             handlePhotoList(photoViewModel.observeAllPhotos().getValue());
         }
     }
+
+    private byte[] convertBitmapToByteArray(Bitmap bitmap) {
+        ByteArrayOutputStream stream = new ByteArrayOutputStream();
+        bitmap.compress(Bitmap.CompressFormat.PNG, 100, stream);
+        return stream.toByteArray();
+    }
+
 
 
     private void handlePhotoList(List<Photo> photos) {

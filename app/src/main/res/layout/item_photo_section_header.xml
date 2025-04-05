@@ -9,9 +9,9 @@
         android:id="@+id/textViewSectionLabel"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
+        style="@style/content"
         android:layout_weight="1"
         android:textSize="18sp"
-        android:textColor="@color/theme_night_theme"
         android:textStyle="bold" />
 
     <CheckBox
