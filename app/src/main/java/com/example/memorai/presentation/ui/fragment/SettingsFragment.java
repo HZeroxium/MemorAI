@@ -30,7 +30,9 @@ import androidx.navigation.fragment.NavHostFragment;
 import com.example.memorai.R;
 import com.example.memorai.databinding.FragmentSettingsBinding;
 import com.example.memorai.domain.model.AppSettings;
+import com.example.memorai.presentation.viewmodel.PhotoViewModel;
 import com.example.memorai.presentation.viewmodel.SettingsViewModel;
+import com.example.memorai.presentation.viewmodel.AlbumViewModel;
 
 import java.util.Locale;
 
@@ -39,9 +41,12 @@ import dagger.hilt.android.AndroidEntryPoint;
 @AndroidEntryPoint
 public class SettingsFragment extends Fragment {
     private FragmentSettingsBinding binding;
+    private AlbumViewModel albumViewModel;
+
+    private PhotoViewModel photoViewModel;
+    private SettingsViewModel settingsViewModel;
 
     boolean darkMode;
-
     SharedPreferences sharedPreferences;
     SharedPreferences.Editor editor;
 
@@ -49,34 +54,48 @@ public class SettingsFragment extends Fragment {
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         binding = FragmentSettingsBinding.inflate(inflater, container, false);
         sharedPreferences = requireContext().getSharedPreferences("Mode", Context.MODE_PRIVATE);
+        editor = sharedPreferences.edit();
+
+        albumViewModel = new ViewModelProvider(requireActivity()).get(AlbumViewModel.class);
+        settingsViewModel = new ViewModelProvider(this).get(SettingsViewModel.class);
+        photoViewModel = new ViewModelProvider(requireActivity()).get(PhotoViewModel.class);
+
+
         darkMode = sharedPreferences.getBoolean("night", false);
         if (darkMode) {
             binding.switchDarkMode.setChecked(true);
             AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES);
-        }
-        else {
+        } else {
             binding.switchDarkMode.setChecked(false);
             AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO);
         }
-        binding.switchDarkMode.setOnClickListener(new View.OnClickListener() {
-            @SuppressLint("CommitPrefEdits")
-            @Override
-            public void onClick(View v) {
-                darkMode = !darkMode;
-                if (darkMode) {
-                    // Bật chế độ dark mode
-                    AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES);
-                    editor = sharedPreferences.edit();
-                    editor.putBoolean("night", true);
-                } else {
-                    // Tắt chế độ dark mode
-                    AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO);
-                    editor = sharedPreferences.edit();
-                    editor.putBoolean("night", false);
-                }
-                editor.apply();
+
+        // Listener cho switchDarkMode
+        binding.switchDarkMode.setOnClickListener(v -> {
+            darkMode = !darkMode;
+            if (darkMode) {
+                AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES);
+                editor.putBoolean("night", true);
+            } else {
+                AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO);
+                editor.putBoolean("night", false);
+            }
+            editor.apply();
+        });
+
+        binding.switchCloudSync.setOnClickListener(v -> {
+            boolean isChecked = binding.switchCloudSync.isChecked();
+            SharedPreferences prefs = requireContext().getSharedPreferences("Settings", Context.MODE_PRIVATE);
+            SharedPreferences.Editor settingsEditor = prefs.edit();
+            settingsEditor.putBoolean("CloudSync", isChecked);
+            settingsEditor.apply();
+
+            if (isChecked) {
+                photoViewModel.syncPhoto();
+//                albumViewModel.syncAllPendingChanges();
             }
         });
+
         return binding.getRoot();
     }
 
@@ -93,30 +112,24 @@ public class SettingsFragment extends Fragment {
         config.setLocale(locale);
         resources.updateConfiguration(config, resources.getDisplayMetrics());
 
-        // Load lại fragment thay vì recreate() toàn bộ Activity
         getParentFragmentManager().beginTransaction()
                 .detach(this)
                 .attach(this)
                 .commit();
     }
 
-
-
-
     @Override
     public void onViewCreated(@NonNull View view, Bundle savedInstanceState) {
-        SettingsViewModel settingsViewModel = new ViewModelProvider(this).get(SettingsViewModel.class);
+        super.onViewCreated(view, savedInstanceState);
+
         settingsViewModel.getSettings().observe(getViewLifecycleOwner(), this::updateUI);
         settingsViewModel.loadSettings();
 
         SharedPreferences prefs = requireContext().getSharedPreferences("Settings", Context.MODE_PRIVATE);
-        String savedLanguage = prefs.getString("Language", "en"); // Mặc định là English
+        String savedLanguage = prefs.getString("Language", "en");
 
-
-        // Listener for language Spinner
-
+        // Cài đặt Spinner ngôn ngữ
         String[] languages = {"Tiếng Việt", "China", "English"};
-
         ArrayAdapter<String> adapter = new ArrayAdapter<>(requireContext(), android.R.layout.simple_spinner_dropdown_item, languages);
         binding.spinnerLanguage.setAdapter(adapter);
 
@@ -128,24 +141,22 @@ public class SettingsFragment extends Fragment {
         }
         binding.spinnerLanguage.setSelection(position);
 
-
         binding.spinnerLanguage.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
-            public void onItemSelected(AdapterView<?> parent, android.view.View view, int position, long id) {
+            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
                 switch (position) {
                     case 0:
-                        setLocale("vi"); // Tiếng Việt
+                        setLocale("vi");
                         break;
                     case 1:
-                        setLocale("zh"); // Tiếng Trung
+                        setLocale("zh");
                         break;
                     case 2:
-                        setLocale("en"); // Tiếng Anh
+                        setLocale("en");
                         break;
                 }
-                updateUIText(); // Cập nhật lại giao diện người dùng
+                updateUIText();
             }
-
 
             private void updateUIText() {
                 binding.tvSettings.setText(getString(R.string.settings));
@@ -156,31 +167,16 @@ public class SettingsFragment extends Fragment {
                 binding.btnResetSystem.setText(getString(R.string.reset_system));
             }
 
-
             @Override
             public void onNothingSelected(AdapterView<?> parent) {
                 // Do nothing
             }
         });
-
-
-
-        // Similar listeners for cloud sync and biometric auth can be added here
     }
 
     private void updateUI(AppSettings settings) {
-        // Update dark mode switch
-
-
-
-        // Update cloud sync switch
         binding.switchCloudSync.setChecked(settings.isCloudSyncEnabled());
-
-        // Update other UI elements as needed
     }
-
-
-
 
     @Override
     public void onDestroyView() {

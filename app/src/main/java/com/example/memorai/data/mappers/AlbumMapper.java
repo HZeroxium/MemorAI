@@ -27,6 +27,7 @@ public class AlbumMapper {
         entity.coverPhotoUrl = album.getCoverPhotoUrl();
         entity.createdAt = album.getCreatedAt();
         entity.updatedAt = album.getUpdatedAt();
+        entity.isSynced = true;
         return entity;
     }
 }

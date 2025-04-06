@@ -71,10 +71,8 @@ public class MainActivity extends AppCompatActivity {
         photoViewModel = new ViewModelProvider(this).get(PhotoViewModel.class);
         firebaseAuth = FirebaseAuth.getInstance();
         FirebaseUser user = firebaseAuth.getCurrentUser();
-        if (user != null) {
-            photoViewModel.loadAllPhotos(user.getUid());
-            albumViewModel.loadAlbums();
-        }
+        photoViewModel.loadAllPhotos();
+        albumViewModel.loadAlbums();
         GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
                 .requestIdToken("619405178592-3ri6lcne9ejli7bt6dt6elj3vo0132t0.apps.googleusercontent.com") // Lấy ID Token để xác thực Firebase
                 .requestEmail()

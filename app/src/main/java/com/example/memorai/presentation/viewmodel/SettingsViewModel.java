@@ -1,4 +1,3 @@
-// presentation/viewmodel/SettingsViewModel.java
 package com.example.memorai.presentation.viewmodel;
 
 import androidx.lifecycle.LiveData;
@@ -19,6 +18,7 @@ public class SettingsViewModel extends ViewModel {
     private final UpdateAppSettingsUseCase updateAppSettingsUseCase;
 
     private final MutableLiveData<AppSettings> settingsLiveData = new MutableLiveData<>();
+    private final MutableLiveData<String> statusMessage = new MutableLiveData<>();
 
     @Inject
     public SettingsViewModel(GetAppSettingsUseCase getAppSettingsUseCase,
@@ -31,17 +31,78 @@ public class SettingsViewModel extends ViewModel {
         return settingsLiveData;
     }
 
+    public LiveData<String> getStatusMessage() {
+        return statusMessage;
+    }
+
     public void loadSettings() {
         new Thread(() -> {
-            AppSettings settings = getAppSettingsUseCase.execute();
-            settingsLiveData.postValue(settings);
+            try {
+                AppSettings settings = getAppSettingsUseCase.execute();
+                settingsLiveData.postValue(settings);
+            } catch (Exception e) {
+                statusMessage.postValue("Failed to load settings: " + e.getMessage());
+            }
         }).start();
     }
 
     public void updateSettings(AppSettings settings) {
         new Thread(() -> {
-            updateAppSettingsUseCase.execute(settings);
-            settingsLiveData.postValue(settings);
+            try {
+                updateAppSettingsUseCase.execute(settings);
+                settingsLiveData.postValue(settings);
+                statusMessage.postValue("Settings updated successfully");
+            } catch (Exception e) {
+                statusMessage.postValue("Failed to update settings: " + e.getMessage());
+            }
+        }).start();
+    }
+
+    public void setCloudSyncEnabled(boolean isEnabled) {
+        new Thread(() -> {
+            try {
+                AppSettings currentSettings = getAppSettingsUseCase.execute();
+                if (currentSettings.isCloudSyncEnabled() != isEnabled) {
+                    AppSettings updatedSettings = currentSettings.withCloudSyncEnabled(isEnabled);
+                    updateAppSettingsUseCase.execute(updatedSettings);
+                    settingsLiveData.postValue(updatedSettings);
+                    statusMessage.postValue("Cloud sync " + (isEnabled ? "enabled" : "disabled"));
+                }
+            } catch (Exception e) {
+                statusMessage.postValue("Failed to update cloud sync: " + e.getMessage());
+            }
+        }).start();
+    }
+
+    public void setLanguage(String languageCode) {
+        new Thread(() -> {
+            try {
+                AppSettings currentSettings = getAppSettingsUseCase.execute();
+                if (!currentSettings.getLanguage().equals(languageCode)) {
+                    AppSettings updatedSettings = currentSettings.withLanguage(languageCode);
+                    updateAppSettingsUseCase.execute(updatedSettings);
+                    settingsLiveData.postValue(updatedSettings);
+                    statusMessage.postValue("Language updated to " + languageCode);
+                }
+            } catch (Exception e) {
+                statusMessage.postValue("Failed to update language: " + e.getMessage());
+            }
+        }).start();
+    }
+
+    public void setDarkModeEnabled(boolean isEnabled) {
+        new Thread(() -> {
+            try {
+                AppSettings currentSettings = getAppSettingsUseCase.execute();
+                if (currentSettings.isDarkModeEnabled() != isEnabled) {
+                    AppSettings updatedSettings = currentSettings.withDarkModeEnabled(isEnabled);
+                    updateAppSettingsUseCase.execute(updatedSettings);
+                    settingsLiveData.postValue(updatedSettings);
+                    statusMessage.postValue("Dark mode " + (isEnabled ? "enabled" : "disabled"));
+                }
+            } catch (Exception e) {
+                statusMessage.postValue("Failed to update dark mode: " + e.getMessage());
+            }
         }).start();
     }
 }

@@ -23,6 +23,8 @@ import com.example.memorai.domain.repository.CloudSyncRepository;
 import com.example.memorai.domain.repository.PhotoRepository;
 import com.example.memorai.domain.repository.SettingsRepository;
 import com.example.memorai.domain.repository.UserRepository;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.firestore.FirebaseFirestore;
 
 import javax.inject.Singleton;
 
@@ -64,17 +66,40 @@ public class DatabaseModule {
         return database.photoAlbumCrossRefDao();
     }
 
-
     @Provides
-    public AlbumRepository provideAlbumRepository(AlbumDao albumDao, PhotoAlbumCrossRefDao photoAlbumCrossRefDao) {
-        return new AlbumRepositoryImpl(albumDao, photoAlbumCrossRefDao);
+    @Singleton
+    public FirebaseFirestore provideFirestore() {
+        return FirebaseFirestore.getInstance();
     }
 
     @Provides
-    public PhotoRepository providePhotoRepository(PhotoDao photoDao, PhotoAlbumCrossRefDao photoAlbumCrossRefDao) {
-        return new PhotoRepositoryImpl(photoDao, photoAlbumCrossRefDao);
+    @Singleton
+    public FirebaseAuth provideFirebaseAuth() {
+        return FirebaseAuth.getInstance();
     }
 
+    @Provides
+    @Singleton
+    public AlbumRepository provideAlbumRepository(
+            AlbumDao albumDao,
+            PhotoAlbumCrossRefDao photoAlbumCrossRefDao,
+            FirebaseFirestore firestore,
+            FirebaseAuth firebaseAuth // Thêm FirebaseAuth
+    ) {
+        return new AlbumRepositoryImpl(albumDao, photoAlbumCrossRefDao, firestore, firebaseAuth);
+    }
+
+    @Provides
+    @Singleton
+    public PhotoRepository providePhotoRepository(
+            PhotoDao photoDao,
+            PhotoAlbumCrossRefDao photoAlbumCrossRefDao,
+            AlbumDao albumDao,
+            FirebaseFirestore firestore,
+            FirebaseAuth firebaseAuth
+    ) {
+        return new PhotoRepositoryImpl(photoDao, photoAlbumCrossRefDao, albumDao, firestore, firebaseAuth);
+    }
     @Provides
     public UserRepository provideUserRepository(UserDao userDao) {
         return new UserRepositoryImpl(userDao);
