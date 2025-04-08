@@ -15,6 +15,7 @@ public final class Album {
     private final String description;
     private String coverPhotoUrl;
     private Bitmap bitmap;
+    private boolean isPrivate = false;
     private final long createdAt;
     private final List<String> photos;
 
@@ -28,9 +29,10 @@ public final class Album {
         this.coverPhotoUrl = null;
         this.createdAt = System.currentTimeMillis();
         this.updatedAt = System.currentTimeMillis();
+        this.isPrivate = false;
     }
 
-    public Album(String id, String name, String description, List<String> photos, String coverPhotoUrl, long createdAt, long updatedAt) {
+    public Album(String id, String name, String description, List<String> photos, String coverPhotoUrl, long createdAt, long updatedAt, boolean isPrivate) {
         this.id = id;
         this.name = name;
         this.description = description;
@@ -38,6 +40,7 @@ public final class Album {
         this.coverPhotoUrl = coverPhotoUrl;
         this.createdAt = createdAt;
         this.updatedAt = updatedAt;
+        this.isPrivate = isPrivate;
     }
 
 
@@ -78,6 +81,10 @@ public final class Album {
 
     public long getUpdatedAt() {
         return updatedAt;
+    }
+
+    public boolean isPrivate() {
+        return isPrivate;
     }
 
     @Override
