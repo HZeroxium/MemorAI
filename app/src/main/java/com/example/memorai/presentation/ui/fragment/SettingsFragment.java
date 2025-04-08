@@ -19,8 +19,10 @@ import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.SeekBar;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatDelegate;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
@@ -30,9 +32,11 @@ import androidx.navigation.fragment.NavHostFragment;
 import com.example.memorai.R;
 import com.example.memorai.databinding.FragmentSettingsBinding;
 import com.example.memorai.domain.model.AppSettings;
+import com.example.memorai.presentation.ui.activity.MainActivity;
 import com.example.memorai.presentation.viewmodel.PhotoViewModel;
 import com.example.memorai.presentation.viewmodel.SettingsViewModel;
 import com.example.memorai.presentation.viewmodel.AlbumViewModel;
+import com.example.memorai.utils.notification.NotificationHelper;
 
 import java.util.Locale;
 
@@ -86,13 +90,65 @@ public class SettingsFragment extends Fragment {
         binding.switchCloudSync.setOnClickListener(v -> {
             boolean isChecked = binding.switchCloudSync.isChecked();
             SharedPreferences prefs = requireContext().getSharedPreferences("Settings", Context.MODE_PRIVATE);
-            SharedPreferences.Editor settingsEditor = prefs.edit();
-            settingsEditor.putBoolean("CloudSync", isChecked);
-            settingsEditor.apply();
+            prefs.edit().putBoolean("CloudSync", isChecked).apply();
 
             if (isChecked) {
-                photoViewModel.syncPhoto();
-//                albumViewModel.syncAllPendingChanges();
+                // Tạo dialog loading
+                AlertDialog loadingDialog = new AlertDialog.Builder(requireContext())
+                        .setView(R.layout.dialog_loading) // Tạo file layout dialog_loading.xml với ProgressBar
+                        .setCancelable(false)
+                        .create();
+                loadingDialog.show();
+
+                // Vô hiệu hóa switch trong khi đồng bộ
+                binding.switchCloudSync.setEnabled(false);
+
+                // Đồng bộ cả ảnh và album
+                photoViewModel.syncPhoto(new PhotoViewModel.SyncCallback() {
+                    @Override
+                    public void onSyncStarted() {
+                        // Không cần xử lý gì đặc biệt
+                    }
+
+                    @Override
+                    public void onSyncCompleted(boolean isPhotoSyncSuccess) {
+                        // Sau khi đồng bộ ảnh xong, tiếp tục đồng bộ album
+                        albumViewModel.syncAllPendingChanges(new AlbumViewModel.SyncCallback() {
+                            @Override
+                            public void onSyncStarted() {
+                                // Có thể cập nhật message dialog nếu muốn
+                            }
+
+                            @Override
+                            public void onSyncCompleted(boolean isAlbumSyncSuccess) {
+                                // Ẩn dialog loading khi hoàn thành cả hai
+                                loadingDialog.dismiss();
+                                binding.switchCloudSync.setEnabled(true);
+
+                                if (!isPhotoSyncSuccess || !isAlbumSyncSuccess) {
+                                    binding.switchCloudSync.setChecked(false);
+                                    Toast.makeText(requireContext(),
+                                            "Đồng bộ thất bại: " +
+                                                    (!isPhotoSyncSuccess ? "Ảnh" : "") +
+                                                    (!isPhotoSyncSuccess && !isAlbumSyncSuccess ? " và " : "") +
+                                                    (!isAlbumSyncSuccess ? "Album" : ""),
+                                            Toast.LENGTH_SHORT).show();
+                                } else {
+                                    Intent intent = new Intent(requireContext(), MainActivity.class);
+                                    intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+
+                                    // Gửi thông báo hệ thống
+                                    NotificationHelper.sendSystemNotification(
+                                            requireContext(),
+                                            "sync_channel", // ID channel thông báo
+                                            "Đồng bộ thành công",
+                                            "Dữ liệu đã được đồng bộ với cloud",
+                                            intent
+                                    );                                }
+                            }
+                        });
+                    }
+                });
             }
         });
 

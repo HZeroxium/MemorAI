@@ -548,4 +548,7 @@
     <string name="add_media">+ Add media</string>
     <string name="edit_profile">Edit Profile</string>
     <string name="exit_save"><![CDATA[Exit & Save]]></string>
+    <string name="async">Syncing...</string>
+    <string name="set_private">Set Private</string>
+    <string name="set_public">Set Public</string>
 </resources>

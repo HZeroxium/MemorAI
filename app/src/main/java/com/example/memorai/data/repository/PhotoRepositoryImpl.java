@@ -148,6 +148,7 @@ public class PhotoRepositoryImpl implements PhotoRepository {
     @Override
     public void deletePhoto(String photoId) {
         executorService.execute(() -> {
+            // Xóa photo từ Room
             PhotoEntity entity = photoDao.getPhotoById(photoId);
             if (entity != null) {
                 photoDao.deletePhoto(entity);
@@ -160,7 +161,28 @@ public class PhotoRepositoryImpl implements PhotoRepository {
                         .document(userId)
                         .collection("user_photos")
                         .document(photoId)
-                        .delete();
+                        .delete()
+                        .addOnFailureListener(e -> Log.e("PhotoRepository", "Failed to delete photo from Firestore", e));
+
+                CollectionReference albumsRef = firestore.collection("photos")
+                        .document(userId)
+                        .collection("user_albums");
+
+                albumsRef.get()
+                        .addOnSuccessListener(querySnapshot -> {
+                            for (DocumentSnapshot document : querySnapshot.getDocuments()) {
+                                List<String> photoIds = (List<String>) document.get("photos");
+                                if (photoIds != null && photoIds.contains(photoId)) {
+                                    photoIds.remove(photoId);
+
+                                    albumsRef.document(document.getId())
+                                            .update("photos", photoIds, "updatedAt", System.currentTimeMillis())
+                                            .addOnSuccessListener(aVoid -> Log.d("AlbumRepository", "Removed photoId from album: " + document.getId()))
+                                            .addOnFailureListener(e -> Log.e("AlbumRepository", "Failed to update album: " + document.getId(), e));
+                                }
+                            }
+                        })
+                        .addOnFailureListener(e -> Log.e("AlbumRepository", "Failed to fetch albums for photo deletion", e));
             }
         });
     }
@@ -344,20 +366,28 @@ public class PhotoRepositoryImpl implements PhotoRepository {
         firestore.collection("photos")
                 .document(userId)
                 .collection("user_photos")
-                .orderBy("createdAt", Query.Direction.DESCENDING)
+                .orderBy("updatedAt", Query.Direction.DESCENDING)
                 .addSnapshotListener((snapshot, error) -> {
+                    if (error != null) {
+                        Log.e("PhotoRepository", "Firestore sync error", error);
+                        return;
+                    }
+
                     if (snapshot != null && !snapshot.isEmpty()) {
                         executorService.execute(() -> {
-                            List<PhotoEntity> localPhotos = new ArrayList<>();
                             for (DocumentSnapshot doc : snapshot.getDocuments()) {
-                                Photo photo = doc.toObject(Photo.class);
-                                if (photo != null) {
-                                    PhotoEntity entity = PhotoMapper.fromDomain(photo);
-                                    entity.isSynced = true;
-                                    localPhotos.add(entity);
+                                Photo firestorePhoto = doc.toObject(Photo.class);
+                                if (firestorePhoto != null) {
+                                    // Kiểm tra xem ảnh đã tồn tại trong Room chưa
+                                    PhotoEntity localPhoto = photoDao.getPhotoById(firestorePhoto.getId());
+
+                                    // Chỉ cập nhật nếu ảnh mới hơn hoặc chưa tồn tại
+                                    if (localPhoto == null || firestorePhoto.getUpdatedAt() > localPhoto.updatedAt) {
+                                        PhotoEntity entity = PhotoMapper.fromDomain(firestorePhoto);
+                                        photoDao.insertPhoto(entity);
+                                    }
                                 }
                             }
-                            photoDao.insertAll(localPhotos);
                         });
                     }
                 });
@@ -368,23 +398,38 @@ public class PhotoRepositoryImpl implements PhotoRepository {
         if (userId == null) return;
 
         executorService.execute(() -> {
-            List<PhotoEntity> unsyncedPhotos = photoDao.getUnsyncedPhotos();
-            if (unsyncedPhotos == null || unsyncedPhotos.isEmpty()) return;
+            List<PhotoEntity> localPhotos = photoDao.getAllPhotos();
+            if (localPhotos.isEmpty()) return;
 
             CollectionReference photosRef = firestore.collection("photos")
                     .document(userId)
                     .collection("user_photos");
 
-            for (PhotoEntity entity : unsyncedPhotos) {
-                Photo photo = PhotoMapper.toDomain(entity);
-                photosRef.document(photo.getId())
-                        .set(photo)
-                        .addOnSuccessListener(aVoid -> {
-                            entity.isSynced = true;
-                            photoDao.updatePhoto(entity);
+            for (PhotoEntity entity : localPhotos) {
+                // Kiểm tra xem ảnh đã có trên Firestore chưa
+                photosRef.document(entity.id).get()
+                        .addOnSuccessListener(doc -> {
+                            if (!doc.exists()) {
+                                if (entity.isSynced) {
+                                    return;
+                                }
+                            }
+                            Photo firestorePhoto = doc.toObject(Photo.class);
+                            boolean shouldUpdate = firestorePhoto == null
+                                    || entity.updatedAt > firestorePhoto.getUpdatedAt();
+
+                            if (shouldUpdate) {
+                                Photo photo = PhotoMapper.toDomain(entity);
+                                photosRef.document(photo.getId())
+                                        .set(photo)
+                                        .addOnFailureListener(e -> {
+                                            Log.e("PhotoRepository", "Sync failed: " + entity.id, e);
+                                        });
+                                entity.isSynced = true;
+                            }
                         })
                         .addOnFailureListener(e -> {
-                            Log.e("PhotoRepository", "Failed to sync photo " + photo.getId() + " to Firestore", e);
+                            Log.e("PhotoRepository", "Firestore fetch error: " + entity.id, e);
                         });
             }
         });

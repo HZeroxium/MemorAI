@@ -18,7 +18,7 @@ public interface PhotoDao {
     @Query("SELECT * FROM photo WHERE id = :photoId LIMIT 1")
     PhotoEntity getPhotoById(String photoId);
 
-    @Insert
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
     void insertPhoto(PhotoEntity photo);
 
     @Query("SELECT * FROM photo")

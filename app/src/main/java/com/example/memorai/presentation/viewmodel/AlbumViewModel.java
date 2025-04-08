@@ -160,6 +160,31 @@ public class AlbumViewModel extends ViewModel {
         }).start();
     }
 
+    public void syncAllPendingChanges(SyncCallback callback) {
+        callback.onSyncStarted();
+
+        executorService.execute(() -> {
+            try {
+                Thread.sleep(2000);
+
+                albumRepository.syncPendingChangesToFirebase();
+                albumRepository.syncFromFirebase();
+
+                // Thành công
+                new Handler(Looper.getMainLooper()).post(() -> {
+                    callback.onSyncCompleted(true);
+                });
+            } catch (Exception e) {
+                new Handler(Looper.getMainLooper()).post(() -> {
+                    callback.onSyncCompleted(false);
+                });
+            }
+        });
+    }
+    public interface SyncCallback {
+        void onSyncStarted();
+        void onSyncCompleted(boolean isSuccess);
+    }
 
     public static Bitmap decodeBase64ToImage(String base64) {
         try {

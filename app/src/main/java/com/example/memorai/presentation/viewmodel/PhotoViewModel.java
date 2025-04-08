@@ -41,6 +41,9 @@ public class PhotoViewModel extends ViewModel {
     private final ExecutorService executorService = Executors.newFixedThreadPool(4);
     private final Handler mainHandler = new Handler(Looper.getMainLooper());
 
+    private MutableLiveData<Boolean> _isSyncing = new MutableLiveData<>(false);
+    public LiveData<Boolean> isSyncing() { return _isSyncing; }
+
     @Inject
     public PhotoViewModel(PhotoRepository photoRepository, @ApplicationContext Context context) {
         this.photoRepository = photoRepository;
@@ -116,7 +119,9 @@ public class PhotoViewModel extends ViewModel {
                         }
                     }
                 }
-
+                for (Photo photo : matchedPhotos) {
+                    photo.setBitmap(decodeBase64ToImage(photo.getFilePath()));
+                }
                 // Cập nhật kết quả lên LiveData
                 searchResults.postValue(matchedPhotos);
 
@@ -176,6 +181,10 @@ public class PhotoViewModel extends ViewModel {
 
     public void clearSearch() {
         searchResults.setValue(new ArrayList<>());
+    }
+
+    public void clearAlbumPhoto() {
+        albumPhotos.setValue(new ArrayList<>());
     }
 
     public void setPhotoPrivacy(String photoId, boolean isPrivate) {
@@ -243,16 +252,40 @@ public class PhotoViewModel extends ViewModel {
         }
     }
 
-    public void syncPhoto() {
-        new Thread(() -> {
+    public void syncPhoto(SyncCallback callback) {
+        // Hiển thị loading trước khi sync
+        callback.onSyncStarted();
+
+        executorService.execute(() -> {
             try {
-            photoRepository.syncFromFirestore();
-            photoRepository.syncLocalPhotosToFirestore();
+                // Giả lập thời gian sync (test)
+                Thread.sleep(2000);
+
+                // 1. Đồng bộ từ Firestore về trước
+                photoRepository.syncFromFirestore();
+
+                // 2. Đồng bộ dữ liệu local lên Firestore
+                photoRepository.syncLocalPhotosToFirestore();
+
+                // Thành công
+                new Handler(Looper.getMainLooper()).post(() -> {
+                    callback.onSyncCompleted(true);
+                });
             } catch (Exception e) {
-                Log.e("PhotoViewModel", "Error syncing photos", e);
+                new Handler(Looper.getMainLooper()).post(() -> {
+                    callback.onSyncCompleted(false);
+                });
             }
-        }).start();
+        });
     }
+
+
+    // Interface callback
+    public interface SyncCallback {
+        void onSyncStarted();
+        void onSyncCompleted(boolean isSuccess);
+    }
+
 
     @Override
     protected void onCleared() {
