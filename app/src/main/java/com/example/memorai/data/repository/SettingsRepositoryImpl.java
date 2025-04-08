@@ -1,4 +1,3 @@
-// data/repository/SettingsRepositoryImpl.java
 package com.example.memorai.data.repository;
 
 import android.content.SharedPreferences;
@@ -12,6 +11,11 @@ import javax.inject.Singleton;
 @Singleton
 public class SettingsRepositoryImpl implements SettingsRepository {
 
+    private static final String KEY_DARK_MODE = "dark_mode_enabled";
+    private static final String KEY_LANGUAGE = "language";
+    private static final String KEY_CLOUD_SYNC = "cloud_sync_enabled";
+    private static final String KEY_BIOMETRIC_AUTH = "biometric_auth_enabled";
+
     private final SharedPreferences sharedPreferences;
 
     @Inject
@@ -21,20 +25,30 @@ public class SettingsRepositoryImpl implements SettingsRepository {
 
     @Override
     public AppSettings getSettings() {
-        boolean darkMode = sharedPreferences.getBoolean("dark_mode", false);
-        String language = sharedPreferences.getString("language", "en");
-        boolean cloudSyncEnabled = sharedPreferences.getBoolean("cloud_sync", false);
-        boolean biometricAuthEnabled = sharedPreferences.getBoolean("biometric_auth", false);
-        return new AppSettings(darkMode, language, cloudSyncEnabled, biometricAuthEnabled);
+        boolean darkMode = sharedPreferences.getBoolean(KEY_DARK_MODE, false);
+        String language = sharedPreferences.getString(KEY_LANGUAGE, "en");
+        boolean cloudSyncEnabled = sharedPreferences.getBoolean(KEY_CLOUD_SYNC, false);
+        boolean biometricAuthEnabled = sharedPreferences.getBoolean(KEY_BIOMETRIC_AUTH, false);
+
+        return new AppSettings.Builder()
+                .setDarkMode(darkMode)
+                .setLanguage(language != null ? language : "en") // Đảm bảo language không null
+                .setCloudSyncEnabled(cloudSyncEnabled)
+                .setBiometricAuthEnabled(biometricAuthEnabled)
+                .build();
     }
 
     @Override
     public void updateSettings(AppSettings settings) {
-        sharedPreferences.edit()
-                .putBoolean("dark_mode", settings.isDarkMode())
-                .putString("language", settings.getLanguage())
-                .putBoolean("cloud_sync", settings.isCloudSyncEnabled())
-                .putBoolean("biometric_auth", settings.isBiometricAuthEnabled())
-                .apply();
+        if (settings == null) {
+            throw new IllegalArgumentException("Settings cannot be null");
+        }
+
+        SharedPreferences.Editor editor = sharedPreferences.edit();
+        editor.putBoolean(KEY_DARK_MODE, settings.isDarkModeEnabled());
+        editor.putString(KEY_LANGUAGE, settings.getLanguage());
+        editor.putBoolean(KEY_CLOUD_SYNC, settings.isCloudSyncEnabled());
+        editor.putBoolean(KEY_BIOMETRIC_AUTH, settings.isBiometricAuthEnabled());
+        editor.apply();
     }
 }

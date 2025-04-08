@@ -1,11 +1,7 @@
-// presentation/ui/fragment/PhotoListFragment.java
 package com.example.memorai.presentation.ui.fragment;
 
 import android.app.AlertDialog;
-import android.graphics.Bitmap;
 import android.os.Bundle;
-import android.os.Handler;
-import android.os.Looper;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -30,11 +26,7 @@ import com.example.memorai.domain.model.Photo;
 import com.example.memorai.presentation.ui.adapter.PhotoSection;
 import com.example.memorai.presentation.ui.adapter.PhotoSectionAdapter;
 import com.example.memorai.presentation.viewmodel.PhotoViewModel;
-import com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton;
-import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.auth.FirebaseUser;
 
-import java.io.ByteArrayOutputStream;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.text.SimpleDateFormat;
@@ -50,9 +42,6 @@ public class PhotoListFragment extends Fragment {
 
     private FragmentPhotoListBinding binding;
     private PhotoViewModel photoViewModel;
-
-    private FirebaseUser user;
-
     private PhotoSectionAdapter adapter;
     private boolean isSelectionMode = false;
 
@@ -67,42 +56,50 @@ public class PhotoListFragment extends Fragment {
                              @Nullable ViewGroup container,
                              @Nullable Bundle savedInstanceState) {
         binding = FragmentPhotoListBinding.inflate(inflater, container, false);
-
         return binding.getRoot();
     }
 
     @Override
-    public void onViewCreated(@NonNull View view,
-                              @Nullable Bundle savedInstanceState) {
+    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        // Initialize toolbar with no menu; we will handle menu via MenuHost
+        // Khởi tạo toolbar
         binding.toolbarPhotoList.setTitle(getString(R.string.photos));
         binding.toolbarPhotoList.setNavigationIcon(R.drawable.ic_more_vert);
         binding.toolbarPhotoList.setNavigationOnClickListener(this::showViewModePopup);
 
-        // Hide "Select All" by default
+        // Ẩn "Select All" mặc định
         binding.checkBoxSelectAll.setVisibility(View.GONE);
         binding.checkBoxSelectAll.setOnCheckedChangeListener((buttonView, isChecked) -> {
             if (!isSelectionMode) return;
-            new Handler(Looper.getMainLooper()).post(() -> {
-                if (isChecked) {
-                    // Example: select all photos in the first section
-                    adapter.selectAllInSection(0);
-                } else {
-                    adapter.clearSectionSelection(0);
-                }
-            });
+            if (isChecked) {
+                adapter.selectAllInSection(0);
+            } else {
+                adapter.clearSectionSelection(0);
+            }
         });
 
-        // Setup RecyclerView
+        // Thiết lập RecyclerView
+        setupRecyclerView();
+
+        // Khởi tạo PhotoViewModel
+        photoViewModel = new ViewModelProvider(requireActivity()).get(PhotoViewModel.class);
+        photoViewModel.observeAllPhotos().observe(getViewLifecycleOwner(), this::handlePhotoList);
+
+        // Quản lý menu toolbar bằng MenuHost
+        setupMenu();
+
+        // Xử lý nút xóa khi chọn
+        binding.buttonDeleteSelected.setOnClickListener(v -> handleDeleteSelected());
+    }
+
+    private void setupRecyclerView() {
         adapter = new PhotoSectionAdapter();
         adapter.setOnPhotoClickListener((sharedView, photo) -> {
             if (!isSelectionMode) {
-                // Pass photoId & photoUrl for the detail
                 Bundle args = new Bundle();
                 args.putString("photo_id", photo.getId());
-                Navigation.findNavController(view).navigate(R.id.photoDetailFragment, args);
+                Navigation.findNavController(requireView()).navigate(R.id.photoDetailFragment, args);
             }
         });
         adapter.setOnPhotoLongClickListener(photo -> {
@@ -114,129 +111,35 @@ public class PhotoListFragment extends Fragment {
 
         binding.recyclerViewPhotos.setAdapter(adapter);
         applyLayoutManager();
-
-        // Setup PhotoViewModel
-        photoViewModel = new ViewModelProvider(requireActivity()).get(PhotoViewModel.class);
-        photoViewModel.observeAllPhotos().observe(getViewLifecycleOwner(), this::handlePhotoList);
-        user = FirebaseAuth.getInstance().getCurrentUser();
-        if (user == null) {
-            Toast.makeText(requireContext(), "User not authenticated", Toast.LENGTH_SHORT).show();
-            return;
-        }
-
-        // Use MenuHost & MenuProvider to manage toolbar menu
-        MenuHost menuHost = requireActivity();
-        menuHost.addMenuProvider(new MenuProvider() {
-            @Override
-            public void onCreateMenu(@NonNull Menu menu, @NonNull MenuInflater menuInflater) {
-                menu.clear();
-                menuInflater.inflate(R.menu.menu_photo_list, menu);
-            }
-
-            @Override
-            public boolean onMenuItemSelected(@NonNull MenuItem menuItem) {
-                if (!isSelectionMode) {
-                    // Normal mode items
-                    if (menuItem.getItemId() == R.id.action_view_mode_comfortable) {
-                        currentViewMode = VIEW_MODE_COMFORTABLE;
-                        applyLayoutManager();
-                        return true;
-                    } else if (menuItem.getItemId() == R.id.action_view_mode_day) {
-                        currentViewMode = VIEW_MODE_DAY;
-                        applyLayoutManager();
-                        return true;
-                    } else if (menuItem.getItemId() == R.id.action_view_mode_month) {
-                        currentViewMode = VIEW_MODE_MONTH;
-                        applyLayoutManager();
-                        return true;
-                    }
-                } else {
-                    // Selection mode items
-                    if (menuItem.getItemId() == R.id.action_delete_selected) {
-                        if (adapter.getSelectedPhotoIds().isEmpty()) {
-                            Toast.makeText(requireContext(), "No photos selected", Toast.LENGTH_SHORT).show();
-                        } else {
-                            new AlertDialog.Builder(requireContext())
-                                    .setTitle("Delete Photos")
-                                    .setMessage("Are you sure you want to delete " + adapter.getSelectedPhotoIds().size() + " selected photos?")
-                                    .setPositiveButton("Yes", (dialog, which) -> {
-                                        for (String photoId : adapter.getSelectedPhotoIds()) {
-                                            photoViewModel.deletePhoto(photoId);
-                                        }
-                                        adapter.clearSelection();
-                                        toggleSelectionMode(false);
-                                        Toast.makeText(requireContext(), "Photos deleted", Toast.LENGTH_SHORT).show();
-                                    })
-                                    .setNegativeButton("No", null)
-                                    .show();
-                        }
-                        return true;
-                    }
-                }
-                return false;
-            }
-        }, getViewLifecycleOwner());
-
-        // Handle click on the delete button
-        binding.buttonDeleteSelected.setOnClickListener(v -> {
-            if (adapter.getSelectedPhotoIds().isEmpty()) {
-                Toast.makeText(requireContext(), "No photos selected", Toast.LENGTH_SHORT).show();
-            } else {
-                new AlertDialog.Builder(requireContext())
-                        .setTitle("Delete Photos")
-                        .setMessage("Are you sure you want to delete the selected photos?")
-                        .setPositiveButton("Yes", (dialog, which) -> {
-                            for (String photoId : adapter.getSelectedPhotoIds()) {
-                                photoViewModel.deletePhoto(photoId);
-                            }
-                            adapter.clearSelection();
-                            toggleSelectionMode(false);
-                            Toast.makeText(requireContext(), "Photos deleted", Toast.LENGTH_SHORT).show();
-                        })
-                        .setNegativeButton("No", null)
-                        .show();
-            }
-        });
-
     }
 
     private void applyLayoutManager() {
-        // We'll default to 3 columns for a Google Photos style (or 2 if you prefer)
-        final int spanCount = 3;
-
+        final int spanCount = 3; // 3 cột cho giao diện kiểu Google Photos
         GridLayoutManager layoutManager = new GridLayoutManager(requireContext(), spanCount);
         layoutManager.setSpanSizeLookup(new GridLayoutManager.SpanSizeLookup() {
             @Override
             public int getSpanSize(int position) {
-                // If item is a section header, take the full row
                 int viewType = adapter.getItemViewType(position);
-                if (viewType == PhotoSectionAdapter.TYPE_HEADER) {
-                    return spanCount; // header spans all columns
-                } else {
-                    return 1; // photo items occupy 1 column each
-                }
+                return viewType == PhotoSectionAdapter.TYPE_HEADER ? spanCount : 1;
             }
         });
         binding.recyclerViewPhotos.setLayoutManager(layoutManager);
 
-        // Hide selection mode if user changed layout
         if (adapter.isSelectionMode()) {
             toggleSelectionMode(false);
         }
-        if (photoViewModel != null && photoViewModel.observeAllPhotos().getValue() != null) {
-            handlePhotoList(photoViewModel.observeAllPhotos().getValue());
+        if (photoViewModel != null) {
+            List<Photo> photos = photoViewModel.observeAllPhotos().getValue();
+            if (photos != null) {
+                handlePhotoList(photos);
+            }
         }
     }
 
-    private byte[] convertBitmapToByteArray(Bitmap bitmap) {
-        ByteArrayOutputStream stream = new ByteArrayOutputStream();
-        bitmap.compress(Bitmap.CompressFormat.PNG, 100, stream);
-        return stream.toByteArray();
-    }
-
-
-
     private void handlePhotoList(List<Photo> photos) {
+        if (photos == null) {
+            photos = new ArrayList<>();
+        }
         List<PhotoSection> sections = groupPhotos(photos, currentViewMode);
         adapter.setData(sections);
     }
@@ -289,55 +192,87 @@ public class PhotoListFragment extends Fragment {
         isSelectionMode = enable;
         adapter.setSelectionMode(enable);
 
-        requireActivity().invalidateOptionsMenu(); // Refresh menu options
-
-        ExtendedFloatingActionButton fab = binding.buttonDeleteSelected; // from your new layout
+        requireActivity().invalidateOptionsMenu();
 
         if (enable) {
-            // Switch toolbar to selection mode
             binding.toolbarPhotoList.setNavigationIcon(R.drawable.ic_close);
             binding.toolbarPhotoList.setTitle("Select photos");
             binding.toolbarPhotoList.setNavigationOnClickListener(v -> toggleSelectionMode(false));
-
-            // Show the Extended FAB
-            fab.setVisibility(View.VISIBLE);
-            fab.setOnClickListener(v -> {
-                if (adapter.getSelectedPhotoIds().isEmpty()) {
-                    Toast.makeText(requireContext(), "No photos selected", Toast.LENGTH_SHORT).show();
-                } else {
-                    new AlertDialog.Builder(requireContext())
-                            .setTitle("Delete Photos")
-                            .setMessage("Are you sure you want to delete " + adapter.getSelectedPhotoIds().size() + " selected photos?")
-                            .setPositiveButton("Yes", (dialog, which) -> {
-                                for (String photoId : adapter.getSelectedPhotoIds()) {
-                                    photoViewModel.deletePhoto(photoId);
-                                }
-                                adapter.clearSelection();
-                                toggleSelectionMode(false);
-                                Toast.makeText(requireContext(), "Photos deleted", Toast.LENGTH_SHORT).show();
-                            })
-                            .setNegativeButton("No", null)
-                            .show();
-                }
-            });
-
+            binding.buttonDeleteSelected.setVisibility(View.VISIBLE);
+            binding.checkBoxSelectAll.setVisibility(View.VISIBLE);
         } else {
-            // Normal mode
             binding.toolbarPhotoList.setNavigationIcon(R.drawable.ic_more_vert);
             binding.toolbarPhotoList.setTitle(getString(R.string.photos));
             binding.toolbarPhotoList.setNavigationOnClickListener(this::showViewModePopup);
-
-            fab.setVisibility(View.GONE);
+            binding.buttonDeleteSelected.setVisibility(View.GONE);
+            binding.checkBoxSelectAll.setVisibility(View.GONE);
+            binding.checkBoxSelectAll.setChecked(false);
         }
     }
 
+    private void setupMenu() {
+        MenuHost menuHost = requireActivity();
+        menuHost.addMenuProvider(new MenuProvider() {
+            @Override
+            public void onCreateMenu(@NonNull Menu menu, @NonNull MenuInflater menuInflater) {
+                menu.clear();
+                menuInflater.inflate(R.menu.menu_photo_list, menu);
+            }
+
+            @Override
+            public boolean onMenuItemSelected(@NonNull MenuItem menuItem) {
+                if (!isSelectionMode) {
+                    int itemId = menuItem.getItemId();
+                    if (itemId == R.id.action_view_mode_comfortable) {
+                        currentViewMode = VIEW_MODE_COMFORTABLE;
+                        applyLayoutManager();
+                        return true;
+                    } else if (itemId == R.id.action_view_mode_day) {
+                        currentViewMode = VIEW_MODE_DAY;
+                        applyLayoutManager();
+                        return true;
+                    } else if (itemId == R.id.action_view_mode_month) {
+                        currentViewMode = VIEW_MODE_MONTH;
+                        applyLayoutManager();
+                        return true;
+                    }
+                } else {
+                    if (menuItem.getItemId() == R.id.action_delete_selected) {
+                        handleDeleteSelected();
+                        return true;
+                    }
+                }
+                return false;
+            }
+        }, getViewLifecycleOwner());
+    }
+
+    private void handleDeleteSelected() {
+        if (adapter.getSelectedPhotoIds().isEmpty()) {
+            Toast.makeText(requireContext(), "No photos selected", Toast.LENGTH_SHORT).show();
+        } else {
+            new AlertDialog.Builder(requireContext())
+                    .setTitle("Delete Photos")
+                    .setMessage("Are you sure you want to delete " + adapter.getSelectedPhotoIds().size() + " selected photos?")
+                    .setPositiveButton("Yes", (dialog, which) -> {
+                        for (String photoId : adapter.getSelectedPhotoIds()) {
+                            photoViewModel.deletePhoto(photoId);
+                        }
+                        adapter.clearSelection();
+                        toggleSelectionMode(false);
+                        Toast.makeText(requireContext(), "Photos deleted", Toast.LENGTH_SHORT).show();
+                    })
+                    .setNegativeButton("No", null)
+                    .show();
+        }
+    }
 
     private void showViewModePopup(View anchor) {
-        if (isSelectionMode) return; // Ignore if in selection mode
+        if (isSelectionMode) return;
         PopupMenu popup = new PopupMenu(requireContext(), anchor);
         popup.getMenuInflater().inflate(R.menu.menu_photo_list, popup.getMenu());
 
-        // Force icons to be visible in PopupMenu
+        // Hiển thị icon trong PopupMenu
         try {
             Field[] fields = popup.getClass().getDeclaredFields();
             for (Field field : fields) {
@@ -369,7 +304,6 @@ public class PhotoListFragment extends Fragment {
 
         popup.show();
     }
-
 
     @Override
     public void onDestroyView() {

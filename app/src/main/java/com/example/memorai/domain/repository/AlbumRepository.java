@@ -25,5 +25,7 @@ public interface AlbumRepository {
     void createAlbumWithPhotos(Album album, List<Photo> photos);
 
     void updateAlbumWithPhotos(Album album, List<Photo> photos);
+
+
 }
 

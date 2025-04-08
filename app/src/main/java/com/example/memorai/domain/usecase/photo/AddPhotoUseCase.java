@@ -1,6 +1,8 @@
 // domain/usecase/photo/AddPhotoUseCase.java
 package com.example.memorai.domain.usecase.photo;
 
+import android.content.Context;
+
 import com.example.memorai.domain.model.Photo;
 import com.example.memorai.domain.repository.PhotoRepository;
 

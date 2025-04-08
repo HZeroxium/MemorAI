@@ -337,7 +337,7 @@ public class EditPhotoFragment extends Fragment {
 
                     photoViewModel.getPhotoById(photoId).observe(getViewLifecycleOwner(), photo -> {
                         if (photo != null) {
-                            photoViewModel.saveNewPhoto(safeBitmap, photo.getTags());
+                            photoViewModel.addPhoto(safeBitmap, photo.getTags());
                             requireActivity().getOnBackPressedDispatcher().onBackPressed();
                         }
                     });

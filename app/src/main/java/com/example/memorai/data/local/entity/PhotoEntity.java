@@ -28,5 +28,7 @@ public class PhotoEntity {
     @ColumnInfo(name = "updated_at")
     public long updatedAt;
 
+    @ColumnInfo(name = "is_synced", defaultValue = "0")
+    public boolean isSynced;
 
 }

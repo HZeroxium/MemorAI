@@ -135,4 +135,15 @@
     <string name="public_photo">公开</string>
     <string name="photo_info">照片信息</string>
     <string name="tags">标签</string>
+
+    <string name="add_photo_album">添加照片到相册</string>
+    <string name="tooltip_update_album">输入相册标题并选择照片</string>
+    <string name="enter_pin">输入PIN码</string>
+    <string name="privates">私密</string>
+    <string name="add_media">+ 添加媒体</string>
+    <string name="edit_profile">编辑资料</string>
+    <string name="exit_save"><![CDATA[退出并保存]]></string>
+    <string name="async">正在同步…</string>
+    <string name="set_private">设为私密</string>
+    <string name="set_public">设为公开</string>
 </resources>

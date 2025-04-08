@@ -96,7 +96,7 @@ public class AlbumDetailFragment extends Fragment {
             }
         });
 
-        photoViewModel.observePhotosByAlbum(albumId).observe(getViewLifecycleOwner(), albumPhotos -> {
+        photoViewModel.observePhotosByAlbum().observe(getViewLifecycleOwner(), albumPhotos -> {
             if (albumPhotos != null && !albumPhotos.isEmpty()) {
                 photoAdapter.submitList(albumPhotos);
                 binding.recyclerViewAlbumPhotos.setVisibility(View.VISIBLE);
@@ -156,7 +156,7 @@ public class AlbumDetailFragment extends Fragment {
                 String enteredName = input.getText().toString().trim();
                 if (enteredName.equals(album.getName())) {
                     user = FirebaseAuth.getInstance().getCurrentUser();
-                    albumViewModel.deleteAlbum(albumId, user.getUid());
+                    albumViewModel.deleteAlbum(albumId);
                     Toast.makeText(requireContext(), "Album deleted", Toast.LENGTH_SHORT).show();
                     Navigation.findNavController(requireView()).popBackStack();
                 } else {

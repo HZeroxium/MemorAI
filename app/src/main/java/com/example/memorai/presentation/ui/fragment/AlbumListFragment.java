@@ -17,6 +17,7 @@ import com.example.memorai.R;
 import com.example.memorai.databinding.FragmentAlbumListBinding;
 import com.example.memorai.presentation.ui.adapter.AlbumAdapter;
 import com.example.memorai.presentation.viewmodel.AlbumViewModel;
+import com.example.memorai.presentation.viewmodel.PhotoViewModel;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 
@@ -26,6 +27,8 @@ import dagger.hilt.android.AndroidEntryPoint;
 public class AlbumListFragment extends Fragment {
     private FragmentAlbumListBinding binding;
     private AlbumViewModel albumViewModel;
+
+    private PhotoViewModel photoViewModel;
     private AlbumAdapter albumAdapter;
 
     private FirebaseUser user;
@@ -53,17 +56,18 @@ public class AlbumListFragment extends Fragment {
         albumAdapter = new AlbumAdapter();
         binding.recyclerViewAlbums.setLayoutManager(new GridLayoutManager(requireContext(), 2));
         binding.recyclerViewAlbums.setAdapter(albumAdapter);
+        photoViewModel = new ViewModelProvider(requireActivity()).get(PhotoViewModel.class);
 
         // Handle album click
         albumAdapter.setOnAlbumClickListener(album -> {
             Bundle args = new Bundle();
             args.putString("album_id", album.getId());
+            photoViewModel.clearAlbumPhoto();
             Navigation.findNavController(view).navigate(R.id.albumDetailFragment, args);
         });
 
         // ViewModel to observe albums
         albumViewModel = new ViewModelProvider(requireActivity()).get(AlbumViewModel.class);
-
         user = FirebaseAuth.getInstance().getCurrentUser();
 
         albumViewModel.getAlbums().observe(getViewLifecycleOwner(), albums ->
@@ -80,6 +84,16 @@ public class AlbumListFragment extends Fragment {
     @Override
     public void onDestroyView() {
         super.onDestroyView();
+        if (albumAdapter != null) {
+            albumAdapter.setOnAlbumClickListener(null);
+        }
+        binding.recyclerViewAlbums.setAdapter(null);
         binding = null;
+    }
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        albumAdapter = null;
     }
 }

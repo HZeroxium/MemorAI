@@ -69,7 +69,7 @@ public class AlbumAddPhotosFragment extends Fragment {
             return;
         }
 
-        photoViewModel.loadAllPhotos(user.getUid());
+        photoViewModel.loadAllPhotos();
 
         photoViewModel.observeAllPhotos().observe(getViewLifecycleOwner(), photos -> {
             // 1) get old selections
@@ -144,7 +144,7 @@ public class AlbumAddPhotosFragment extends Fragment {
             if (!TextUtils.isEmpty(query)) {
                 photoViewModel.searchPhotos(query);
             } else {
-                photoViewModel.loadAllPhotos(user.getUid());
+                photoViewModel.loadAllPhotos();
             }
             return true;
         });

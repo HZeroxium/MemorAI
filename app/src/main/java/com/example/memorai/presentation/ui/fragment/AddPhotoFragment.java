@@ -184,7 +184,6 @@ public class AddPhotoFragment extends Fragment {
         String photoId = String.valueOf(System.currentTimeMillis());
 
         Photo photo = new Photo(photoId, base64Image);
-        photoViewModel.addPhoto(photo);
 
         userPhotosRef.document(photoId).set(photo)
                 .addOnSuccessListener(aVoid -> Toast.makeText(requireContext(), "Photo saved successfully", Toast.LENGTH_SHORT).show())
@@ -207,7 +206,6 @@ public class AddPhotoFragment extends Fragment {
                 uri.toString()
         );
         if (photo.getFilePath() != null) {
-            photoViewModel.addPhoto(photo);
             Toast.makeText(requireContext(), "Photo added successfully", Toast.LENGTH_SHORT).show();
         } else {
             Toast.makeText(requireContext(), "Failed to save photo", Toast.LENGTH_SHORT).show();

@@ -1,4 +1,3 @@
-// presentation/ui/fragment/ImportPhotoFragment.java
 package com.example.memorai.presentation.ui.fragment;
 
 import android.content.Intent;
@@ -9,6 +8,7 @@ import android.media.ExifInterface;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
+import android.util.Base64;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -23,19 +23,22 @@ import androidx.appcompat.app.AlertDialog;
 import androidx.core.content.FileProvider;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
+import androidx.navigation.NavController;
+import androidx.navigation.Navigation;
 import androidx.recyclerview.widget.GridLayoutManager;
 
 import com.example.memorai.databinding.FragmentImportPhotoBinding;
 import com.example.memorai.domain.model.Photo;
 import com.example.memorai.presentation.ui.adapter.SelectedPhotoAdapter;
 import com.example.memorai.presentation.viewmodel.PhotoViewModel;
-import com.example.memorai.utils.ImageUtils;
 import com.example.memorai.utils.ImageClassifierHelper;
+import com.example.memorai.utils.ImageUtils;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.FirebaseFirestore;
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -57,6 +60,7 @@ public class ImportPhotoFragment extends Fragment {
     private PhotoViewModel photoViewModel;
     private SelectedPhotoAdapter selectedPhotoAdapter;
     private ImageClassifierHelper imageClassifier;
+
     private final ActivityResultLauncher<String> galleryLauncher = registerForActivityResult(
             new ActivityResultContracts.GetMultipleContents(), uris -> {
                 if (uris != null && !uris.isEmpty()) {
@@ -68,13 +72,29 @@ public class ImportPhotoFragment extends Fragment {
                         } catch (SecurityException e) {
                             uri = copyImageToAppStorage(uri);
                         }
+
                         Bitmap bitmap = getBitmapFromUri(uri);
-                        Photo photo = new Photo(UUID.randomUUID().toString(), uri.toString(), new ArrayList<>(),
+                        if (bitmap == null) {
+                            Toast.makeText(requireContext(), "Error loading image", Toast.LENGTH_SHORT).show();
+                            continue;
+                        }
+
+                        // Nén và resize ảnh
+                        Bitmap compressedBitmap = compressAndResizeBitmap(bitmap);
+
+                        // Tạo đối tượng Photo tạm thời để hiển thị trong RecyclerView
+                        String photoId = UUID.randomUUID().toString();
+                        List<String> tags = new ArrayList<>();
+                        Photo photo = new Photo(photoId, bitmapToBase64(compressedBitmap), tags,
                                 System.currentTimeMillis(), System.currentTimeMillis());
-                        photo.setBitmap(bitmap);
+                        photo.setBitmap(compressedBitmap);
+
+                        // Thêm vào danh sách importedPhotos để hiển thị
                         importedPhotos.add(photo);
+
+                        // Cập nhật RecyclerView với danh sách importedPhotos
+                        selectedPhotoAdapter.submitList(new ArrayList<>(importedPhotos));
                     }
-                    selectedPhotoAdapter.submitList(new ArrayList<>(importedPhotos));
                 } else {
                     Toast.makeText(requireContext(), "No photos selected", Toast.LENGTH_SHORT).show();
                 }
@@ -85,7 +105,7 @@ public class ImportPhotoFragment extends Fragment {
             Bitmap bitmap = BitmapFactory.decodeStream(inputStream);
             return rotateBitmapIfNeeded(bitmap, uri);
         } catch (Exception e) {
-            Log.e("TakePhotoFragment", "Error loading bitmap", e);
+            Log.e("ImportPhotoFragment", "Error loading bitmap", e);
             return null;
         }
     }
@@ -102,7 +122,7 @@ public class ImportPhotoFragment extends Fragment {
                 return Bitmap.createBitmap(bitmap, 0, 0, bitmap.getWidth(), bitmap.getHeight(), matrix, true);
             }
         } catch (Exception e) {
-            Log.e("TakePhotoFragment", "Error rotating bitmap", e);
+            Log.e("ImportPhotoFragment", "Error rotating bitmap", e);
         }
         return bitmap;
     }
@@ -120,24 +140,46 @@ public class ImportPhotoFragment extends Fragment {
         }
     }
 
+    private Bitmap compressAndResizeBitmap(Bitmap originalBitmap) {
+        int maxDimension = 800;
+        int width = originalBitmap.getWidth();
+        int height = originalBitmap.getHeight();
+        float scale = Math.min((float) maxDimension / width, (float) maxDimension / height);
+
+        if (scale < 1) {
+            int newWidth = Math.round(width * scale);
+            int newHeight = Math.round(height * scale);
+            return Bitmap.createScaledBitmap(originalBitmap, newWidth, newHeight, true);
+        }
+        return originalBitmap;
+    }
+
+    private String bitmapToBase64(Bitmap bitmap) {
+        ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+        bitmap.compress(Bitmap.CompressFormat.JPEG, 70, byteArrayOutputStream);
+        byte[] byteArray = byteArrayOutputStream.toByteArray();
+        return Base64.encodeToString(byteArray, Base64.DEFAULT);
+    }
+
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container,
-            @Nullable Bundle savedInstanceState) {
+                             @Nullable Bundle savedInstanceState) {
         binding = FragmentImportPhotoBinding.inflate(inflater, container, false);
         return binding.getRoot();
     }
 
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
         photoViewModel = new ViewModelProvider(requireActivity()).get(PhotoViewModel.class);
         setupRecyclerView();
         binding.buttonSelectFromGallery.setOnClickListener(v -> galleryLauncher.launch("image/*"));
         binding.buttonConfirmImport.setOnClickListener(v -> confirmImport());
         binding.toolbarImportPhoto.setNavigationOnClickListener(v -> requireActivity().onBackPressed());
 
-        // Initialize the image classifier
         imageClassifier = new ImageClassifierHelper(requireContext());
+
     }
 
     private void setupRecyclerView() {
@@ -145,10 +187,9 @@ public class ImportPhotoFragment extends Fragment {
         binding.recyclerViewImportedPhotos.setLayoutManager(new GridLayoutManager(requireContext(), 3));
         binding.recyclerViewImportedPhotos.setAdapter(selectedPhotoAdapter);
 
-        // Implement remove functionality
         selectedPhotoAdapter.setOnRemoveClickListener(photo -> {
-            importedPhotos.remove(photo); // Remove from list
-            selectedPhotoAdapter.submitList(new ArrayList<>(importedPhotos)); // Refresh UI
+            importedPhotos.remove(photo);
+            selectedPhotoAdapter.submitList(new ArrayList<>(importedPhotos));
         });
     }
 
@@ -158,78 +199,52 @@ public class ImportPhotoFragment extends Fragment {
             return;
         }
 
-        // Show a dialog to let the user know photos are being processed
-        AlertDialog processingDialog = new AlertDialog.Builder(requireContext())
-                .setTitle("Processing Photos")
-                .setMessage("Analyzing and tagging photos...")
-                .setCancelable(false)
-                .create();
-        processingDialog.show();
-
-        // Classify photos to get tags
-        classifyPhotos(importedPhotos);
-
-        // Dismiss the dialog after processing
-        processingDialog.dismiss();
-
-        FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
-        if (user == null) {
-            Toast.makeText(requireContext(), "User not authenticated", Toast.LENGTH_SHORT).show();
-            return;
-        }
-
-        String userId = user.getUid();
-        FirebaseFirestore firestore = FirebaseFirestore.getInstance();
-        CollectionReference userPhotosRef = firestore.collection("photos").document(userId).collection("user_photos");
-
-        for (Photo p : importedPhotos) {
-            Uri contentUri = Uri.parse(p.getFilePath());
-            String base64Image = ImageUtils.convertImageToBase64(requireContext(), contentUri);
-
-            if (base64Image == null) {
-                Toast.makeText(requireContext(), "Error converting image", Toast.LENGTH_SHORT).show();
-                continue;
-            }
-
-            Map<String, Object> photoData = new HashMap<>();
-            photoData.put("id", p.getId());
-            photoData.put("filePath", base64Image);
-            photoData.put("isPrivate", false);
-            photoData.put("tags", p.getTags()); // Now includes tags from classification
-            photoData.put("createdAt", p.getCreatedAt());
-            photoData.put("updatedAt", System.currentTimeMillis());
-
-            userPhotosRef.document(p.getId()).set(photoData)
-                    .addOnSuccessListener(aVoid -> {
-                        if (importedPhotos.indexOf(p) == importedPhotos.size() - 1) {
-                            Toast.makeText(requireContext(), "Upload complete!", Toast.LENGTH_SHORT).show();
-                            requireActivity().onBackPressed();
-                        }
-                    })
-                    .addOnFailureListener(e -> {
-                        Toast.makeText(requireContext(), "Upload failed", Toast.LENGTH_SHORT).show();
-                    });
-        }
+        new androidx.appcompat.app.AlertDialog.Builder(requireContext())
+                .setTitle("Confirm")
+                .setMessage("Save " + importedPhotos.size() + " photo(s)?")
+                .setPositiveButton("Confirm", (dialog, which) -> {
+                    List<Photo> photosToSave = new ArrayList<>(importedPhotos);
+                    classifyAndSavePhotos(photosToSave);
+                    importedPhotos.clear();
+                    selectedPhotoAdapter.submitList(new ArrayList<>(importedPhotos));
+                    binding.buttonConfirmImport.setEnabled(false); // Vô hiệu hóa nút sau khi xác nhận
+                    NavController navController = Navigation.findNavController(requireView());
+                    navController.navigateUp();
+                })
+                .setNegativeButton("Cancel", null)
+                .show();
     }
 
-    private void classifyPhotos(List<Photo> photos) {
+    private void classifyAndSavePhotos(List<Photo> photos) {
+        Toast.makeText(requireContext(), "Analyzing photos...", Toast.LENGTH_SHORT).show();
+
         for (Photo photo : photos) {
             Bitmap bitmap = photo.getBitmap();
             if (bitmap != null) {
-                // Classify image to get tags
                 List<String> tags = imageClassifier.classify(bitmap);
                 photo.setTags(tags);
-                Log.d("ImportPhotoFragment", "Photo tagged with: " + tags);
+                Log.d("TakePhotoFragment", "Photo tagged with: " + tags);
+
+                // Lưu ảnh đã nén qua PhotoViewModel
+                photoViewModel.addPhoto(bitmap, tags);
             }
         }
+
+        Toast.makeText(requireContext(), "Photos saved successfully!", Toast.LENGTH_SHORT).show();
     }
 
     @Override
     public void onDestroyView() {
         super.onDestroyView();
-        binding = null;
+        // Reset danh sách khi fragment bị hủy
+        if (selectedPhotoAdapter != null) {
+            selectedPhotoAdapter.submitList(new ArrayList<>());
+        }
+        if (binding != null) {
+            binding.recyclerViewImportedPhotos.setAdapter(null);
+            binding = null;
+        }
 
-        // Clean up TensorFlow resources
         if (imageClassifier != null) {
             imageClassifier.close();
             imageClassifier = null;
@@ -261,5 +276,4 @@ public class ImportPhotoFragment extends Fragment {
             return sourceUri;
         }
     }
-
 }
