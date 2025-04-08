@@ -37,4 +37,7 @@ public class AlbumEntity {
 
     @ColumnInfo(name = "updated_at")
     public long updatedAt;
+
+    @ColumnInfo(name = "is_private")
+    public boolean isPrivate;
 }

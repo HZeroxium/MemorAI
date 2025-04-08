@@ -157,6 +157,7 @@ public class AlbumCreateFragment extends Fragment {
             albumData.put("coverPhotoUrl", selected.get(0).getFilePath());
             albumData.put("createdAt", System.currentTimeMillis());
             albumData.put("updatedAt", System.currentTimeMillis());
+            albumData.put("isPrivate", false);
 
             // Lưu vào Firestore trong Collection user_albums
             FirebaseFirestore firestore = FirebaseFirestore.getInstance();

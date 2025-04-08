@@ -135,4 +135,5 @@
     <string name="public_photo">公开</string>
     <string name="photo_info">照片信息</string>
     <string name="tags">标签</string>
+<!--    <string name="pin_verified">Pin照片信息</string>-->
 </resources>
