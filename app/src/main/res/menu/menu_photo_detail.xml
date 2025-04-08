@@ -22,6 +22,6 @@
         android:id="@+id/action_private"
         android:icon="@drawable/ic_lock_open"
         style="@style/content"
-        android:title="Set Private"
+        android:title="@string/set_private"
         app:showAsAction="ifRoom" />
 </menu>

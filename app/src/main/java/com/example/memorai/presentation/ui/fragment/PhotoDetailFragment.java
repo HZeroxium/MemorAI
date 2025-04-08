@@ -231,13 +231,11 @@ public class PhotoDetailFragment extends Fragment {
         }
     }
 
-
-
     private void updatePrivateIcon() {
         MenuItem privateItem = binding.toolbar.getMenu().findItem(R.id.action_private);
         if (privateItem != null) {
             privateItem.setIcon(isPrivate ? R.drawable.ic_lock : R.drawable.ic_lock_open);
-            privateItem.setTitle(isPrivate ? "Set Public" : "Set Private");
+            privateItem.setTitle(isPrivate ? R.string.set_public : R.string.set_private);
         }
     }
 

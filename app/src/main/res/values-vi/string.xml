@@ -136,4 +136,15 @@
     <string name="public_photo">Công khai</string>
     <string name="photo_info">Thông tin ảnh</string>
     <string name="tags">Nhãn</string>
+
+    <string name="add_photo_album">Thêm ảnh vào album</string>
+    <string name="tooltip_update_album">Nhập tiêu đề album và chọn ảnh</string>
+    <string name="enter_pin">Nhập mã PIN</string>
+    <string name="privates">Riêng tư</string>
+    <string name="add_media">+ Thêm phương tiện</string>
+    <string name="edit_profile">Chỉnh sửa hồ sơ</string>
+    <string name="exit_save"><![CDATA[Thoát & Lưu]]></string>
+    <string name="async">Đang đồng bộ…</string>
+    <string name="set_private">Đặt làm riêng tư</string>
+    <string name="set_public">Đặt công khai</string>
 </resources>

@@ -17,6 +17,8 @@ public final class Photo {
     final private long createdAt;
     final private long updatedAt;
 
+    public boolean isSynced;
+
     public Photo() {
         this.id = "";
         this.filePath = "";

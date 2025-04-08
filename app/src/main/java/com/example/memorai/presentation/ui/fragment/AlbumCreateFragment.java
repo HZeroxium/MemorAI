@@ -1,4 +1,3 @@
-// presentation/ui/fragment/AlbumCreateFragment.java
 package com.example.memorai.presentation.ui.fragment;
 
 import static com.example.memorai.utils.ImageUtils.convertImageToBase64;
@@ -6,8 +5,9 @@ import static com.example.memorai.utils.ImageUtils.convertImageToBase64;
 import android.net.Uri;
 import android.os.Bundle;
 import android.text.TextUtils;
-import android.util.Log;
+import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
@@ -25,22 +25,13 @@ import com.example.memorai.presentation.ui.adapter.SelectedPhotoAdapter;
 import com.example.memorai.presentation.viewmodel.AlbumCreationViewModel;
 import com.example.memorai.presentation.viewmodel.AlbumViewModel;
 import com.google.android.material.snackbar.Snackbar;
-import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.auth.FirebaseUser;
-import com.google.firebase.firestore.CollectionReference;
-import com.google.firebase.firestore.FirebaseFirestore;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.UUID;
 
 import dagger.hilt.android.AndroidEntryPoint;
 
-/**
- * Fragment to create a new album.
- */
 @AndroidEntryPoint
 public class AlbumCreateFragment extends Fragment {
 
@@ -51,28 +42,30 @@ public class AlbumCreateFragment extends Fragment {
 
     @Nullable
     @Override
-    public View onCreateView(@NonNull android.view.LayoutInflater inflater,
-                             @Nullable android.view.ViewGroup container,
+    public View onCreateView(@NonNull LayoutInflater inflater,
+                             @Nullable ViewGroup container,
                              @Nullable Bundle savedInstanceState) {
         binding = FragmentAlbumCreateBinding.inflate(inflater, container, false);
         return binding.getRoot();
     }
 
     @Override
-    public void onViewCreated(@NonNull View view,
-                              @Nullable Bundle savedInstanceState) {
+    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
         albumViewModel = new ViewModelProvider(requireActivity()).get(AlbumViewModel.class);
         albumCreationViewModel = new ViewModelProvider(requireActivity()).get(AlbumCreationViewModel.class);
 
-        binding.toolbarAlbumCreate.setNavigationOnClickListener(v ->
-                Navigation.findNavController(view).popBackStack()
-        );
-
+        setupToolbar();
         setupRecyclerView();
         observeSelectedPhotos();
-        setupButtons(view);
+        setupButtons();
+    }
+
+    private void setupToolbar() {
+        binding.toolbarAlbumCreate.setNavigationOnClickListener(v ->
+                Navigation.findNavController(requireView()).popBackStack()
+        );
     }
 
     private void setupRecyclerView() {
@@ -92,24 +85,12 @@ public class AlbumCreateFragment extends Fragment {
             validateForm();
         });
 
-        binding.editTextAlbumTitle.addTextChangedListener(new android.text.TextWatcher() {
-            @Override
-            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
-            }
-
+        binding.editTextAlbumTitle.addTextChangedListener(new SimpleTextWatcher() {
             @Override
             public void onTextChanged(CharSequence s, int start, int before, int count) {
                 validateForm();
             }
-
-            @Override
-            public void afterTextChanged(android.text.Editable s) {
-            }
         });
-    }
-
-    private void showSnackbar(String message) {
-        Snackbar.make(binding.getRoot(), message, Snackbar.LENGTH_SHORT).show();
     }
 
     private void validateForm() {
@@ -120,75 +101,111 @@ public class AlbumCreateFragment extends Fragment {
         binding.buttonAddAlbum.setEnabled(isValid);
     }
 
-    private void setupButtons(View view) {
+    private void setupButtons() {
         binding.buttonSelectPhotos.setOnClickListener(v ->
-                Navigation.findNavController(view).navigate(R.id.albumAddPhotosFragment));
+                Navigation.findNavController(requireView()).navigate(R.id.albumAddPhotosFragment)
+        );
 
-        binding.buttonAddAlbum.setOnClickListener(v -> {
-            String name = binding.editTextAlbumTitle.getText().toString().trim();
-            if (TextUtils.isEmpty(name)) {
-                Toast.makeText(requireContext(), "Please enter an album title", Toast.LENGTH_SHORT).show();
-                return;
-            }
-
-            List<Photo> selected = albumCreationViewModel.getSelectedPhotos().getValue();
-            if (selected == null || selected.isEmpty()) {
-                Toast.makeText(requireContext(), "No photos selected for album!", Toast.LENGTH_SHORT).show();
-                return;
-            }
-
-            // Lấy danh sách ID ảnh
-            List<String> photoIds = new ArrayList<>();
-            for (Photo photo : selected) {
-                photoIds.add(photo.getId());  // Đảm bảo Photo có trường ID
-            }
-
-            String albumId = UUID.randomUUID().toString();
-            Uri contentUri = Uri.parse(selected.get(0).getFilePath());
-
-            String base64 = convertImageToBase64(requireContext(), contentUri);
-            Log.d("AlbumCreateFragment", "Base64: " + base64);
-
-            Map<String, Object> albumData = new HashMap<>();
-            albumData.put("id", albumId);
-            albumData.put("name", name);
-            albumData.put("description", "");
-            albumData.put("photos", photoIds);
-            albumData.put("coverPhotoUrl", selected.get(0).getFilePath());
-            albumData.put("createdAt", System.currentTimeMillis());
-            albumData.put("updatedAt", System.currentTimeMillis());
-            albumData.put("isPrivate", false);
-
-            // Lưu vào Firestore trong Collection user_albums
-            FirebaseFirestore firestore = FirebaseFirestore.getInstance();
-            FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
-            if (user == null) {
-                Toast.makeText(requireContext(), "User not logged in!", Toast.LENGTH_SHORT).show();
-                return;
-            }
-            String userId = user.getUid();
-
-            CollectionReference userAlbumsRef = firestore.collection("photos")
-                    .document(userId)
-                    .collection("user_albums");
-
-            userAlbumsRef.document(albumId).set(albumData)
-                    .addOnSuccessListener(aVoid -> {
-                        Toast.makeText(requireContext(), "Album created!", Toast.LENGTH_SHORT).show();
-                        albumCreationViewModel.clear();
-                        Navigation.findNavController(view).popBackStack();
-                    })
-                    .addOnFailureListener(e -> {
-                        Toast.makeText(requireContext(), "Failed to save album", Toast.LENGTH_SHORT).show();
-                    });
-        });
+        binding.buttonAddAlbum.setOnClickListener(v -> createAlbum());
     }
 
+    private void createAlbum() {
+        String name = binding.editTextAlbumTitle.getText().toString().trim();
+        List<Photo> selectedPhotos = albumCreationViewModel.getSelectedPhotos().getValue();
 
+        if (TextUtils.isEmpty(name)) {
+            Toast.makeText(requireContext(), "Please enter an album title", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        if (selectedPhotos == null || selectedPhotos.isEmpty()) {
+            Toast.makeText(requireContext(), "No photos selected for album!", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        // Convert selected photos to list of photo IDs
+        List<String> photoIds = new ArrayList<>();
+        for (Photo photo : selectedPhotos) {
+            photoIds.add(photo.getId());
+        }
+
+        // Create new album
+        String albumId = UUID.randomUUID().toString();
+        String coverPhotoUrl = selectedPhotos.get(0).getFilePath();
+
+        Album newAlbum = new Album(
+                albumId,
+                name,
+                "", // description - có thể thêm trường này sau
+                photoIds,
+                coverPhotoUrl,
+                System.currentTimeMillis(),
+                System.currentTimeMillis()
+        );
+
+        // Sử dụng AlbumViewModel để tạo album
+        albumViewModel.createAlbumWithPhotos(newAlbum, selectedPhotos);
+
+        // Hiển thị thông báo và quay lại
+        Toast.makeText(requireContext(), "Album created!", Toast.LENGTH_SHORT).show();
+        albumCreationViewModel.clear();
+        Navigation.findNavController(requireView()).popBackStack();
+// =======
+//             String albumId = UUID.randomUUID().toString();
+//             Uri contentUri = Uri.parse(selected.get(0).getFilePath());
+
+//             String base64 = convertImageToBase64(requireContext(), contentUri);
+//             Log.d("AlbumCreateFragment", "Base64: " + base64);
+
+//             Map<String, Object> albumData = new HashMap<>();
+//             albumData.put("id", albumId);
+//             albumData.put("name", name);
+//             albumData.put("description", "");
+//             albumData.put("photos", photoIds);
+//             albumData.put("coverPhotoUrl", selected.get(0).getFilePath());
+//             albumData.put("createdAt", System.currentTimeMillis());
+//             albumData.put("updatedAt", System.currentTimeMillis());
+//             albumData.put("isPrivate", false);
+
+//             // Lưu vào Firestore trong Collection user_albums
+//             FirebaseFirestore firestore = FirebaseFirestore.getInstance();
+//             FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+//             if (user == null) {
+//                 Toast.makeText(requireContext(), "User not logged in!", Toast.LENGTH_SHORT).show();
+//                 return;
+//             }
+//             String userId = user.getUid();
+
+//             CollectionReference userAlbumsRef = firestore.collection("photos")
+//                     .document(userId)
+//                     .collection("user_albums");
+
+//             userAlbumsRef.document(albumId).set(albumData)
+//                     .addOnSuccessListener(aVoid -> {
+//                         Toast.makeText(requireContext(), "Album created!", Toast.LENGTH_SHORT).show();
+//                         albumCreationViewModel.clear();
+//                         Navigation.findNavController(view).popBackStack();
+//                     })
+//                     .addOnFailureListener(e -> {
+//                         Toast.makeText(requireContext(), "Failed to save album", Toast.LENGTH_SHORT).show();
+//                     });
+//         });
+// >>>>>>> dev/tu
+    }
+
+    private void showSnackbar(String message) {
+        Snackbar.make(binding.getRoot(), message, Snackbar.LENGTH_SHORT).show();
+    }
 
     @Override
     public void onDestroyView() {
         super.onDestroyView();
         binding = null;
+    }
+
+    // Helper class to simplify TextWatcher
+    private abstract static class SimpleTextWatcher implements android.text.TextWatcher {
+        @Override public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+        @Override public void afterTextChanged(android.text.Editable s) {}
     }
 }

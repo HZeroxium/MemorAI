@@ -168,7 +168,7 @@ public class SearchFragment extends Fragment {
         isSearchActive = true;
 
         // Start search
-        photoViewModel.searchPhotosByTag(query);
+        photoViewModel.searchPhotosByTag(query, requireContext());
     }
 
     private void handleSearchResults(List<Photo> photos) {

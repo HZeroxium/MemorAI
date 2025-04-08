@@ -1,5 +1,6 @@
-// data/repository/AlbumRepositoryImpl.java
 package com.example.memorai.data.repository;
+
+import android.util.Log;
 
 import com.example.memorai.data.local.dao.AlbumDao;
 import com.example.memorai.data.local.dao.PhotoAlbumCrossRefDao;
@@ -9,8 +10,17 @@ import com.example.memorai.data.mappers.AlbumMapper;
 import com.example.memorai.domain.model.Album;
 import com.example.memorai.domain.model.Photo;
 import com.example.memorai.domain.repository.AlbumRepository;
+import com.google.android.gms.tasks.Task;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.firestore.CollectionReference;
+import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.QuerySnapshot;
 
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.stream.Collectors;
 
 import javax.inject.Inject;
@@ -21,11 +31,32 @@ public class AlbumRepositoryImpl implements AlbumRepository {
 
     private final AlbumDao albumDao;
     private final PhotoAlbumCrossRefDao crossRefDao;
+    private final FirebaseFirestore firestore;
+    private final FirebaseAuth firebaseAuth;
+    private final ExecutorService executorService = Executors.newSingleThreadExecutor();
 
     @Inject
-    public AlbumRepositoryImpl(AlbumDao albumDao, PhotoAlbumCrossRefDao crossRefDao) {
+    public AlbumRepositoryImpl(
+            AlbumDao albumDao,
+            PhotoAlbumCrossRefDao crossRefDao,
+            FirebaseFirestore firestore,
+            FirebaseAuth firebaseAuth
+    ) {
         this.albumDao = albumDao;
         this.crossRefDao = crossRefDao;
+        this.firestore = firestore;
+        this.firebaseAuth = firebaseAuth;
+    }
+
+    private String getUserId() {
+        if (firebaseAuth.getCurrentUser() == null) {
+            throw new IllegalStateException("User not authenticated");
+        }
+        return firebaseAuth.getCurrentUser().getUid();
+    }
+
+    private CollectionReference getUserAlbumsRef() {
+        return firestore.collection("photos").document(getUserId()).collection("user_albums");
     }
 
     @Override
@@ -43,28 +74,30 @@ public class AlbumRepositoryImpl implements AlbumRepository {
 
     @Override
     public void addAlbum(Album album) {
-        albumDao.insertAlbum(AlbumMapper.fromDomain(album));
+        AlbumEntity entity = AlbumMapper.fromDomain(album);
+        entity.isSynced = false;
+        albumDao.insertAlbum(entity);
+        syncAlbumToFirebase(entity);
     }
 
     @Override
     public void updateAlbum(Album album) {
-        albumDao.updateAlbum(AlbumMapper.fromDomain(album));
+        AlbumEntity entity = AlbumMapper.fromDomain(album);
+        entity.isSynced = false;
+        albumDao.updateAlbum(entity);
+        syncAlbumToFirebase(entity);
     }
 
     @Override
     public void deleteAlbum(String albumId) {
-        AlbumEntity entity = albumDao.getAlbumById(albumId);
-        if (entity != null) {
-            albumDao.deleteAlbum(entity);
-        }
-
-        // Also delete all cross-references for this album
+        albumDao.deleteAlbum(albumId);
         crossRefDao.deleteCrossRefsForAlbum(albumId);
+        deleteAlbumFromFirebase(albumId);
     }
 
     @Override
     public List<Album> searchAlbums(String query) {
-        return albumDao.searchAlbums(query).stream()
+        return albumDao.searchAlbums("%" + query + "%").stream()
                 .map(AlbumMapper::toDomain)
                 .collect(Collectors.toList());
     }
@@ -80,37 +113,134 @@ public class AlbumRepositoryImpl implements AlbumRepository {
                     .map(AlbumMapper::toDomain)
                     .collect(Collectors.toList());
         } else {
-            // default
-            return albumDao.getAllAlbums().stream()
-                    .map(AlbumMapper::toDomain)
-                    .collect(Collectors.toList());
+            return getAlbums();
         }
     }
 
     @Override
     public void createAlbumWithPhotos(Album album, List<Photo> photos) {
-        // 1) Insert the album
-        albumDao.insertAlbum(AlbumMapper.fromDomain(album));
+        List<String> photoIds = photos.stream().map(Photo::getId).collect(Collectors.toList());
+        AlbumEntity entity = new AlbumEntity();
+        entity.id = album.getId();
+        entity.name = album.getName();
+        entity.description = album.getDescription();
+        entity.photos = photoIds;
+        entity.coverPhotoUrl = album.getCoverPhotoUrl();
+        entity.createdAt = album.getCreatedAt();
+        entity.updatedAt = System.currentTimeMillis();
+        entity.isSynced = false;
 
-        // 2) Insert cross-ref for each selected photo
-        for (Photo p : photos) {
-            PhotoAlbumCrossRef crossRef = new PhotoAlbumCrossRef(p.getId(), album.getId());
+        albumDao.insertAlbum(entity);
+        for (String photoId : photoIds) {
+            PhotoAlbumCrossRef crossRef = new PhotoAlbumCrossRef(photoId, album.getId());
             crossRefDao.insertCrossRef(crossRef);
         }
+        syncAlbumToFirebase(entity);
     }
 
     @Override
     public void updateAlbumWithPhotos(Album album, List<Photo> photos) {
-        // 1) Update the album
-        albumDao.updateAlbum(AlbumMapper.fromDomain(album));
+        List<String> photoIds = photos.stream().map(Photo::getId).collect(Collectors.toList());
+        AlbumEntity entity = AlbumMapper.fromDomain(album);
+        entity.photos = photoIds;
+        entity.updatedAt = System.currentTimeMillis();
+        entity.isSynced = false;
 
-        // 2) Delete all existing cross-refs for this album
+        albumDao.updateAlbum(entity);
         crossRefDao.deleteCrossRefsForAlbum(album.getId());
-
-        // 3) Insert cross-ref for each selected photo
-        for (Photo p : photos) {
-            PhotoAlbumCrossRef crossRef = new PhotoAlbumCrossRef(p.getId(), album.getId());
+        for (String photoId : photoIds) {
+            PhotoAlbumCrossRef crossRef = new PhotoAlbumCrossRef(photoId, album.getId());
             crossRefDao.insertCrossRef(crossRef);
         }
+        syncAlbumToFirebase(entity);
+    }
+
+    private void deleteAlbumFromFirebase(String albumId) {
+        if (firebaseAuth.getCurrentUser() == null) return;
+
+        executorService.execute(() -> {
+            getUserAlbumsRef().document(albumId).delete()
+                    .addOnFailureListener(e -> {
+                        Log.e("AlbumRepository", "Failed to delete album from Firebase", e);
+                    });
+        });
+    }
+
+
+    public void syncFromFirebase() {
+        if (firebaseAuth.getCurrentUser() == null) return;
+
+        executorService.execute(() -> {
+            try {
+                Task<QuerySnapshot> task = getUserAlbumsRef().get();
+                task.addOnCompleteListener(task1 -> {
+                    if (task1.isSuccessful()) {
+                        QuerySnapshot snapshot = task1.getResult();
+                        if (snapshot != null) {
+                            List<Album> firebaseAlbums = snapshot.toObjects(Album.class);
+                            executorService.execute(() -> { // Thêm executorService.execute ở đây
+                                for (Album firebaseAlbum : firebaseAlbums) {
+                                    AlbumEntity localEntity = albumDao.getAlbumById(firebaseAlbum.getId());
+                                    if (localEntity == null || firebaseAlbum.getUpdatedAt() > localEntity.updatedAt) {
+                                        AlbumEntity entity = AlbumMapper.fromDomain(firebaseAlbum);
+                                        albumDao.insertAlbum(entity);
+
+                                        crossRefDao.deleteCrossRefsForAlbum(firebaseAlbum.getId());
+                                        for (String photoId : firebaseAlbum.getPhotos()) {
+                                            PhotoAlbumCrossRef crossRef = new PhotoAlbumCrossRef(photoId, firebaseAlbum.getId());
+                                            crossRefDao.insertCrossRef(crossRef);
+                                        }
+                                    }
+                                }
+                            });
+                        }
+                    } else {
+                        Log.e("AlbumRepository", "Error getting albums", task1.getException());
+                    }
+                });
+            } catch (Exception e) {
+                Log.e("AlbumRepository", "Error syncing from Firebase", e);
+            }
+        });
+    }
+    public void syncPendingChangesToFirebase() {
+        if (firebaseAuth.getCurrentUser() == null) return;
+
+        executorService.execute(() -> {
+            // Lấy tất cả album local (hoặc có thể thêm điều kiện nếu cần)
+            List<AlbumEntity> localAlbums = albumDao.getAllAlbums();
+            for (AlbumEntity entity : localAlbums) {
+                syncAlbumToFirebase(entity);
+            }
+        });
+    }
+
+    private void syncAlbumToFirebase(AlbumEntity entity) {
+        if (entity.isSynced) {
+            return;
+        }
+
+        getUserAlbumsRef().document(entity.id).get()
+                .addOnCompleteListener(task -> {
+                    if (task.isSuccessful()) {
+                        DocumentSnapshot snapshot = task.getResult();
+                        if (!snapshot.exists() || entity.updatedAt > snapshot.getLong("updatedAt")) {
+                            entity.isSynced = true;
+                            Album album = AlbumMapper.toDomain(entity);
+                            getUserAlbumsRef().document(entity.id).set(album)
+                                    .addOnSuccessListener(aVoid -> {
+                                        Log.d("AlbumRepository", "Album synced to Firebase");
+                                    })
+                                    .addOnFailureListener(e -> {
+                                        entity.isSynced = false;
+                                        Log.e("AlbumRepository", "Error syncing album", e);
+                                    });
+                        } else if (snapshot.exists()) {
+                            entity.isSynced = true;
+                        }
+                    } else {
+                        Log.e("AlbumRepository", "Error checking album on Firebase", task.getException());
+                    }
+                });
     }
 }

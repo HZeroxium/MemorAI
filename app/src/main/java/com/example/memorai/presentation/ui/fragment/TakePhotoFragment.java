@@ -1,4 +1,3 @@
-// presentation/ui/fragment/TakePhotoFragment.java
 package com.example.memorai.presentation.ui.fragment;
 
 import android.Manifest;
@@ -63,10 +62,13 @@ public class TakePhotoFragment extends Fragment {
                 if (success && currentPhotoUri != null) {
                     Bitmap bitmap = getBitmapFromUri(currentPhotoUri);
                     if (bitmap != null) {
-                        Photo photo = new Photo(UUID.randomUUID().toString(), currentPhotoUri.toString(),
+                        // Giảm kích thước và nén ảnh trước khi chuyển thành base64
+                        Bitmap compressedBitmap = compressAndResizeBitmap(bitmap);
+                        String base64Image = bitmapToBase64(compressedBitmap);
+                        Photo photo = new Photo(UUID.randomUUID().toString(), base64Image,
                                 new ArrayList<>(), System.currentTimeMillis(), System.currentTimeMillis());
-                        photo.setBitmap(bitmap);
-                        tempPhotoList.add(photo); // Lưu vào danh sách tạm
+                        photo.setBitmap(compressedBitmap);
+                        tempPhotoList.add(photo);
                         selectedPhotoAdapter.submitList(new ArrayList<>(tempPhotoList));
                     }
                 } else {
@@ -114,6 +116,30 @@ public class TakePhotoFragment extends Fragment {
         }
     }
 
+    // Hàm mới: Giảm kích thước và nén ảnh
+    private Bitmap compressAndResizeBitmap(Bitmap originalBitmap) {
+        // Giảm kích thước ảnh xuống tối đa 800px chiều dài hoặc rộng (tùy theo tỷ lệ)
+        int maxDimension = 800;
+        int width = originalBitmap.getWidth();
+        int height = originalBitmap.getHeight();
+        float scale = Math.min((float) maxDimension / width, (float) maxDimension / height);
+
+        if (scale < 1) {
+            int newWidth = Math.round(width * scale);
+            int newHeight = Math.round(height * scale);
+            return Bitmap.createScaledBitmap(originalBitmap, newWidth, newHeight, true);
+        }
+        return originalBitmap; // Không cần resize nếu ảnh đã nhỏ
+    }
+
+    // Hàm mới: Chuyển Bitmap thành base64 với nén
+    private String bitmapToBase64(Bitmap bitmap) {
+        ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+        bitmap.compress(Bitmap.CompressFormat.JPEG, 70, byteArrayOutputStream); // Nén xuống 70% chất lượng
+        byte[] byteArray = byteArrayOutputStream.toByteArray();
+        return Base64.encodeToString(byteArray, Base64.DEFAULT);
+    }
+
     private final ActivityResultLauncher<String> permissionLauncher = registerForActivityResult(
             new ActivityResultContracts.RequestPermission(), isGranted -> {
                 if (isGranted) {
@@ -123,23 +149,34 @@ public class TakePhotoFragment extends Fragment {
                 }
             });
 
+    @Override
+    public void onSaveInstanceState(@NonNull Bundle outState) {
+        super.onSaveInstanceState(outState);
+        if (currentPhotoUri != null) {
+            outState.putParcelable("currentPhotoUri", currentPhotoUri);
+        }
+    }
+
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container,
-            @Nullable Bundle savedInstanceState) {
+                             @Nullable Bundle savedInstanceState) {
         binding = FragmentTakePhotoBinding.inflate(inflater, container, false);
         return binding.getRoot();
     }
 
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
+        if (savedInstanceState != null) {
+            currentPhotoUri = savedInstanceState.getParcelable("currentPhotoUri");
+        }
         photoViewModel = new ViewModelProvider(requireActivity()).get(PhotoViewModel.class);
         setupRecyclerView();
         binding.buttonCapture.setOnClickListener(v -> openCamera());
         binding.buttonConfirm.setOnClickListener(v -> confirmPhotos());
         binding.toolbarTakePhoto.setNavigationOnClickListener(v -> requireActivity().onBackPressed());
 
-        // Initialize the image classifier
         imageClassifier = new ImageClassifierHelper(requireContext());
     }
 
@@ -179,79 +216,36 @@ public class TakePhotoFragment extends Fragment {
             return;
         }
 
-        for (Photo photo : tempPhotoList) {
-            photoViewModel.addPhoto(photo); // Đảm bảo ViewModel lưu ảnh
-        }
-
         new androidx.appcompat.app.AlertDialog.Builder(requireContext())
                 .setTitle("Confirm")
-                .setMessage("Upload " + tempPhotoList.size() + " photo(s) to Firestore?")
+                .setMessage("Save " + tempPhotoList.size() + " photo(s)?")
                 .setPositiveButton("Confirm", (dialog, which) -> {
-                    List<Photo> photosToUpload = new ArrayList<>(tempPhotoList); // Copy list để tránh bị clear()
-                    classifyAndUploadPhotos(photosToUpload);
-                    tempPhotoList.clear(); // Chỉ xóa sau khi lấy danh sách xong
+                    List<Photo> photosToSave = new ArrayList<>(tempPhotoList);
+                    classifyAndSavePhotos(photosToSave);
+                    tempPhotoList.clear();
+                    selectedPhotoAdapter.submitList(new ArrayList<>(tempPhotoList));
                 })
                 .setNegativeButton("Cancel", null)
                 .show();
     }
 
-    private void classifyAndUploadPhotos(List<Photo> photos) {
-        // Show a loading message
+    private void classifyAndSavePhotos(List<Photo> photos) {
         Toast.makeText(requireContext(), "Analyzing photos...", Toast.LENGTH_SHORT).show();
 
         for (Photo photo : photos) {
             Bitmap bitmap = photo.getBitmap();
             if (bitmap != null) {
-                // Classify image to get tags
                 List<String> tags = imageClassifier.classify(bitmap);
                 photo.setTags(tags);
                 Log.d("TakePhotoFragment", "Photo tagged with: " + tags);
+
+                // Lưu ảnh đã nén qua PhotoViewModel
+                photoViewModel.addPhoto(bitmap, tags);
             }
         }
-        uploadPhotos(photos);
-    }
 
-    private void uploadPhotos(List<Photo> photos) {
-        FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
-        if (user == null) {
-            Toast.makeText(requireContext(), "User not authenticated", Toast.LENGTH_SHORT).show();
-            return;
-        }
-
-        String userId = user.getUid();
-        FirebaseFirestore firestore = FirebaseFirestore.getInstance();
-        CollectionReference userPhotosRef = firestore.collection("photos").document(userId).collection("user_photos");
-
-        for (Photo p : photos) {
-            Uri contentUri = Uri.parse(p.getFilePath());
-            String base64Image = ImageUtils.convertImageToBase64(requireContext(), contentUri);
-
-            if (base64Image == null) {
-                Log.e("TakePhotoFragment", "Failed to convert image to Base64");
-                Toast.makeText(requireContext(), "Error converting image", Toast.LENGTH_SHORT).show();
-                continue;
-            }
-
-            Map<String, Object> photoData = new HashMap<>();
-            photoData.put("id", p.getId());
-            photoData.put("filePath", base64Image);
-            photoData.put("isPrivate", false);
-            photoData.put("tags", p.getTags());
-            photoData.put("createdAt", p.getCreatedAt());
-            photoData.put("updatedAt", System.currentTimeMillis());
-
-            userPhotosRef.document(p.getId()).set(photoData)
-                    .addOnSuccessListener(aVoid -> {
-                        if (photos.indexOf(p) == photos.size() - 1) {
-                            Toast.makeText(requireContext(), "Upload complete!", Toast.LENGTH_SHORT).show();
-                            requireActivity().onBackPressed();
-                        }
-                    })
-                    .addOnFailureListener(e -> {
-                        Log.e("TakePhotoFragment", "Failed to upload to Firestore", e);
-                        Toast.makeText(requireContext(), "Upload failed", Toast.LENGTH_SHORT).show();
-                    });
-        }
+        Toast.makeText(requireContext(), "Photos saved successfully!", Toast.LENGTH_SHORT).show();
+        requireActivity().onBackPressed();
     }
 
     @Override
@@ -262,11 +256,9 @@ public class TakePhotoFragment extends Fragment {
             binding = null;
         }
 
-        // Clean up TensorFlow resources
         if (imageClassifier != null) {
             imageClassifier.close();
             imageClassifier = null;
         }
     }
-
 }

@@ -1,9 +1,7 @@
-// presentation/ui/fragment/AlbumUpdateFragment.java
 package com.example.memorai.presentation.ui.fragment;
 
 import static com.example.memorai.utils.ImageUtils.convertImageToBase64;
 
-import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Bundle;
 import android.text.TextUtils;
@@ -30,9 +28,7 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import dagger.hilt.android.AndroidEntryPoint;
 
@@ -50,8 +46,11 @@ public class AlbumUpdateFragment extends Fragment {
     private String albumId;
 
     private FirebaseUser user;
-
     private Album currentAlbum;
+
+    public AlbumUpdateFragment() {
+        super(R.layout.fragment_album_update);
+    }
 
     @Nullable
     @Override
@@ -80,7 +79,7 @@ public class AlbumUpdateFragment extends Fragment {
         setupObservers();
         setupButtons(view);
         user = FirebaseAuth.getInstance().getCurrentUser();
-        loadAlbumAndPhotos(user.getUid());
+        loadAlbumAndPhotos();
     }
 
     private void setupToolbar(View view) {
@@ -121,6 +120,20 @@ public class AlbumUpdateFragment extends Fragment {
             public void afterTextChanged(android.text.Editable s) {
             }
         });
+
+        // Observe album data
+        albumViewModel.getAlbumLiveData().observe(getViewLifecycleOwner(), album -> {
+            if (album == null) return;
+            currentAlbum = album;
+            binding.editTextAlbumTitle.setText(album.getName());
+        });
+
+        // Observe photos of the album
+        albumViewModel.getPhotosLiveData().observe(getViewLifecycleOwner(), photos -> {
+            if (photos != null && !photos.isEmpty()) {
+                albumCreationViewModel.setPhotos(photos);
+            }
+        });
     }
 
     private void validateForm() {
@@ -131,28 +144,14 @@ public class AlbumUpdateFragment extends Fragment {
         binding.buttonUpdateAlbum.setEnabled(isValid);
     }
 
-    private void loadAlbumAndPhotos(String userId) {
-        if (userId == null || albumId == null) return;
+    private void loadAlbumAndPhotos() {
+        if (albumId == null) return;
 
-        // Load album details
+        // Load album details from local (Room)
         albumViewModel.loadAlbumById(albumId);
-        albumViewModel.getAlbumLiveData().observe(getViewLifecycleOwner(), album -> {
-            if (album == null) return;
-            currentAlbum = album;
-            binding.editTextAlbumTitle.setText(album.getName());
 
-            // Load photos for this album
-            if (album.getPhotos() != null && !album.getPhotos().isEmpty()) {
-                albumViewModel.loadPhotosFromAlbum(userId, albumId);
-            }
-        });
-
-        // Observe photos
-        albumViewModel.getPhotosLiveData().observe(getViewLifecycleOwner(), photos -> {
-            if (photos != null && !photos.isEmpty()) {
-                albumCreationViewModel.setPhotos(photos);
-            }
-        });
+        // Load photos for this album
+        albumViewModel.loadPhotosFromAlbum(albumId);
     }
 
     private void setupButtons(View view) {
@@ -165,7 +164,7 @@ public class AlbumUpdateFragment extends Fragment {
 
         binding.buttonUpdateAlbum.setOnClickListener(v -> {
             String title = binding.editTextAlbumTitle.getText().toString().trim();
-            String description = "";
+            String description = ""; // Nếu không có description trong UI, để trống
 
             // Validation
             if (TextUtils.isEmpty(title)) {
@@ -173,51 +172,36 @@ public class AlbumUpdateFragment extends Fragment {
                 return;
             }
 
-            List<Photo> selected = albumCreationViewModel.getSelectedPhotos().getValue();
-            if (selected == null || selected.isEmpty()) {
+            List<Photo> selectedPhotos = albumCreationViewModel.getSelectedPhotos().getValue();
+            if (selectedPhotos == null || selectedPhotos.isEmpty()) {
                 Toast.makeText(requireContext(), "No photos selected for album!", Toast.LENGTH_SHORT).show();
                 return;
             }
 
-            // Extract photo IDs
-            List<String> photoIds = new ArrayList<>();
-            for (Photo photo : selected) {
-                photoIds.add(photo.getId());
-            }
-
-            Uri contentUri = Uri.parse(selected.get(0).getFilePath());
-
+            // Lấy cover photo từ ảnh đầu tiên trong danh sách
+            Uri contentUri = Uri.parse(selectedPhotos.get(0).getFilePath());
             String base64 = convertImageToBase64(requireContext(), contentUri);
 
-            // Update album
-            user = FirebaseAuth.getInstance().getCurrentUser();
-            String userId = user.getUid();
-            if (userId != null) {
+            // Tạo album mới với thông tin cập nhật
+            Album updatedAlbum = new Album(
+                    albumId,
+                    title,
+                    description,
+                    currentAlbum.getPhotos(), // Giữ nguyên danh sách photo cũ để cập nhật sau
+                    base64,
+                    currentAlbum.getCreatedAt(),
+                    System.currentTimeMillis()
+            );
 
-                Map<String, Object> updatedAlbum = new HashMap<>();
-                updatedAlbum.put("id", albumId);
-                updatedAlbum.put("title", title);
-                updatedAlbum.put("description", "");
-                updatedAlbum.put("photos", photoIds);
-                updatedAlbum.put("coverPhotoUrl", base64);
-                updatedAlbum.put("createdAt", System.currentTimeMillis());
-                updatedAlbum.put("updatedAt", System.currentTimeMillis());
-                // Update in Firestore
-                albumViewModel.updateAlbumWithPhotos(userId, albumId, photoIds);
-                Toast.makeText(requireContext(), "Album updated!", Toast.LENGTH_SHORT).show();
+            // Cập nhật album với danh sách ảnh mới
+            albumViewModel.updateAlbumWithPhotos(updatedAlbum, selectedPhotos);
 
-                // Clear selection and go back
-                albumCreationViewModel.clear();
-                Navigation.findNavController(view).popBackStack();
-            }
+            Toast.makeText(requireContext(), "Album updated!", Toast.LENGTH_SHORT).show();
+
+            // Clear selection và quay lại
+            albumCreationViewModel.clear();
+            Navigation.findNavController(view).popBackStack();
         });
-    }
-
-    // Helper method to get Bitmap from Photo (implement according to your storage)
-    private Bitmap getBitmapFromPhoto(Photo photo) {
-        // Implement your logic to get Bitmap from photo
-        // This could be loading from file, decoding from base64, etc.
-        return null; // placeholder
     }
 
     private void showSnackbar(String message) {
@@ -229,15 +213,4 @@ public class AlbumUpdateFragment extends Fragment {
         super.onDestroyView();
         binding = null;
     }
-
-    private void loadAlbumAndPhotos() {
-        // 1) Get album info from VM
-        albumViewModel.getAlbumById(albumId).observe(getViewLifecycleOwner(), album -> {
-            if (album == null) return;
-            currentAlbum = album;
-            binding.editTextAlbumTitle.setText(album.getName());
-        });
-
-    }
-
 }

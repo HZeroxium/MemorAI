@@ -15,6 +15,7 @@ import android.view.View;
 import android.widget.PopupMenu;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.app.AppCompatDelegate;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.lifecycle.ViewModelProvider;
@@ -57,24 +58,29 @@ public class MainActivity extends AppCompatActivity {
 
     private PhotoViewModel photoViewModel;
 
+    AlbumViewModel albumViewModel;
+
+    SharedPreferences sharedPreferences;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         binding = ActivityMainBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
-        SharedPreferences sharedPreferences = getSharedPreferences("Mode", Context.MODE_PRIVATE);
-        boolean darkMode = sharedPreferences.getBoolean("night", false);
-        AlbumViewModel albumViewModel = new ViewModelProvider(this).get(AlbumViewModel.class);
-
+        albumViewModel = new ViewModelProvider(this).get(AlbumViewModel.class);
+        sharedPreferences = getSharedPreferences("Mode", Context.MODE_PRIVATE);
+        Boolean darkMode = sharedPreferences.getBoolean("night", false);
+        if (darkMode) {
+            AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES);
+        } else {
+            AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO);
+        }
         userViewModel = new ViewModelProvider(this).get(UserViewModel.class);
         photoViewModel = new ViewModelProvider(this).get(PhotoViewModel.class);
         firebaseAuth = FirebaseAuth.getInstance();
         FirebaseUser user = firebaseAuth.getCurrentUser();
-        if (user != null) {
-            photoViewModel.loadAllPhotos(user.getUid());
-            albumViewModel.loadAlbums();
-        }
+        photoViewModel.loadAllPhotos();
+        albumViewModel.loadAlbums();
         GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
                 .requestIdToken("619405178592-3ri6lcne9ejli7bt6dt6elj3vo0132t0.apps.googleusercontent.com") // Lấy ID Token để xác thực Firebase
                 .requestEmail()
@@ -180,7 +186,6 @@ public class MainActivity extends AppCompatActivity {
         int visibility = isVisible ? View.VISIBLE : View.GONE;
         binding.bottomNavigation.setVisibility(visibility);
         binding.header.setVisibility(visibility);
-        binding.searchBar.setVisibility(visibility);
     }
 
 

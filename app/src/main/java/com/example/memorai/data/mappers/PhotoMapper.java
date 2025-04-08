@@ -19,7 +19,8 @@ public class PhotoMapper {
                 entity.filePath,
                 tags,
                 entity.createdAt,
-                entity.updatedAt
+                entity.updatedAt,
+                entity.isPrivate
         );
     }
 

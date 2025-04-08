@@ -181,7 +181,7 @@ public class AlbumDetailFragment extends Fragment {
                 String enteredName = input.getText().toString().trim();
                 if (enteredName.equals(album.getName())) {
                     user = FirebaseAuth.getInstance().getCurrentUser();
-                    albumViewModel.deleteAlbum(albumId, user.getUid());
+                    albumViewModel.deleteAlbum(albumId);
                     Toast.makeText(requireContext(), "Album deleted", Toast.LENGTH_SHORT).show();
                     Navigation.findNavController(requireView()).popBackStack();
                 } else {
