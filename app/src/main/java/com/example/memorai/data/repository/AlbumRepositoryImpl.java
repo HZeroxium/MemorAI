@@ -216,16 +216,27 @@ public class AlbumRepositoryImpl implements AlbumRepository {
     }
 
     private void syncAlbumToFirebase(AlbumEntity entity) {
+        if (entity.isSynced) {
+            return;
+        }
+
         getUserAlbumsRef().document(entity.id).get()
                 .addOnCompleteListener(task -> {
                     if (task.isSuccessful()) {
                         DocumentSnapshot snapshot = task.getResult();
-                        // Nếu album chưa tồn tại trên Firebase hoặc bản local mới hơn
                         if (!snapshot.exists() || entity.updatedAt > snapshot.getLong("updatedAt")) {
+                            entity.isSynced = true;
                             Album album = AlbumMapper.toDomain(entity);
                             getUserAlbumsRef().document(entity.id).set(album)
-                                    .addOnSuccessListener(aVoid -> Log.d("AlbumRepository", "Album synced to Firebase"))
-                                    .addOnFailureListener(e -> Log.e("AlbumRepository", "Error syncing album", e));
+                                    .addOnSuccessListener(aVoid -> {
+                                        Log.d("AlbumRepository", "Album synced to Firebase");
+                                    })
+                                    .addOnFailureListener(e -> {
+                                        entity.isSynced = false;
+                                        Log.e("AlbumRepository", "Error syncing album", e);
+                                    });
+                        } else if (snapshot.exists()) {
+                            entity.isSynced = true;
                         }
                     } else {
                         Log.e("AlbumRepository", "Error checking album on Firebase", task.getException());
