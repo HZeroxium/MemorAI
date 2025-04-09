@@ -1,6 +1,7 @@
 package com.example.memorai.presentation.ui.activity;
 
 import android.content.Context;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.content.res.Configuration;
@@ -20,6 +21,7 @@ import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.navigation.NavController;
+import androidx.navigation.Navigation;
 import androidx.navigation.fragment.NavHostFragment;
 import androidx.navigation.ui.NavigationUI;
 
@@ -79,8 +81,16 @@ public class MainActivity extends AppCompatActivity {
         photoViewModel = new ViewModelProvider(this).get(PhotoViewModel.class);
         firebaseAuth = FirebaseAuth.getInstance();
         FirebaseUser user = firebaseAuth.getCurrentUser();
-        photoViewModel.loadAllPhotos();
-        albumViewModel.loadAlbums();
+
+        if (savedInstanceState == null) {
+            photoViewModel.loadAllPhotos();
+            albumViewModel.loadAlbums();
+        }
+
+
+        if (getIntent().getBooleanExtra("REFRESH_UI", false)) {
+            refreshUI();
+        }
         GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
                 .requestIdToken("619405178592-3ri6lcne9ejli7bt6dt6elj3vo0132t0.apps.googleusercontent.com") // Lấy ID Token để xác thực Firebase
                 .requestEmail()
@@ -97,7 +107,26 @@ public class MainActivity extends AppCompatActivity {
         requestNotificationPermission();
     }
 
+    private void refreshUI() {
+        photoViewModel.loadAllPhotos();
+        albumViewModel.loadAlbums();
+        NavController navController = Navigation.findNavController(this, R.id.nav_host_fragment);
+        navController.popBackStack(R.id.photoListFragment, true); // Xóa fragment cũ
+        navController.navigate(R.id.photoListFragment);
+        // Force reload cả albumListFragment nếu đang ở đó
+        navController.popBackStack(R.id.albumListFragment, true);
+        navController.navigate(R.id.albumListFragment);
+    }
 
+    @Override
+    protected void onNewIntent(Intent intent) {
+        super.onNewIntent(intent);
+        setIntent(intent);
+
+        if (intent.getBooleanExtra("REFRESH_UI", false)) {
+            refreshUI();
+        }
+    }
 
     private void requestNotificationPermission() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) { // Android 13+

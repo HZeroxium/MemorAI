@@ -113,6 +113,7 @@ public class PhotoListFragment extends Fragment {
         applyLayoutManager();
     }
 
+
     private void applyLayoutManager() {
         final int spanCount = 3; // 3 cột cho giao diện kiểu Google Photos
         GridLayoutManager layoutManager = new GridLayoutManager(requireContext(), spanCount);

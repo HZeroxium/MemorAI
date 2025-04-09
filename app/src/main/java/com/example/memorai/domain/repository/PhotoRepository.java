@@ -38,6 +38,8 @@ public interface PhotoRepository {
 
     void syncFromFirestore();
 
+    public void syncFromFirestoreSync();
+
     void syncLocalPhotosToFirestore();
 }
 

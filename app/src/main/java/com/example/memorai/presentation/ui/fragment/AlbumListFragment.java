@@ -21,6 +21,8 @@ import com.example.memorai.presentation.viewmodel.PhotoViewModel;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 
+import java.util.ArrayList;
+
 import dagger.hilt.android.AndroidEntryPoint;
 
 @AndroidEntryPoint
@@ -71,7 +73,7 @@ public class AlbumListFragment extends Fragment {
         user = FirebaseAuth.getInstance().getCurrentUser();
 
         albumViewModel.getAlbums().observe(getViewLifecycleOwner(), albums ->
-                albumAdapter.submitList(albums)
+                albumAdapter.submitList(new ArrayList<>(albums))
         );
 
         // Handle Floating Action Button click (to add new album)
