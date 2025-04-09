@@ -13,12 +13,14 @@ import com.example.memorai.data.mappers.AlbumMapper;
 import com.example.memorai.domain.model.Photo;
 import com.example.memorai.domain.model.Album;
 import com.example.memorai.domain.repository.PhotoRepository;
+import com.google.android.gms.tasks.Tasks;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.Query;
+import com.google.firebase.firestore.QuerySnapshot;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -384,6 +386,7 @@ public class PhotoRepositoryImpl implements PhotoRepository {
                                     // Chỉ cập nhật nếu ảnh mới hơn hoặc chưa tồn tại
                                     if (localPhoto == null || firestorePhoto.getUpdatedAt() > localPhoto.updatedAt) {
                                         PhotoEntity entity = PhotoMapper.fromDomain(firestorePhoto);
+                                        entity.isSynced = true;
                                         photoDao.insertPhoto(entity);
                                     }
                                 }
@@ -393,6 +396,37 @@ public class PhotoRepositoryImpl implements PhotoRepository {
                 });
     }
 
+    public void syncFromFirestoreSync() {
+        String userId = getCurrentUserId();
+        if (userId == null) return;
+
+        try {
+            // Lấy dữ liệu từ Firestore một cách đồng bộ
+            QuerySnapshot querySnapshot = Tasks.await(
+                    firestore.collection("photos")
+                            .document(userId)
+                            .collection("user_photos")
+                            .orderBy("updatedAt", Query.Direction.DESCENDING)
+                            .get()
+            );
+
+            List<Photo> firestorePhotos = querySnapshot.toObjects(Photo.class);
+
+            executorService.execute(() -> {
+                for (Photo firestorePhoto : firestorePhotos) {
+                    PhotoEntity localPhoto = photoDao.getPhotoById(firestorePhoto.getId());
+                    if (localPhoto == null || firestorePhoto.getUpdatedAt() > localPhoto.updatedAt) {
+                        PhotoEntity entity = PhotoMapper.fromDomain(firestorePhoto);
+                        entity.isSynced = true;
+                        photoDao.insertPhoto(entity);
+                    }
+                }
+                Log.d("PhotoRepository", "Synced " + firestorePhotos.size() + " photos from Firestore");
+            });
+        } catch (Exception e) {
+            Log.e("PhotoRepository", "Sync from Firestore failed", e);
+        }
+    }
     public void syncLocalPhotosToFirestore() {
         String userId = getCurrentUserId();
         if (userId == null) return;
@@ -427,7 +461,7 @@ public class PhotoRepositoryImpl implements PhotoRepository {
                                                 // Chạy trên background thread
                                                 executorService.execute(() -> {
                                                     entity.isSynced = true;
-                                                    photoDao.updatePhoto(entity);
+                                                    photoDao.insertPhoto(entity);
                                                 });
                                             })
                                             .addOnFailureListener(e -> {

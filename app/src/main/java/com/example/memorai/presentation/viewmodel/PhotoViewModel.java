@@ -253,32 +253,37 @@ public class PhotoViewModel extends ViewModel {
     }
 
     public void syncPhoto(SyncCallback callback) {
-        // Hiển thị loading trước khi sync
         callback.onSyncStarted();
+        _isSyncing.setValue(true);
 
         executorService.execute(() -> {
             try {
-                // Giả lập thời gian sync (test)
-                Thread.sleep(2000);
+                // 1. Đồng bộ từ Firestore về Room
+                photoRepository.syncFromFirestoreSync(); // Sẽ tạo phương thức mới
 
-                // 1. Đồng bộ từ Firestore về trước
-                photoRepository.syncFromFirestore();
-
-                // 2. Đồng bộ dữ liệu local lên Firestore
+                // 2. Đồng bộ từ Room lên Firestore
                 photoRepository.syncLocalPhotosToFirestore();
 
-                // Thành công
-                new Handler(Looper.getMainLooper()).post(() -> {
+                // 3. Tải lại danh sách ảnh từ Room sau khi sync
+                List<Photo> photos = photoRepository.getAllPhotos();
+                for (Photo photo : photos) {
+                    photo.setBitmap(decodeBase64ToImage(photo.getFilePath()));
+                }
+                allPhotos.postValue(photos); // Cập nhật LiveData
+
+                mainHandler.post(() -> {
+                    _isSyncing.setValue(false);
                     callback.onSyncCompleted(true);
                 });
             } catch (Exception e) {
-                new Handler(Looper.getMainLooper()).post(() -> {
+                Log.e("PhotoViewModel", "Sync failed", e);
+                mainHandler.post(() -> {
+                    _isSyncing.setValue(false);
                     callback.onSyncCompleted(false);
                 });
             }
         });
     }
-
 
     // Interface callback
     public interface SyncCallback {

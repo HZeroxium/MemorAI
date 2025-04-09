@@ -11,6 +11,7 @@ import com.example.memorai.domain.model.Album;
 import com.example.memorai.domain.model.Photo;
 import com.example.memorai.domain.repository.AlbumRepository;
 import com.google.android.gms.tasks.Task;
+import com.google.android.gms.tasks.Tasks;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentSnapshot;
@@ -167,42 +168,38 @@ public class AlbumRepositoryImpl implements AlbumRepository {
     }
 
 
-    public void syncFromFirebase() {
-        if (firebaseAuth.getCurrentUser() == null) return;
+    public CompletableFuture<Void> syncFromFirebaseAsync() {
+        CompletableFuture<Void> future = new CompletableFuture<>();
 
         executorService.execute(() -> {
             try {
-                Task<QuerySnapshot> task = getUserAlbumsRef().get();
-                task.addOnCompleteListener(task1 -> {
-                    if (task1.isSuccessful()) {
-                        QuerySnapshot snapshot = task1.getResult();
-                        if (snapshot != null) {
-                            List<Album> firebaseAlbums = snapshot.toObjects(Album.class);
-                            executorService.execute(() -> { // Thêm executorService.execute ở đây
-                                for (Album firebaseAlbum : firebaseAlbums) {
-                                    AlbumEntity localEntity = albumDao.getAlbumById(firebaseAlbum.getId());
-                                    if (localEntity == null || firebaseAlbum.getUpdatedAt() > localEntity.updatedAt) {
-                                        AlbumEntity entity = AlbumMapper.fromDomain(firebaseAlbum);
-                                        albumDao.updateAlbum(entity);
-
-                                        crossRefDao.deleteCrossRefsForAlbum(firebaseAlbum.getId());
-                                        for (String photoId : firebaseAlbum.getPhotos()) {
-                                            PhotoAlbumCrossRef crossRef = new PhotoAlbumCrossRef(photoId, firebaseAlbum.getId());
-                                            crossRefDao.insertCrossRef(crossRef);
-                                        }
-                                    }
-                                }
-                            });
+                QuerySnapshot snapshot = Tasks.await(getUserAlbumsRef().get());
+                if (snapshot != null && !snapshot.isEmpty()) {
+                    List<Album> firebaseAlbums = snapshot.toObjects(Album.class);
+                    for (Album firebaseAlbum : firebaseAlbums) {
+                        AlbumEntity localEntity = albumDao.getAlbumById(firebaseAlbum.getId());
+                        if (localEntity == null || firebaseAlbum.getUpdatedAt() > localEntity.updatedAt) {
+                            AlbumEntity entity = AlbumMapper.fromDomain(firebaseAlbum);
+                            entity.isSynced = true;
+                            albumDao.insertAlbum(entity);
+                            crossRefDao.deleteCrossRefsForAlbum(firebaseAlbum.getId());
+                            for (String photoId : firebaseAlbum.getPhotos()) {
+                                PhotoAlbumCrossRef crossRef = new PhotoAlbumCrossRef(photoId, firebaseAlbum.getId());
+                                crossRefDao.insertCrossRef(crossRef);
+                            }
                         }
-                    } else {
-                        Log.e("AlbumRepository", "Error getting albums", task1.getException());
                     }
-                });
+                }
+                future.complete(null); // ✅ báo hiệu đã hoàn thành
             } catch (Exception e) {
-                Log.e("AlbumRepository", "Error syncing from Firebase", e);
+                Log.e("AlbumRepository", "Lỗi đồng bộ từ Firebase", e);
+                future.completeExceptionally(e);
             }
         });
+
+        return future;
     }
+
     public void syncPendingChangesToFirebase() {
         if (firebaseAuth.getCurrentUser() == null) return;
 

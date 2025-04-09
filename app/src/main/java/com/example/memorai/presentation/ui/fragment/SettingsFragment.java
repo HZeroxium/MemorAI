@@ -134,12 +134,13 @@ public class SettingsFragment extends Fragment {
                                                             (!isAlbumSyncSuccess ? getString(R.string.albums) : "")),
                                             Toast.LENGTH_SHORT).show();
                                 } else {
+                                    photoViewModel.loadAllPhotos();
+                                    albumViewModel.loadAlbums();
                                     if (getContext() != null) {
                                         NotificationHelper.createNotificationChannel(getContext(), "sync_channel");
-
                                         Intent intent = new Intent(requireContext(), MainActivity.class);
-                                        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
-
+                                        intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
+                                        intent.putExtra("REFRESH_UI", true); // Thêm extra để yêu cầu làm mới UI
                                         NotificationHelper.sendSystemNotification(
                                                 requireContext(),
                                                 "sync_channel",
