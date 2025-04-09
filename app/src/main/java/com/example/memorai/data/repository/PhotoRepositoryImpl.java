@@ -406,27 +406,35 @@ public class PhotoRepositoryImpl implements PhotoRepository {
                     .collection("user_photos");
 
             for (PhotoEntity entity : localPhotos) {
-                // Kiểm tra xem ảnh đã có trên Firestore chưa
                 photosRef.document(entity.id).get()
                         .addOnSuccessListener(doc -> {
-                            if (!doc.exists()) {
-                                if (entity.isSynced) {
-                                    return;
+                            // Chuyển sang background thread trước khi thao tác với database
+                            executorService.execute(() -> {
+                                if (!doc.exists()) {
+                                    if (entity.isSynced) {
+                                        return;
+                                    }
                                 }
-                            }
-                            Photo firestorePhoto = doc.toObject(Photo.class);
-                            boolean shouldUpdate = firestorePhoto == null
-                                    || entity.updatedAt > firestorePhoto.getUpdatedAt();
+                                Photo firestorePhoto = doc.toObject(Photo.class);
+                                boolean shouldUpdate = firestorePhoto == null
+                                        || entity.updatedAt > firestorePhoto.getUpdatedAt();
 
-                            if (shouldUpdate) {
-                                Photo photo = PhotoMapper.toDomain(entity);
-                                photosRef.document(photo.getId())
-                                        .set(photo)
-                                        .addOnFailureListener(e -> {
-                                            Log.e("PhotoRepository", "Sync failed: " + entity.id, e);
-                                        });
-                                entity.isSynced = true;
-                            }
+                                if (shouldUpdate) {
+                                    Photo photo = PhotoMapper.toDomain(entity);
+                                    photosRef.document(photo.getId())
+                                            .set(photo)
+                                            .addOnSuccessListener(aVoid -> {
+                                                // Chạy trên background thread
+                                                executorService.execute(() -> {
+                                                    entity.isSynced = true;
+                                                    photoDao.updatePhoto(entity);
+                                                });
+                                            })
+                                            .addOnFailureListener(e -> {
+                                                Log.e("PhotoRepository", "Sync failed: " + entity.id, e);
+                                            });
+                                }
+                            });
                         })
                         .addOnFailureListener(e -> {
                             Log.e("PhotoRepository", "Firestore fetch error: " + entity.id, e);

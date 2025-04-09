@@ -145,7 +145,10 @@ public class PhotoDetailFragment extends Fragment {
             binding.textViewNoTags.setVisibility(View.GONE);
             binding.chipGroupTags.setVisibility(View.VISIBLE);
 
-            for (String tag : photo.getTags()) {
+            List<String> tagsToShow = photo.getTags().subList(0, Math.min(5, photo.getTags().size()));
+
+
+            for (String tag : tagsToShow) {
                 Chip chip = new Chip(requireContext());
                 chip.setText(tag);
                 chip.setClickable(false);

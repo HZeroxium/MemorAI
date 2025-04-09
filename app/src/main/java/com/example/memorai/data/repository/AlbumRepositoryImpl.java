@@ -183,7 +183,7 @@ public class AlbumRepositoryImpl implements AlbumRepository {
                                     AlbumEntity localEntity = albumDao.getAlbumById(firebaseAlbum.getId());
                                     if (localEntity == null || firebaseAlbum.getUpdatedAt() > localEntity.updatedAt) {
                                         AlbumEntity entity = AlbumMapper.fromDomain(firebaseAlbum);
-                                        albumDao.insertAlbum(entity);
+                                        albumDao.updateAlbum(entity);
 
                                         crossRefDao.deleteCrossRefsForAlbum(firebaseAlbum.getId());
                                         for (String photoId : firebaseAlbum.getPhotos()) {
