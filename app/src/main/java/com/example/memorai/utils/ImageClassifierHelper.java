@@ -109,37 +109,26 @@ public class ImageClassifierHelper {
   }
 
   private List<String> getTopResults(float[] confidences) {
-    // Sử dụng PriorityQueue để sắp xếp kết quả theo độ tin cậy giảm dần
     PriorityQueue<Recognition> topResults = new PriorityQueue<>(
             MAX_RESULTS,
-            (a, b) -> Float.compare(b.confidence, a.confidence) // Sắp xếp giảm dần
+            (a, b) -> Float.compare(b.confidence, a.confidence)
     );
 
-    // Lặp qua tất cả các class
     for (int i = 0; i < confidences.length; i++) {
-      // Chỉ xét các class có trong labels và confidence > ngưỡng (1%)
-      if (i < labels.size() && confidences[i] > 0.01f) {
-        // Thêm vào queue (tự động sắp xếp)
+      if (i < labels.size() && confidences[i] > 0.02f) {
         topResults.offer(new Recognition(labels.get(i), confidences[i]));
 
-        // Giữ chỉ 5 kết quả tốt nhất
         if (topResults.size() > MAX_RESULTS) {
-          topResults.poll(); // Loại bỏ phần tử có confidence thấp nhất
+          topResults.poll();
         }
       }
     }
 
-    // Chuyển kết quả từ Queue sang List
     List<String> results = new ArrayList<>(MAX_RESULTS);
     while (!topResults.isEmpty()) {
-      Recognition recognition = topResults.poll();
-      // Format kết quả: "Label (X%)"
-      results.add(String.format("%s (%.1f%%)",
-              recognition.label,
-              recognition.confidence * 100));
+      results.add(topResults.poll().label);
     }
 
-    // Đảo ngược để có thứ tự từ cao đến thấp
     Collections.reverse(results);
     return results;
   }
