@@ -26,6 +26,8 @@ import androidx.core.content.FileProvider;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.GridLayoutManager;
+
+import com.example.memorai.R;
 import com.example.memorai.databinding.FragmentTakePhotoBinding;
 import com.example.memorai.domain.model.Photo;
 import com.example.memorai.presentation.ui.adapter.SelectedPhotoAdapter;
@@ -72,7 +74,7 @@ public class TakePhotoFragment extends Fragment {
                         selectedPhotoAdapter.submitList(new ArrayList<>(tempPhotoList));
                     }
                 } else {
-                    Toast.makeText(requireContext(), "Failed to capture photo", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(requireContext(), R.string.failed_to_capture_photo, Toast.LENGTH_SHORT).show();
                 }
             });
 
@@ -145,7 +147,7 @@ public class TakePhotoFragment extends Fragment {
                 if (isGranted) {
                     openCamera();
                 } else {
-                    Toast.makeText(requireContext(), "Camera permission denied", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(requireContext(), R.string.camera_permission_denied, Toast.LENGTH_SHORT).show();
                 }
             });
 
@@ -212,25 +214,25 @@ public class TakePhotoFragment extends Fragment {
 
     private void confirmPhotos() {
         if (tempPhotoList.isEmpty()) {
-            Toast.makeText(requireContext(), "No photos captured", Toast.LENGTH_SHORT).show();
+            Toast.makeText(requireContext(), R.string.no_photos_captured, Toast.LENGTH_SHORT).show();
             return;
         }
 
         new androidx.appcompat.app.AlertDialog.Builder(requireContext())
-                .setTitle("Confirm")
-                .setMessage("Save " + tempPhotoList.size() + " photo(s)?")
-                .setPositiveButton("Confirm", (dialog, which) -> {
+                .setTitle(R.string.confirm_title)
+                .setMessage(getString(R.string.confirm_message, tempPhotoList.size()))
+                .setPositiveButton(R.string.confirm_button, (dialog, which) -> {
                     List<Photo> photosToSave = new ArrayList<>(tempPhotoList);
                     classifyAndSavePhotos(photosToSave);
                     tempPhotoList.clear();
                     selectedPhotoAdapter.submitList(new ArrayList<>(tempPhotoList));
                 })
-                .setNegativeButton("Cancel", null)
+                .setNegativeButton(R.string.cancel_button, null)
                 .show();
     }
 
     private void classifyAndSavePhotos(List<Photo> photos) {
-        Toast.makeText(requireContext(), "Analyzing photos...", Toast.LENGTH_SHORT).show();
+        Toast.makeText(requireContext(), R.string.analyzing_photos, Toast.LENGTH_SHORT).show();
 
         for (Photo photo : photos) {
             Bitmap bitmap = photo.getBitmap();
@@ -244,7 +246,7 @@ public class TakePhotoFragment extends Fragment {
             }
         }
 
-        Toast.makeText(requireContext(), "Photos saved successfully!", Toast.LENGTH_SHORT).show();
+        Toast.makeText(requireContext(), R.string.photos_saved_success, Toast.LENGTH_SHORT).show();
         requireActivity().onBackPressed();
     }
 

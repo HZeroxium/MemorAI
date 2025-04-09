@@ -90,8 +90,8 @@ public class SearchFragment extends Fragment {
         binding.searchBar.setOnMenuItemClickListener(this::onMenuItemClick);
 
         // Update the hint to indicate tag-based search
-        binding.searchBar.setHint("Search by tags");
-        binding.searchView.setHint("Enter a tag to search");
+        binding.searchBar.setHint(R.string.search_by_tags);
+        binding.searchView.setHint(R.string.enter_tag_to_search);
 
         // Clicking search bar => show SearchView
         binding.searchBar.setOnClickListener(v -> binding.searchView.show());
@@ -152,7 +152,7 @@ public class SearchFragment extends Fragment {
     private void performSearch() {
         String query = binding.searchView.getText().toString().trim();
         if (query.isEmpty()) {
-            Toast.makeText(requireContext(), "Enter a tag to search", Toast.LENGTH_SHORT).show();
+            Toast.makeText(requireContext(), R.string.enter_tag_prompt, Toast.LENGTH_SHORT).show();
             return;
         }
 
@@ -185,8 +185,7 @@ public class SearchFragment extends Fragment {
             // Show results count
             int resultCount = photos.size();
             binding.textViewResultCount.setVisibility(View.VISIBLE);
-            binding.textViewResultCount.setText(resultCount + " photos found with tag: " +
-                    binding.searchView.getText().toString().trim());
+            binding.textViewResultCount.setText(getString(R.string.photos_found, resultCount, binding.searchView.getText().toString().trim()));
 
             // Show results
             searchAdapter.submitList(photos);
@@ -196,8 +195,7 @@ public class SearchFragment extends Fragment {
             searchAdapter.submitList(null);
             binding.textViewNoResults.setVisibility(View.VISIBLE);
             binding.textViewResultCount.setVisibility(View.GONE);
-            binding.textViewNoResults.setText("No photos found with the tag: " +
-                    binding.searchView.getText().toString().trim());
+            binding.textViewNoResults.setText(getString(R.string.no_photos_found, binding.searchView.getText().toString().trim()));
         }
     }
 

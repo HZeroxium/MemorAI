@@ -68,7 +68,32 @@
     <string name="modified">Modified: </string>
     <string name="private_photo">Private</string>
     <string name="public_photo">Public</string>
+    <string name="search_by_tags">Search by tags</string>
+    <string name="photos_found">%d photos found with tag: %s</string>
+    <string name="no_photos_found">No photos found with the tag: %s</string>
+    <string name="enter_tag_prompt">Enter a tag to search</string>
+    <string name="failed_to_capture_photo">Failed to capture photo</string>
+    <string name="camera_permission_denied">Camera permission denied</string>
+    <string name="no_photos_captured">No photos captured</string>
+    <string name="confirm_title">Confirm</string>
+    <string name="confirm_message">Save %d photo(s)?</string>
+    <string name="confirm_button">Confirm</string>
+    <string name="analyzing_photos">Analyzing photos...</string>
+    <string name="photos_saved_success">Photos saved successfully!</string>
+    <string name="photo_tagged_with">Photo tagged with: %s</string>
+    <string name="error_loading_image">Error loading image</string>
+    <string name="no_photos_imported">No photos imported</string>
+    <string name="confirm_import_title">Confirm</string>
+    <string name="confirm_import_message">Save %d photo(s)?</string>
+    <string name="select_from_gallery">Select from Gallery</string>
+    <string name="confirm_import">Confirm Import</string>
+    <string name="sync_failed">Sync failed: %s</string>
+    <string name="sync_success">Sync completed successfully</string>
+    <string name="sync_notification_title">Sync successful</string>
+    <string name="sync_notification_message">Data has been synced with cloud</string>
     <string-array name="photo_editor_emoji">
+
+
 
         <!-- Smiles -->
         <item>u+1f604</item>
@@ -551,4 +576,5 @@
     <string name="async">Syncing...</string>
     <string name="set_private">Set Private</string>
     <string name="set_public">Set Public</string>
+    <string name="and"><![CDATA[&]]></string>
 </resources>

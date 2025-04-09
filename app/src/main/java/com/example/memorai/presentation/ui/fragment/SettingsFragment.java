@@ -128,23 +128,27 @@ public class SettingsFragment extends Fragment {
                                 if (!isPhotoSyncSuccess || !isAlbumSyncSuccess) {
                                     binding.switchCloudSync.setChecked(false);
                                     Toast.makeText(requireContext(),
-                                            "Đồng bộ thất bại: " +
-                                                    (!isPhotoSyncSuccess ? "Ảnh" : "") +
-                                                    (!isPhotoSyncSuccess && !isAlbumSyncSuccess ? " và " : "") +
-                                                    (!isAlbumSyncSuccess ? "Album" : ""),
+                                            getString(R.string.sync_failed,
+                                                    (!isPhotoSyncSuccess ? getString(R.string.photos) : "") +
+                                                            (!isPhotoSyncSuccess && !isAlbumSyncSuccess ? getString(R.string.and) : "") +
+                                                            (!isAlbumSyncSuccess ? getString(R.string.albums) : "")),
                                             Toast.LENGTH_SHORT).show();
                                 } else {
-                                    Intent intent = new Intent(requireContext(), MainActivity.class);
-                                    intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+                                    if (getContext() != null) {
+                                        NotificationHelper.createNotificationChannel(getContext(), "sync_channel");
 
-                                    // Gửi thông báo hệ thống
-                                    NotificationHelper.sendSystemNotification(
-                                            requireContext(),
-                                            "sync_channel", // ID channel thông báo
-                                            "Đồng bộ thành công",
-                                            "Dữ liệu đã được đồng bộ với cloud",
-                                            intent
-                                    );                                }
+                                        Intent intent = new Intent(requireContext(), MainActivity.class);
+                                        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+
+                                        NotificationHelper.sendSystemNotification(
+                                                requireContext(),
+                                                "sync_channel",
+                                                getString(R.string.sync_notification_title),
+                                                getString(R.string.sync_notification_message),
+                                                intent
+                                        );
+                                    }
+                             }
                             }
                         });
                     }
@@ -185,7 +189,7 @@ public class SettingsFragment extends Fragment {
         String savedLanguage = prefs.getString("Language", "en");
 
         // Cài đặt Spinner ngôn ngữ
-        String[] languages = {"Tiếng Việt", "China", "English"};
+        String[] languages = {"Tiếng Việt", "中文", "English"};
         ArrayAdapter<String> adapter = new ArrayAdapter<>(requireContext(), android.R.layout.simple_spinner_dropdown_item, languages);
         binding.spinnerLanguage.setAdapter(adapter);
 
@@ -221,6 +225,7 @@ public class SettingsFragment extends Fragment {
                 binding.tvSync.setText(getString(R.string.synchronize));
                 binding.btnChangePin.setText(getString(R.string.change_pin));
                 binding.btnResetSystem.setText(getString(R.string.reset_system));
+                binding.btnSave.setText(getString(R.string.exit_save));
             }
 
             @Override

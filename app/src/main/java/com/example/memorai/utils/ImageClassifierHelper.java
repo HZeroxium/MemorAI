@@ -13,6 +13,7 @@ import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.MappedByteBuffer;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.PriorityQueue;
 
@@ -108,26 +109,38 @@ public class ImageClassifierHelper {
   }
 
   private List<String> getTopResults(float[] confidences) {
-    PriorityQueue<Recognition> pq = new PriorityQueue<>(
-            MAX_RESULTS, (a, b) -> Float.compare(b.confidence, a.confidence));
+    // Sử dụng PriorityQueue để sắp xếp kết quả theo độ tin cậy giảm dần
+    PriorityQueue<Recognition> topResults = new PriorityQueue<>(
+            MAX_RESULTS,
+            (a, b) -> Float.compare(b.confidence, a.confidence) // Sắp xếp giảm dần
+    );
 
+    // Lặp qua tất cả các class
     for (int i = 0; i < confidences.length; i++) {
-      if (i < labels.size() && confidences[i] > 0.01f) { // Threshold
-        pq.add(new Recognition(labels.get(i), confidences[i]));
+      // Chỉ xét các class có trong labels và confidence > ngưỡng (1%)
+      if (i < labels.size() && confidences[i] > 0.01f) {
+        // Thêm vào queue (tự động sắp xếp)
+        topResults.offer(new Recognition(labels.get(i), confidences[i]));
+
+        // Giữ chỉ 5 kết quả tốt nhất
+        if (topResults.size() > MAX_RESULTS) {
+          topResults.poll(); // Loại bỏ phần tử có confidence thấp nhất
+        }
       }
     }
 
-    List<String> results = new ArrayList<>();
-    while (!pq.isEmpty() && results.size() < MAX_RESULTS) {
-      Recognition r = pq.poll();
-      results.add(r.label);
-
-      // Special case for wig detection
-      if (r.label.toLowerCase().contains("wig")) {
-        results.add("You look handsome! 🥳✨");
-        break;
-      }
+    // Chuyển kết quả từ Queue sang List
+    List<String> results = new ArrayList<>(MAX_RESULTS);
+    while (!topResults.isEmpty()) {
+      Recognition recognition = topResults.poll();
+      // Format kết quả: "Label (X%)"
+      results.add(String.format("%s (%.1f%%)",
+              recognition.label,
+              recognition.confidence * 100));
     }
+
+    // Đảo ngược để có thứ tự từ cao đến thấp
+    Collections.reverse(results);
     return results;
   }
 
