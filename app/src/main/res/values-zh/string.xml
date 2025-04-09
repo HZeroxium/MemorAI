@@ -146,4 +146,29 @@
     <string name="async">正在同步…</string>
     <string name="set_private">设为私密</string>
     <string name="set_public">设为公开</string>
+
+    <string name="search_by_tags">按标签搜索</string>
+    <string name="photos_found">找到%d张带有标签的照片: %s</string>
+    <string name="no_photos_found">未找到带有标签的照片: %s</string>
+    <string name="enter_tag_prompt">输入标签进行搜索</string>
+
+    <string name="failed_to_capture_photo">拍照失败</string>
+    <string name="camera_permission_denied">相机权限被拒绝</string>
+    <string name="no_photos_captured">没有拍摄照片</string>
+    <string name="confirm_title">确认</string>
+    <string name="confirm_message">保存%d张照片？</string>
+    <string name="confirm_button">确认</string>
+    <string name="analyzing_photos">正在分析照片...</string>
+    <string name="photos_saved_success">照片保存成功！</string>
+    <string name="photo_tagged_with">照片标签: %s</string>
+    <string name="error_loading_image">加载图像错误</string>
+    <string name="no_photos_imported">没有导入照片</string>
+    <string name="confirm_import_title">确认</string>
+    <string name="confirm_import_message">保存%d张照片？</string>
+    <string name="select_from_gallery">从相册选择</string>
+    <string name="confirm_import">确认导入</string>
+    <string name="sync_failed">同步失败: %s</string>
+    <string name="sync_success">同步成功完成</string>
+    <string name="sync_notification_title">同步成功</string>
+    <string name="sync_notification_message">数据已与云端同步</string>
 </resources>

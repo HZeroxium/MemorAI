@@ -147,4 +147,28 @@
     <string name="async">Đang đồng bộ…</string>
     <string name="set_private">Đặt làm riêng tư</string>
     <string name="set_public">Đặt công khai</string>
+
+    <string name="search_by_tags">Tìm kiếm theo thẻ</string>
+    <string name="photos_found">Tìm thấy %d ảnh với thẻ: %s</string>
+    <string name="no_photos_found">Không tìm thấy ảnh nào với thẻ: %s</string>
+    <string name="enter_tag_prompt">Nhập thẻ để tìm kiếm</string>
+    <string name="failed_to_capture_photo">Chụp ảnh thất bại</string>
+    <string name="camera_permission_denied">Từ chối quyền truy cập camera</string>
+    <string name="no_photos_captured">Không có ảnh nào được chụp</string>
+    <string name="confirm_title">Xác nhận</string>
+    <string name="confirm_message">Lưu %d ảnh?</string>
+    <string name="confirm_button">Xác nhận</string>
+    <string name="analyzing_photos">Đang phân tích ảnh...</string>
+    <string name="photos_saved_success">Lưu ảnh thành công!</string>
+    <string name="photo_tagged_with">Ảnh được gắn thẻ: %s</string>
+    <string name="error_loading_image">Lỗi tải ảnh</string>
+    <string name="no_photos_imported">Không có ảnh nào được nhập</string>
+    <string name="confirm_import_title">Xác nhận</string>
+    <string name="confirm_import_message">Lưu %d ảnh?</string>
+    <string name="select_from_gallery">Chọn từ Thư viện</string>
+    <string name="confirm_import">Xác nhận nhập</string>
+    <string name="sync_failed">Đồng bộ thất bại: %s</string>
+    <string name="sync_success">Đồng bộ thành công</string>
+    <string name="sync_notification_title">Đồng bộ thành công</string>
+    <string name="sync_notification_message">Dữ liệu đã được đồng bộ với đám mây</string>
 </resources>
