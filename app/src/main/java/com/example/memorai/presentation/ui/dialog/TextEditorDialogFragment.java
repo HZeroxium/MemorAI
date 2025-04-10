@@ -3,7 +3,7 @@ package com.example.memorai.presentation.ui.dialog;
 import android.app.Dialog;
 import android.content.Context;
 import android.graphics.Color;
-import android.graphics.Typeface;
+import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
@@ -24,8 +24,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.example.memorai.R;
 import com.example.memorai.presentation.ui.adapter.ColorPickerAdapter;
 
-import java.util.Arrays;
-import java.util.List;
+import java.util.Objects;
 
 public class TextEditorDialogFragment extends DialogFragment {
 
@@ -47,6 +46,17 @@ public class TextEditorDialogFragment extends DialogFragment {
         this.textEditorListener = listener;
     }
 
+    @Override
+    public void onStart() {
+        super.onStart();
+        if (getDialog() != null) {
+            int width = ViewGroup.LayoutParams.MATCH_PARENT;
+            int height = ViewGroup.LayoutParams.MATCH_PARENT;
+            Objects.requireNonNull(getDialog().getWindow()).setLayout(width, height);
+            getDialog().getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
+        }
+    }
+
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
@@ -59,19 +69,26 @@ public class TextEditorDialogFragment extends DialogFragment {
         setupColorPicker();
         setupListeners();
 
+        // Hiển thị bàn phím ảo và focus vào EditText
+        editText.requestFocus();
+        InputMethodManager imm = (InputMethodManager) requireActivity().getSystemService(Context.INPUT_METHOD_SERVICE);
+        imm.showSoftInput(editText, InputMethodManager.SHOW_IMPLICIT);
+
         return view;
     }
 
     private void setupColorPicker() {
-        List<Integer> colors = Arrays.asList(Color.RED, Color.GREEN, Color.BLUE, Color.YELLOW, Color.WHITE, Color.BLACK);
-        ColorPickerAdapter adapter = new ColorPickerAdapter(requireContext(), colors);
-        adapter.setOnColorPickerClickListener(color -> {
-            // Xử lý sự kiện chọn màu
-            selectedColor = color;
-            editText.setTextColor(color);
+        // Cài đặt RecyclerView cho Color Picker
+        LinearLayoutManager layoutManager = new LinearLayoutManager(getContext(), LinearLayoutManager.HORIZONTAL, false);
+        colorPickerRecyclerView.setLayoutManager(layoutManager);
+
+        ColorPickerAdapter colorPickerAdapter = new ColorPickerAdapter(requireContext());
+        colorPickerAdapter.setOnColorPickerClickListener(colorCode -> {
+            selectedColor = colorCode; // Cập nhật màu đã chọn
+            editText.setTextColor(colorCode); // Đổi màu văn bản ngay khi chọn
         });
-        colorPickerRecyclerView.setLayoutManager(new LinearLayoutManager(getContext(), LinearLayoutManager.HORIZONTAL, false));
-        colorPickerRecyclerView.setAdapter(adapter);
+
+        colorPickerRecyclerView.setAdapter(colorPickerAdapter);
     }
 
     private void setupListeners() {
@@ -90,8 +107,6 @@ public class TextEditorDialogFragment extends DialogFragment {
             // Trì hoãn dismiss để văn bản kịp thêm lên ảnh
             editText.postDelayed(this::dismiss, 200);
         });
-
-
 
         editText.addTextChangedListener(new TextWatcher() {
             @Override
@@ -113,6 +128,7 @@ public class TextEditorDialogFragment extends DialogFragment {
         // Gán style trong suốt cho DialogFragment
         setStyle(DialogFragment.STYLE_NO_TITLE, R.style.TransparentDialogTheme);
     }
+
     @NonNull
     @Override
     public Dialog onCreateDialog(@Nullable Bundle savedInstanceState) {

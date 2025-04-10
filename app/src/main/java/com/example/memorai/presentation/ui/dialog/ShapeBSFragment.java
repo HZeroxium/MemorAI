@@ -243,7 +243,7 @@ public class ShapeBSFragment extends BottomSheetDialogFragment implements SeekBa
         ColorPickerAdapter colorPickerAdapter = new ColorPickerAdapter(getActivity());
         colorPickerAdapter.setOnColorPickerClickListener(colorCode -> {
             if (mProperties != null) {
-                dismiss();
+                //dismiss();
                 mProperties.onColorChanged(colorCode);
             }
         });
