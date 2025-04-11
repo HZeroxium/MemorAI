@@ -11,10 +11,12 @@ import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.lifecycle.ViewModelProvider;
 import androidx.navigation.Navigation;
 
 import com.example.memorai.databinding.FragmentLoginBinding;
 import com.example.memorai.domain.model.Album;
+import com.example.memorai.domain.model.Photo;
 import com.example.memorai.domain.model.User;
 import com.example.memorai.presentation.ui.activity.MainActivity;
 import com.example.memorai.presentation.viewmodel.AlbumViewModel;
@@ -32,6 +34,7 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.firestore.FirebaseFirestore;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.HashMap;
@@ -71,6 +74,7 @@ public class LoginFragment extends BottomSheetDialogFragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
+        albumViewModel = new ViewModelProvider(requireActivity()).get(AlbumViewModel.class);
         binding.btnGoogleSignIn.setOnClickListener(v -> signIn());
     }
 
@@ -185,12 +189,13 @@ public class LoginFragment extends BottomSheetDialogFragment {
                 true
         );
 
+        List<Photo> listPhoto = Collections.emptyList();
         // Sử dụng AlbumViewModel để tạo album
-        albumViewModel.createAlbumWithPhotos(newAlbum, null);
+        albumViewModel.createAlbumWithPhotos(newAlbum, listPhoto);
+        albumViewModel.loadAlbums();
 
         // Hiển thị thông báo và quay lại
         Toast.makeText(requireContext(), "Album created!", Toast.LENGTH_SHORT).show();
-        Navigation.findNavController(requireView()).popBackStack();
     }
 
     @Override
