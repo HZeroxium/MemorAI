@@ -34,7 +34,10 @@ public interface PhotoRepository {
     List<Album> getAllAlbums();
     void addPhotoToAlbum(String photoId, String albumId);
     void removePhotoFromAlbum(String photoId, String albumId);
+    String getPrivateAlbumId();
     List<Photo> getAllPhotos();
+
+    List<Photo> getPhotosByAlbum(String albumId, boolean includePrivate);
 
     void syncFromFirestore();
 

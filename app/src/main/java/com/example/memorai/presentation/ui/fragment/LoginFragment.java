@@ -2,17 +2,22 @@ package com.example.memorai.presentation.ui.fragment;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.text.TextUtils;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.navigation.Navigation;
 
 import com.example.memorai.databinding.FragmentLoginBinding;
+import com.example.memorai.domain.model.Album;
 import com.example.memorai.domain.model.User;
 import com.example.memorai.presentation.ui.activity.MainActivity;
+import com.example.memorai.presentation.viewmodel.AlbumViewModel;
 import com.google.android.gms.auth.api.signin.GoogleSignIn;
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
 import com.google.android.gms.auth.api.signin.GoogleSignInClient;
@@ -27,6 +32,7 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.firestore.FirebaseFirestore;
 
+import java.util.List;
 import java.util.Map;
 import java.util.HashMap;
 import java.util.ArrayList;
@@ -38,6 +44,7 @@ public class LoginFragment extends BottomSheetDialogFragment {
     private FirebaseAuth mAuth;
     private FirebaseFirestore firestore;
     private static final int RC_SIGN_IN = 9001;
+    private AlbumViewModel albumViewModel;
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
@@ -117,7 +124,7 @@ public class LoginFragment extends BottomSheetDialogFragment {
                             "123456"
                     );
 
-                    createDefaultPrivateAlbum(firebaseUser.getUid());
+                    createPrivateAlbum();
 
                     PinFragment pinFragment = new PinFragment();
                     Bundle bundle = new Bundle();
@@ -144,7 +151,7 @@ public class LoginFragment extends BottomSheetDialogFragment {
         String albumId = UUID.randomUUID().toString();
         Map<String, Object> albumData = new HashMap<>();
         albumData.put("id", albumId);
-        albumData.put("name", "Private Album");
+        albumData.put("name", "Private");
         albumData.put("description", "My private photos");
         albumData.put("photos", new ArrayList<String>());
         albumData.put("coverPhotoUrl", "");
@@ -159,6 +166,31 @@ public class LoginFragment extends BottomSheetDialogFragment {
                 .set(albumData)
                 .addOnSuccessListener(aVoid -> Log.d("LoginFragment", "Default private album created"))
                 .addOnFailureListener(e -> Log.w("LoginFragment", "Failed to create default album", e));
+    }
+
+    private void createPrivateAlbum() {
+        List<String> photoIds = new ArrayList<>();
+
+        // Create new album
+        String albumId = UUID.randomUUID().toString();
+
+        Album newAlbum = new Album(
+                albumId,
+                "Private",
+                "",
+                photoIds,
+                "",
+                System.currentTimeMillis(),
+                System.currentTimeMillis(),
+                true
+        );
+
+        // Sử dụng AlbumViewModel để tạo album
+        albumViewModel.createAlbumWithPhotos(newAlbum, null);
+
+        // Hiển thị thông báo và quay lại
+        Toast.makeText(requireContext(), "Album created!", Toast.LENGTH_SHORT).show();
+        Navigation.findNavController(requireView()).popBackStack();
     }
 
     @Override

@@ -50,7 +50,7 @@ public class AlbumViewModel extends ViewModel {
                 List<Album> result = new ArrayList<>();
 
                 for (Album album : albums) {
-                    Album newAlbum = new Album(album.getId(), album.getName(), album.getDescription(), album.getPhotos(), album.getCoverPhotoUrl(), album.getCreatedAt(), album.getUpdatedAt()); // Tạo bản sao để tránh thay đổi trực tiếp
+                    Album newAlbum = new Album(album.getId(), album.getName(), album.getDescription(), album.getPhotos(), album.getCoverPhotoUrl(), album.getCreatedAt(), album.getUpdatedAt(), album.isPrivate()); // Tạo bản sao để tránh thay đổi trực tiếp
                     if (newAlbum.getCoverPhotoUrl() != null) {
                         Bitmap bitmap = decodeBase64ToImage(newAlbum.getCoverPhotoUrl());
                         // Scale down bitmap để tránh OOM

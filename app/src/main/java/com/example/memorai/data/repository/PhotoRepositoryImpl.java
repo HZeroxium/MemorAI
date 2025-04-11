@@ -24,6 +24,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.stream.Collectors;
@@ -71,7 +72,7 @@ public class PhotoRepositoryImpl implements PhotoRepository {
                         .document(userId)
                         .collection("user_photos")
                         .document(photoId)
-                        .update("private", isPrivate);
+                        .update("is_private", isPrivate);
             }
         });
     }
@@ -101,7 +102,7 @@ public class PhotoRepositoryImpl implements PhotoRepository {
                 Map<String, Object> photoData = new HashMap<>();
                 photoData.put("id", photo.getId());
                 photoData.put("filePath", photo.getFilePath());
-                photoData.put("isPrivate", false);
+                photoData.put("is_private", false);
                 photoData.put("tags", photo.getTags());
                 photoData.put("createdAt", photo.getCreatedAt());
                 photoData.put("updatedAt", System.currentTimeMillis());
@@ -217,6 +218,21 @@ public class PhotoRepositoryImpl implements PhotoRepository {
                 throw new UnsupportedOperationException("Sort by " + sortBy + " is not supported.");
         }
         return photos;
+    }
+
+    @Override
+    public List<Photo> getPhotosByAlbum(String albumId, boolean includePrivate) {
+        List<PhotoAlbumCrossRef> crossRefs = crossRefDao.getCrossRefsForAlbum(albumId);
+        return crossRefs.stream()
+                .map(crossRef -> {
+                    PhotoEntity entity = photoDao.getPhotoById(crossRef.getPhotoId());
+                    if (entity != null && (includePrivate || !entity.isPrivate)) {
+                        return PhotoMapper.toDomain(entity);
+                    }
+                    return null;
+                })
+                .filter(Objects::nonNull)
+                .collect(Collectors.toList());
     }
 
     // --- Album Methods ---
@@ -356,6 +372,31 @@ public class PhotoRepositoryImpl implements PhotoRepository {
             }
         });
     }
+
+    @Override
+    public String getPrivateAlbumId() {
+        String userId = getCurrentUserId();
+        if (userId == null) {
+            return null;
+        }
+
+        try {
+            DocumentSnapshot albumDoc = firestore.collection("photos")
+                    .document(userId)
+                    .collection("user_albums")
+                    .whereEqualTo("name", "Private")
+                    .limit(1)
+                    .get()
+                    .getResult()
+                    .getDocuments()
+                    .get(0);
+            return albumDoc.getId();
+        } catch (Exception e) {
+            Log.e("PhotoRepository", "Error getting Private Album", e);
+            return null;
+        }
+    }
+
 
     // --- Sync Methods ---
 

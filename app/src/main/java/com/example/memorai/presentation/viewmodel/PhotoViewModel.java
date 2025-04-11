@@ -193,12 +193,33 @@ public class PhotoViewModel extends ViewModel {
         if (currentPhotos != null) {
             for (Photo photo : currentPhotos) {
                 if (photo.getId().equals(photoId)) {
-                    photo.seIsPrivate(isPrivate);
+                    photo.setIsPrivate(isPrivate);
                     break;
                 }
             }
             allPhotos.setValue(new ArrayList<>(currentPhotos));
         }
+
+        String albumId = photoRepository.getPrivateAlbumId();
+        if (albumId != null) {
+            if (isPrivate) {
+                photoRepository.addPhotoToAlbum(photoId, albumId);
+            } else {
+                photoRepository.removePhotoFromAlbum(photoId, albumId);
+            }
+        }
+    }
+
+    public LiveData<List<Photo>> observePhotosByAlbum(String albumId, boolean includePrivate) {
+        MutableLiveData<List<Photo>> result = new MutableLiveData<>();
+        executorService.execute(() -> {
+            List<Photo> photos = photoRepository.getPhotosByAlbum(albumId, includePrivate);
+            for (Photo photo : photos) {
+                photo.setBitmap(decodeBase64ToImage(photo.getFilePath()));
+            }
+            result.postValue(photos);
+        });
+        return result;
     }
 
     public LiveData<Photo> getPhotoById(String photoId) {

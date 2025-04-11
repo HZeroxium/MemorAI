@@ -129,6 +129,7 @@ public class AlbumRepositoryImpl implements AlbumRepository {
         entity.createdAt = album.getCreatedAt();
         entity.updatedAt = System.currentTimeMillis();
         entity.isSynced = false;
+        entity.isPrivate = album.isPrivate();
 
         albumDao.insertAlbum(entity);
         for (String photoId : photoIds) {

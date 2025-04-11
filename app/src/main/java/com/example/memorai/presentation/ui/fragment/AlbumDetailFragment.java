@@ -97,40 +97,28 @@ public class AlbumDetailFragment extends Fragment {
     private void observeViewModels() {
         albumViewModel.getAlbumLiveData().observe(getViewLifecycleOwner(), album -> {
             if (album != null) {
-                // Nếu album là private, mở SecurityFragment để xác thực
                 if (true) {
                     openSecurityFragment(album);
                 } else {
                     displayAlbumInfo(album.getId(), album.getCreatedAt(), album.getName());
-                    filterAndDisplayPhotos(false);
+                    loadAlbumPhotos(false);
                 }
             }
         });
     }
 
-    private void filterAndDisplayPhotos(boolean showPrivatePhotos) {
-        photoViewModel.observePhotosByAlbum(albumId).observe(getViewLifecycleOwner(), albumPhotos -> {
-            if (albumPhotos != null && !albumPhotos.isEmpty()) {
-                List<Photo> filteredPhotos = new ArrayList<>();
-                for (Photo photo : albumPhotos) {
-                    if (photo.isPrivate() == showPrivatePhotos) {
-                        filteredPhotos.add(photo);
+    private void loadAlbumPhotos(boolean showPrivatePhotos) {
+        photoViewModel.observePhotosByAlbum(albumId, showPrivatePhotos)
+                .observe(getViewLifecycleOwner(), photos -> {
+                    if (photos != null && !photos.isEmpty()) {
+                        photoAdapter.submitList(photos);
+                        binding.recyclerViewAlbumPhotos.setVisibility(View.VISIBLE);
+                        binding.textViewNoPhotos.setVisibility(View.GONE);
+                    } else {
+                        binding.recyclerViewAlbumPhotos.setVisibility(View.GONE);
+                        binding.textViewNoPhotos.setVisibility(View.VISIBLE);
                     }
-                }
-
-                if (!filteredPhotos.isEmpty()) {
-                    photoAdapter.submitList(filteredPhotos);
-                    binding.recyclerViewAlbumPhotos.setVisibility(View.VISIBLE);
-                    binding.textViewNoPhotos.setVisibility(View.GONE);
-                } else {
-                    binding.recyclerViewAlbumPhotos.setVisibility(View.GONE);
-                    binding.textViewNoPhotos.setVisibility(View.VISIBLE);
-                }
-            } else {
-                binding.recyclerViewAlbumPhotos.setVisibility(View.GONE);
-                binding.textViewNoPhotos.setVisibility(View.VISIBLE);
-            }
-        });
+                });
     }
 
     private void displayAlbumInfo(String id, long createdAt, String name) {
@@ -200,7 +188,6 @@ public class AlbumDetailFragment extends Fragment {
             Toast.makeText(requireContext(), "Người dùng chưa đăng nhập", Toast.LENGTH_SHORT).show();
             return;
         }
-        // Sử dụng userId (String)
         String userId = firebaseUser.getUid();
 
         SecurityFragment securityFragment = new SecurityFragment();
@@ -209,10 +196,9 @@ public class AlbumDetailFragment extends Fragment {
         args.putString("userId", userId);
         securityFragment.setArguments(args);
 
-        // Đặt callback từ SecurityFragment (sẽ được gọi khi PIN hoặc Biometric xác thực thành công)
         securityFragment.setPinVerificationListener(() -> {
             displayAlbumInfo(album.getId(), album.getCreatedAt(), album.getName());
-            filterAndDisplayPhotos(true); // Hiển thị ảnh riêng tư sau khi xác thực thành công
+            loadAlbumPhotos(true);
         });
         securityFragment.show(getParentFragmentManager(), "SecurityFragment");
     }

@@ -140,7 +140,8 @@ public class AlbumCreateFragment extends Fragment {
                 photoIds,
                 coverPhotoUrl,
                 System.currentTimeMillis(),
-                System.currentTimeMillis()
+                System.currentTimeMillis(),
+                false
         );
 
         // Sử dụng AlbumViewModel để tạo album
@@ -150,47 +151,6 @@ public class AlbumCreateFragment extends Fragment {
         Toast.makeText(requireContext(), "Album created!", Toast.LENGTH_SHORT).show();
         albumCreationViewModel.clear();
         Navigation.findNavController(requireView()).popBackStack();
-// =======
-//             String albumId = UUID.randomUUID().toString();
-//             Uri contentUri = Uri.parse(selected.get(0).getFilePath());
-
-//             String base64 = convertImageToBase64(requireContext(), contentUri);
-//             Log.d("AlbumCreateFragment", "Base64: " + base64);
-
-//             Map<String, Object> albumData = new HashMap<>();
-//             albumData.put("id", albumId);
-//             albumData.put("name", name);
-//             albumData.put("description", "");
-//             albumData.put("photos", photoIds);
-//             albumData.put("coverPhotoUrl", selected.get(0).getFilePath());
-//             albumData.put("createdAt", System.currentTimeMillis());
-//             albumData.put("updatedAt", System.currentTimeMillis());
-//             albumData.put("isPrivate", false);
-
-//             // Lưu vào Firestore trong Collection user_albums
-//             FirebaseFirestore firestore = FirebaseFirestore.getInstance();
-//             FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
-//             if (user == null) {
-//                 Toast.makeText(requireContext(), "User not logged in!", Toast.LENGTH_SHORT).show();
-//                 return;
-//             }
-//             String userId = user.getUid();
-
-//             CollectionReference userAlbumsRef = firestore.collection("photos")
-//                     .document(userId)
-//                     .collection("user_albums");
-
-//             userAlbumsRef.document(albumId).set(albumData)
-//                     .addOnSuccessListener(aVoid -> {
-//                         Toast.makeText(requireContext(), "Album created!", Toast.LENGTH_SHORT).show();
-//                         albumCreationViewModel.clear();
-//                         Navigation.findNavController(view).popBackStack();
-//                     })
-//                     .addOnFailureListener(e -> {
-//                         Toast.makeText(requireContext(), "Failed to save album", Toast.LENGTH_SHORT).show();
-//                     });
-//         });
-// >>>>>>> dev/tu
     }
 
     private void showSnackbar(String message) {
