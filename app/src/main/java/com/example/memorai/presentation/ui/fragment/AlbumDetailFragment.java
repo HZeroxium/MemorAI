@@ -3,6 +3,7 @@ package com.example.memorai.presentation.ui.fragment;
 import android.app.AlertDialog;
 import android.os.Bundle;
 import android.text.InputType;
+import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.EditText;
@@ -64,13 +65,13 @@ public class AlbumDetailFragment extends Fragment {
 
         if (getArguments() != null) {
             albumId = getArguments().getString("album_id", "");
+            albumViewModel.loadAlbumById(albumId);
         }
 
         setupToolbar(view);
         setupRecyclerView();
-        observeViewModels();
 
-        albumViewModel.loadAlbumById(albumId);
+        observeViewModels();
         // Ảnh chỉ được load sau khi xác thực thành công (ở callback)
     }
 
@@ -97,10 +98,15 @@ public class AlbumDetailFragment extends Fragment {
     private void observeViewModels() {
         albumViewModel.getAlbumLiveData().observe(getViewLifecycleOwner(), album -> {
             if (album != null) {
-                if (true) {
+                Fragment prev = getParentFragmentManager().findFragmentByTag("SecurityFragment");
+                if (prev != null && prev.isAdded()) {
+                    return;
+                }
+                displayAlbumInfo(album.getId(), album.getCreatedAt(), album.getName());
+                Log.d("AlbumPrivate", String.valueOf(album.isPrivate()));
+                if (album.isPrivate()) {
                     openSecurityFragment(album);
                 } else {
-                    displayAlbumInfo(album.getId(), album.getCreatedAt(), album.getName());
                     loadAlbumPhotos(false);
                 }
             }
@@ -197,8 +203,8 @@ public class AlbumDetailFragment extends Fragment {
         securityFragment.setArguments(args);
 
         securityFragment.setPinVerificationListener(() -> {
-            displayAlbumInfo(album.getId(), album.getCreatedAt(), album.getName());
             loadAlbumPhotos(true);
+            securityFragment.dismiss();
         });
         securityFragment.show(getParentFragmentManager(), "SecurityFragment");
     }

@@ -3,6 +3,7 @@ package com.example.memorai.domain.repository;
 
 import android.content.Context;
 
+import com.example.memorai.data.repository.PhotoRepositoryImpl;
 import com.example.memorai.domain.model.Album;
 import com.example.memorai.domain.model.Photo;
 
@@ -34,7 +35,7 @@ public interface PhotoRepository {
     List<Album> getAllAlbums();
     void addPhotoToAlbum(String photoId, String albumId);
     void removePhotoFromAlbum(String photoId, String albumId);
-    String getPrivateAlbumId();
+    public void getPrivateAlbumId(PhotoRepositoryImpl.OnResultCallback<String> callback);
     List<Photo> getAllPhotos();
 
     List<Photo> getPhotosByAlbum(String albumId, boolean includePrivate);

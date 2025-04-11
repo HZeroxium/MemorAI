@@ -13,6 +13,7 @@ import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.ViewModel;
 
+import com.example.memorai.data.repository.PhotoRepositoryImpl;
 import com.example.memorai.domain.model.Photo;
 import com.example.memorai.domain.repository.PhotoRepository;
 
@@ -22,6 +23,7 @@ import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.stream.Collectors;
 
 import javax.inject.Inject;
 
@@ -69,7 +71,9 @@ public class PhotoViewModel extends ViewModel {
 
     public void loadAllPhotos() {
         executorService.execute(() -> {
-            List<Photo> photos = photoRepository.getAllPhotos();
+            List<Photo> photos = photoRepository.getAllPhotos().stream()
+                    .filter(photo -> !photo.isPrivate())
+                    .collect(Collectors.toList());
             for (Photo photo : photos) {
                 photo.setBitmap(decodeBase64ToImage(photo.getFilePath()));
             }
@@ -200,14 +204,19 @@ public class PhotoViewModel extends ViewModel {
             allPhotos.setValue(new ArrayList<>(currentPhotos));
         }
 
-        String albumId = photoRepository.getPrivateAlbumId();
-        if (albumId != null) {
-            if (isPrivate) {
-                photoRepository.addPhotoToAlbum(photoId, albumId);
-            } else {
-                photoRepository.removePhotoFromAlbum(photoId, albumId);
+        photoRepository.getPrivateAlbumId(new PhotoRepositoryImpl.OnResultCallback<String>() {
+            @Override
+            public void onResult(String albumId) {
+                // Xử lý kết quả trên main thread
+                if (albumId != null) {
+                    if (isPrivate) {
+                        photoRepository.addPhotoToAlbum(photoId, albumId);
+                    } else {
+                        photoRepository.removePhotoFromAlbum(photoId, albumId);
+                    }
+                }
             }
-        }
+        });
     }
 
     public LiveData<List<Photo>> observePhotosByAlbum(String albumId, boolean includePrivate) {

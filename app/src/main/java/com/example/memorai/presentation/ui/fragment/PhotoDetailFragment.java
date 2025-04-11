@@ -1,6 +1,8 @@
 // presentation/ui/fragment/PhotoDetailFragment.java
 package com.example.memorai.presentation.ui.fragment;
 
+import android.os.Handler;
+import android.os.Looper;
 import android.view.MenuItem;
 import android.app.AlertDialog;
 import android.content.Intent;
@@ -217,6 +219,7 @@ public class PhotoDetailFragment extends Fragment {
 
             // Gọi phương thức update trạng thái của ảnh và album private
             photoViewModel.setPhotoPrivacy(currentPhoto.getId(), newPrivacy);
+            photoViewModel.loadAllPhotos();
 
             // Hiển thị thông báo và cập nhật giao diện
             Toast.makeText(requireContext(),

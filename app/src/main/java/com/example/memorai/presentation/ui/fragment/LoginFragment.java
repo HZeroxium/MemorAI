@@ -14,6 +14,7 @@ import androidx.annotation.Nullable;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.navigation.Navigation;
 
+import com.example.memorai.R;
 import com.example.memorai.databinding.FragmentLoginBinding;
 import com.example.memorai.domain.model.Album;
 import com.example.memorai.domain.model.Photo;
@@ -133,6 +134,7 @@ public class LoginFragment extends BottomSheetDialogFragment {
                     PinFragment pinFragment = new PinFragment();
                     Bundle bundle = new Bundle();
                     bundle.putParcelable("user", user);
+                    bundle.putString("userId", user.getId());
                     bundle.putString("mode", "create");
                     pinFragment.setArguments(bundle);
                     pinFragment.show(getParentFragmentManager(), "PinFragment");
@@ -177,13 +179,13 @@ public class LoginFragment extends BottomSheetDialogFragment {
 
         // Create new album
         String albumId = UUID.randomUUID().toString();
-
+        String drawableUri = "android.resource://" + requireContext().getPackageName() + "/" + R.drawable.ic_lock;
         Album newAlbum = new Album(
                 albumId,
                 "Private",
                 "",
                 photoIds,
-                "",
+                drawableUri,
                 System.currentTimeMillis(),
                 System.currentTimeMillis(),
                 true

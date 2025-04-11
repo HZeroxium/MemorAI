@@ -50,20 +50,38 @@ public class AlbumViewModel extends ViewModel {
                 List<Album> result = new ArrayList<>();
 
                 for (Album album : albums) {
-                    Album newAlbum = new Album(album.getId(), album.getName(), album.getDescription(), album.getPhotos(), album.getCoverPhotoUrl(), album.getCreatedAt(), album.getUpdatedAt(), album.isPrivate()); // Tạo bản sao để tránh thay đổi trực tiếp
-                    if (newAlbum.getCoverPhotoUrl() != null) {
-                        Bitmap bitmap = decodeBase64ToImage(newAlbum.getCoverPhotoUrl());
-                        // Scale down bitmap để tránh OOM
-                        Bitmap scaledBitmap = Bitmap.createScaledBitmap(
-                                bitmap,
-                                200, 200, // Kích thước phù hợp
-                                true
-                        );
-                        if (bitmap != scaledBitmap) {
-                            bitmap.recycle();
+                    Album newAlbum = new Album(
+                            album.getId(),
+                            album.getName(),
+                            album.getDescription(),
+                            album.getPhotos(),
+                            album.getCoverPhotoUrl(),
+                            album.getCreatedAt(),
+                            album.getUpdatedAt(),
+                            album.isPrivate()
+                    );
+
+                    // Xử lý ảnh bìa nếu có URL
+                    if (newAlbum.getCoverPhotoUrl() != null && !newAlbum.getCoverPhotoUrl().isEmpty()) {
+                        try {
+                            Bitmap bitmap = decodeBase64ToImage(newAlbum.getCoverPhotoUrl());
+                            if (bitmap != null) {
+                                Bitmap scaledBitmap = Bitmap.createScaledBitmap(
+                                        bitmap,
+                                        200, 200, // Kích thước phù hợp
+                                        true
+                                );
+                                if (bitmap != scaledBitmap) {
+                                    bitmap.recycle();
+                                }
+                                newAlbum.setBitmap(scaledBitmap);
+                            }
+                        } catch (Exception e) {
+                            // Xử lý lỗi nếu không decode được ảnh
+                            Log.e("AlbumViewModel", "Error decoding cover photo", e);
                         }
-                        newAlbum.setBitmap(scaledBitmap);
                     }
+                    // Nếu không có ảnh bìa, vẫn thêm album vào kết quả
                     result.add(newAlbum);
                 }
                 mainHandler.post(() -> albumsLiveData.setValue(result));
@@ -83,11 +101,13 @@ public class AlbumViewModel extends ViewModel {
 
     public void loadAlbumById(String albumId) {
         executorService.execute(() -> {
+            mainHandler.post(() -> albumLiveData.setValue(null));
             Album album = albumRepository.getAlbumById(albumId);
             if (album != null && album.getCoverPhotoUrl() != null) {
                 Bitmap bitmap = decodeBase64ToImage(album.getCoverPhotoUrl());
                 album.setBitmap(bitmap);
             }
+            // Clear albumlivedata truoc
             mainHandler.post(() -> albumLiveData.setValue(album));
         });
     }
@@ -181,6 +201,11 @@ public class AlbumViewModel extends ViewModel {
             }
         });
     }
+
+    public void clearAlbum() {
+        albumLiveData.setValue(null);
+    }
+
     public interface SyncCallback {
         void onSyncStarted();
         void onSyncCompleted(boolean isSuccess);

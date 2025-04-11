@@ -13,12 +13,14 @@ import com.example.memorai.data.mappers.AlbumMapper;
 import com.example.memorai.domain.model.Photo;
 import com.example.memorai.domain.model.Album;
 import com.example.memorai.domain.repository.PhotoRepository;
+import com.google.android.gms.tasks.Tasks;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.Query;
+import com.google.firebase.firestore.QuerySnapshot;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -27,6 +29,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 import javax.inject.Inject;
@@ -374,27 +377,33 @@ public class PhotoRepositoryImpl implements PhotoRepository {
     }
 
     @Override
-    public String getPrivateAlbumId() {
+    public void getPrivateAlbumId(OnResultCallback<String> callback) {
         String userId = getCurrentUserId();
         if (userId == null) {
-            return null;
+            callback.onResult(null);
+            return;
         }
 
-        try {
-            DocumentSnapshot albumDoc = firestore.collection("photos")
-                    .document(userId)
-                    .collection("user_albums")
-                    .whereEqualTo("name", "Private")
-                    .limit(1)
-                    .get()
-                    .getResult()
-                    .getDocuments()
-                    .get(0);
-            return albumDoc.getId();
-        } catch (Exception e) {
-            Log.e("PhotoRepository", "Error getting Private Album", e);
-            return null;
-        }
+        firestore.collection("photos")
+                .document(userId)
+                .collection("user_albums")
+                .whereEqualTo("name", "Private")
+                .limit(1)
+                .get()
+                .addOnCompleteListener(task -> {
+                    if (task.isSuccessful() && !task.getResult().isEmpty()) {
+                        String albumId = task.getResult().getDocuments().get(0).getId();
+                        callback.onResult(albumId);
+                    } else {
+                        Log.e("PhotoRepository", "Error getting Private Album", task.getException());
+                        callback.onResult(null);
+                    }
+                });
+    }
+
+    // Interface callback
+    public interface OnResultCallback<T> {
+        void onResult(T result);
     }
 
 
