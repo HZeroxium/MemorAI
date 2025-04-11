@@ -14,7 +14,7 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
         app:navigationIcon="@drawable/ic_back"
-        app:title="Import Photos" />
+        app:title="@string/import_photo_from_gallery" />
 
     <Button
         android:id="@+id/buttonSelectFromGallery"

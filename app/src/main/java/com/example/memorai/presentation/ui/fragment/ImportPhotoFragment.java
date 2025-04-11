@@ -27,6 +27,7 @@ import androidx.navigation.NavController;
 import androidx.navigation.Navigation;
 import androidx.recyclerview.widget.GridLayoutManager;
 
+import com.example.memorai.R;
 import com.example.memorai.databinding.FragmentImportPhotoBinding;
 import com.example.memorai.domain.model.Photo;
 import com.example.memorai.presentation.ui.adapter.SelectedPhotoAdapter;
@@ -75,7 +76,7 @@ public class ImportPhotoFragment extends Fragment {
 
                         Bitmap bitmap = getBitmapFromUri(uri);
                         if (bitmap == null) {
-                            Toast.makeText(requireContext(), "Error loading image", Toast.LENGTH_SHORT).show();
+                            Toast.makeText(requireContext(), R.string.error_loading_image, Toast.LENGTH_SHORT).show();
                             continue;
                         }
 
@@ -96,7 +97,7 @@ public class ImportPhotoFragment extends Fragment {
                         selectedPhotoAdapter.submitList(new ArrayList<>(importedPhotos));
                     }
                 } else {
-                    Toast.makeText(requireContext(), "No photos selected", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(requireContext(), R.string.no_photos_selected, Toast.LENGTH_SHORT).show();
                 }
             });
 
@@ -195,14 +196,14 @@ public class ImportPhotoFragment extends Fragment {
 
     private void confirmImport() {
         if (importedPhotos.isEmpty()) {
-            Toast.makeText(requireContext(), "No photos imported", Toast.LENGTH_SHORT).show();
+            Toast.makeText(requireContext(), R.string.no_photos_imported, Toast.LENGTH_SHORT).show();
             return;
         }
 
         new androidx.appcompat.app.AlertDialog.Builder(requireContext())
-                .setTitle("Confirm")
-                .setMessage("Save " + importedPhotos.size() + " photo(s)?")
-                .setPositiveButton("Confirm", (dialog, which) -> {
+                .setTitle(R.string.confirm_import_title)
+                .setMessage(getString(R.string.confirm_import_message, importedPhotos.size()))
+                .setPositiveButton(R.string.confirm_button, (dialog, which) -> {
                     List<Photo> photosToSave = new ArrayList<>(importedPhotos);
                     classifyAndSavePhotos(photosToSave);
                     importedPhotos.clear();
@@ -211,12 +212,12 @@ public class ImportPhotoFragment extends Fragment {
                     NavController navController = Navigation.findNavController(requireView());
                     navController.navigateUp();
                 })
-                .setNegativeButton("Cancel", null)
+                .setNegativeButton(R.string.cancel_button, null)
                 .show();
     }
 
     private void classifyAndSavePhotos(List<Photo> photos) {
-        Toast.makeText(requireContext(), "Analyzing photos...", Toast.LENGTH_SHORT).show();
+        Toast.makeText(requireContext(), R.string.analyzing_photos, Toast.LENGTH_SHORT).show();
 
         for (Photo photo : photos) {
             Bitmap bitmap = photo.getBitmap();
@@ -230,7 +231,7 @@ public class ImportPhotoFragment extends Fragment {
             }
         }
 
-        Toast.makeText(requireContext(), "Photos saved successfully!", Toast.LENGTH_SHORT).show();
+        Toast.makeText(requireContext(), R.string.photos_saved_success, Toast.LENGTH_SHORT).show();
     }
 
     @Override

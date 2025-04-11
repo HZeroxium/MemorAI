@@ -120,19 +120,38 @@ public class PhotoSectionAdapter extends RecyclerView.Adapter<RecyclerView.ViewH
     }
 
     public void selectAllInSection(int sectionIndex) {
-        for (Photo p : sectionList.get(sectionIndex).getPhotos()) {
+        List<Photo> photos = sectionList.get(sectionIndex).getPhotos();
+        int startPosition = findFirstPositionOfSection(sectionIndex);
+
+        // Thêm tất cả ảnh vào selectedIds
+        for (Photo p : photos) {
             selectedIds.add(p.getId());
         }
-        notifyDataSetChanged();
+
+        // Chỉ cập nhật các item trong section này
+        notifyItemRangeChanged(startPosition + 1, photos.size()); // +1 để bỏ qua header
     }
 
     public void clearSectionSelection(int sectionIndex) {
-        for (Photo p : sectionList.get(sectionIndex).getPhotos()) {
+        List<Photo> photos = sectionList.get(sectionIndex).getPhotos();
+        int startPosition = findFirstPositionOfSection(sectionIndex);
+
+        // Xóa tất cả ảnh khỏi selectedIds
+        for (Photo p : photos) {
             selectedIds.remove(p.getId());
         }
-        notifyDataSetChanged();
+
+        // Chỉ cập nhật các item trong section này
+        notifyItemRangeChanged(startPosition + 1, photos.size());
     }
 
+    private int findFirstPositionOfSection(int sectionIndex) {
+        int position = 0;
+        for (int i = 0; i < sectionIndex; i++) {
+            position += 1 + sectionList.get(i).getPhotos().size(); // header + photos
+        }
+        return position;
+    }
     private int[] findSectionAndOffset(int position) {
         int running = 0;
         for (int i = 0; i < sectionList.size(); i++) {
@@ -200,7 +219,10 @@ public class PhotoSectionAdapter extends RecyclerView.Adapter<RecyclerView.ViewH
 
             if (selectionMode) {
                 checkBoxSelectAll.setVisibility(View.VISIBLE);
-                // Check if all photos in this section are selected
+                // Tạm thời gỡ listener để tránh kích hoạt khi setChecked
+                checkBoxSelectAll.setOnCheckedChangeListener(null);
+
+                // Kiểm tra trạng thái chọn
                 boolean allSelected = true;
                 for (Photo p : sectionList.get(sectionIndex).getPhotos()) {
                     if (!selectedIds.contains(p.getId())) {
@@ -210,6 +232,7 @@ public class PhotoSectionAdapter extends RecyclerView.Adapter<RecyclerView.ViewH
                 }
                 checkBoxSelectAll.setChecked(allSelected);
 
+                // Thiết lập listener sau khi đã setChecked
                 checkBoxSelectAll.setOnCheckedChangeListener((btn, isChecked) -> {
                     if (isChecked) {
                         selectAllInSection(sectionIndex);

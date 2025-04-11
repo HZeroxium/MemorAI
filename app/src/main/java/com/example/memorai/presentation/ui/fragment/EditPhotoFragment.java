@@ -449,12 +449,12 @@ public class EditPhotoFragment extends Fragment {
      */
     private void initToolIcons() {
         toolIcons = new ArrayList<>();
-        toolIcons.add(new ToolIcon(R.drawable.ic_brush, getString(R.string.label_brush)));
-        toolIcons.add(new ToolIcon(R.drawable.ic_text, getString(R.string.label_text)));
-        toolIcons.add(new ToolIcon(R.drawable.ic_eraser, getString(R.string.label_eraser)));
-        toolIcons.add(new ToolIcon(R.drawable.ic_photo_filter, getString(R.string.label_filter)));
-        toolIcons.add(new ToolIcon(R.drawable.ic_emoji, getString(R.string.label_emoji)));
-        toolIcons.add(new ToolIcon(R.drawable.ic_sticker, getString(R.string.label_sticker)));
+        toolIcons.add(new ToolIcon(R.drawable.ic_brush, "Brush"));
+        toolIcons.add(new ToolIcon(R.drawable.ic_text, "Text"));
+        toolIcons.add(new ToolIcon(R.drawable.ic_eraser, "Eraser"));
+        toolIcons.add(new ToolIcon(R.drawable.ic_photo_filter, "Filter"));
+        toolIcons.add(new ToolIcon(R.drawable.ic_emoji, "Emoji"));
+        toolIcons.add(new ToolIcon(R.drawable.ic_sticker, "Sticker"));
     }
 
     /**

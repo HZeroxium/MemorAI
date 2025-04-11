@@ -167,35 +167,49 @@ public class AlbumViewModel extends ViewModel {
         });
     }
 
-    public void syncAllPendingChanges() {
-        syncStatus.setValue("Syncing pending changes...");
-        new Thread(() -> {
-            try {
-                albumRepository.syncPendingChangesToFirebase();
-                albumRepository.syncFromFirebase();
-                syncStatus.postValue("Pending changes synced successfully");
-            } catch (Exception e) {
-                syncStatus.postValue("Failed to sync pending changes: " + e.getMessage());
-            }
-        }).start();
-    }
 
     public void syncAllPendingChanges(SyncCallback callback) {
         callback.onSyncStarted();
 
         executorService.execute(() -> {
             try {
-                Thread.sleep(2000);
-
                 albumRepository.syncPendingChangesToFirebase();
-                albumRepository.syncFromFirebase();
 
-                // Thành công
-                new Handler(Looper.getMainLooper()).post(() -> {
-                    callback.onSyncCompleted(true);
+                albumRepository.syncFromFirebaseAsync().thenRun(() -> {
+                    List<Album> albums = albumRepository.getAlbums();
+                    List<Album> result = new ArrayList<>();
+
+                    for (Album album : albums) {
+                        Album newAlbum = new Album(album.getId(), album.getName(),
+                                album.getDescription(), album.getPhotos(),
+                                album.getCoverPhotoUrl(), album.getCreatedAt(),
+                                album.getUpdatedAt());
+
+                        if (newAlbum.getCoverPhotoUrl() != null) {
+                            Bitmap bitmap = decodeBase64ToImage(newAlbum.getCoverPhotoUrl());
+                            Bitmap scaledBitmap = Bitmap.createScaledBitmap(bitmap, 200, 200, true);
+                            if (bitmap != scaledBitmap) {
+                                bitmap.recycle();
+                            }
+                            newAlbum.setBitmap(scaledBitmap);
+                        }
+                        result.add(newAlbum);
+                    }
+
+                    mainHandler.post(() -> {
+                        albumsLiveData.setValue(result);
+                        callback.onSyncCompleted(true);
+                    });
+                }).exceptionally(e -> {
+                    mainHandler.post(() -> {
+                        errorLiveData.setValue("Sync failed: " + e.getMessage());
+                        callback.onSyncCompleted(false);
+                    });
+                    return null;
                 });
             } catch (Exception e) {
-                new Handler(Looper.getMainLooper()).post(() -> {
+                mainHandler.post(() -> {
+                    errorLiveData.setValue("Sync failed: " + e.getMessage());
                     callback.onSyncCompleted(false);
                 });
             }

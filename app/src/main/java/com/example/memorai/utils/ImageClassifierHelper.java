@@ -13,6 +13,7 @@ import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.MappedByteBuffer;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.PriorityQueue;
 
@@ -108,26 +109,27 @@ public class ImageClassifierHelper {
   }
 
   private List<String> getTopResults(float[] confidences) {
-    PriorityQueue<Recognition> pq = new PriorityQueue<>(
-            MAX_RESULTS, (a, b) -> Float.compare(b.confidence, a.confidence));
+    PriorityQueue<Recognition> topResults = new PriorityQueue<>(
+            MAX_RESULTS,
+            (a, b) -> Float.compare(b.confidence, a.confidence)
+    );
 
     for (int i = 0; i < confidences.length; i++) {
-      if (i < labels.size() && confidences[i] > 0.01f) { // Threshold
-        pq.add(new Recognition(labels.get(i), confidences[i]));
+      if (i < labels.size() && confidences[i] > 0.02f) {
+        topResults.offer(new Recognition(labels.get(i), confidences[i]));
+
+        if (topResults.size() > MAX_RESULTS) {
+          topResults.poll();
+        }
       }
     }
 
-    List<String> results = new ArrayList<>();
-    while (!pq.isEmpty() && results.size() < MAX_RESULTS) {
-      Recognition r = pq.poll();
-      results.add(r.label);
-
-      // Special case for wig detection
-      if (r.label.toLowerCase().contains("wig")) {
-        results.add("You look handsome! 🥳✨");
-        break;
-      }
+    List<String> results = new ArrayList<>(MAX_RESULTS);
+    while (!topResults.isEmpty()) {
+      results.add(topResults.poll().label);
     }
+
+    Collections.reverse(results);
     return results;
   }
 
