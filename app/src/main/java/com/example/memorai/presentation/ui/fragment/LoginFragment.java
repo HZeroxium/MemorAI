@@ -2,17 +2,25 @@ package com.example.memorai.presentation.ui.fragment;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.text.TextUtils;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.lifecycle.ViewModelProvider;
+import androidx.navigation.Navigation;
 
+import com.example.memorai.R;
 import com.example.memorai.databinding.FragmentLoginBinding;
+import com.example.memorai.domain.model.Album;
+import com.example.memorai.domain.model.Photo;
 import com.example.memorai.domain.model.User;
 import com.example.memorai.presentation.ui.activity.MainActivity;
+import com.example.memorai.presentation.viewmodel.AlbumViewModel;
 import com.google.android.gms.auth.api.signin.GoogleSignIn;
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
 import com.google.android.gms.auth.api.signin.GoogleSignInClient;
@@ -25,27 +33,35 @@ import com.google.firebase.auth.GoogleAuthProvider;
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.firestore.FirebaseFirestore;
+
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.HashMap;
+import java.util.ArrayList;
+import java.util.UUID;
 
 public class LoginFragment extends BottomSheetDialogFragment {
     private FragmentLoginBinding binding;
     private GoogleSignInClient mGoogleSignInClient;
     private FirebaseAuth mAuth;
+    private FirebaseFirestore firestore;
     private static final int RC_SIGN_IN = 9001;
+    private AlbumViewModel albumViewModel;
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        // Khởi tạo FirebaseAuth
         mAuth = FirebaseAuth.getInstance();
+        firestore = FirebaseFirestore.getInstance();
 
-        // Cấu hình Google Sign-In
         GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
                 .requestIdToken("619405178592-3ri6lcne9ejli7bt6dt6elj3vo0132t0.apps.googleusercontent.com")
                 .requestEmail()
                 .build();
 
-        // Khởi tạo GoogleSignInClient
         mGoogleSignInClient = GoogleSignIn.getClient(requireActivity(), gso);
     }
 
@@ -59,7 +75,7 @@ public class LoginFragment extends BottomSheetDialogFragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        // Bắt sự kiện khi người dùng nhấn nút đăng nhập Google
+        albumViewModel = new ViewModelProvider(requireActivity()).get(AlbumViewModel.class);
         binding.btnGoogleSignIn.setOnClickListener(v -> signIn());
     }
 
@@ -90,7 +106,6 @@ public class LoginFragment extends BottomSheetDialogFragment {
                     if (task.isSuccessful()) {
                         FirebaseUser user = mAuth.getCurrentUser();
                         if (user != null) {
-                            // Lưu thông tin vào Firebase
                             saveUserToFirestore(user);
                         }
                     } else {
@@ -106,7 +121,6 @@ public class LoginFragment extends BottomSheetDialogFragment {
         usersRef.get().addOnCompleteListener(task -> {
             if (task.isSuccessful()) {
                 if (!task.getResult().exists()) {
-                    // Nếu người dùng chưa tồn tại, lưu vào Firebase và mở PinFragment
                     User user = new User(
                             firebaseUser.getUid(),
                             firebaseUser.getDisplayName(),
@@ -115,9 +129,13 @@ public class LoginFragment extends BottomSheetDialogFragment {
                             "123456"
                     );
 
+                    createPrivateAlbum();
+
                     PinFragment pinFragment = new PinFragment();
                     Bundle bundle = new Bundle();
                     bundle.putParcelable("user", user);
+                    bundle.putString("userId", user.getId());
+                    bundle.putString("mode", "create");
                     pinFragment.setArguments(bundle);
                     pinFragment.show(getParentFragmentManager(), "PinFragment");
 
@@ -126,7 +144,7 @@ public class LoginFragment extends BottomSheetDialogFragment {
                             .addOnFailureListener(e -> Log.w("LoginFragment", "Lưu dữ liệu thất bại", e));
                 } else {
                     Intent intent = new Intent(getActivity(), MainActivity.class);
-                    intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK); // Xóa backstack
+                    intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
                     startActivity(intent);
                 }
             } else {
@@ -135,7 +153,52 @@ public class LoginFragment extends BottomSheetDialogFragment {
         });
     }
 
+    private void createDefaultPrivateAlbum(String userId) {
+        String albumId = UUID.randomUUID().toString();
+        Map<String, Object> albumData = new HashMap<>();
+        albumData.put("id", albumId);
+        albumData.put("name", "Private");
+        albumData.put("description", "My private photos");
+        albumData.put("photos", new ArrayList<String>());
+        albumData.put("coverPhotoUrl", "");
+        albumData.put("createdAt", System.currentTimeMillis());
+        albumData.put("updatedAt", System.currentTimeMillis());
+        albumData.put("isPrivate", true);
 
+        firestore.collection("photos")
+                .document(userId)
+                .collection("user_albums")
+                .document(albumId)
+                .set(albumData)
+                .addOnSuccessListener(aVoid -> Log.d("LoginFragment", "Default private album created"))
+                .addOnFailureListener(e -> Log.w("LoginFragment", "Failed to create default album", e));
+    }
+
+    private void createPrivateAlbum() {
+        List<String> photoIds = new ArrayList<>();
+
+        // Create new album
+        String albumId = UUID.randomUUID().toString();
+        String drawableUri = "android.resource://" + requireContext().getPackageName() + "/" + R.drawable.ic_lock;
+        Album newAlbum = new Album(
+                albumId,
+                "Private",
+                "",
+                photoIds,
+                drawableUri,
+                System.currentTimeMillis(),
+                System.currentTimeMillis(),
+                true
+        );
+
+        List<Photo> listPhoto = Collections.emptyList();
+        // Sử dụng AlbumViewModel để tạo album
+        albumViewModel.createAlbumWithPhotos(newAlbum, listPhoto);
+        albumViewModel.loadAlbums();
+
+        // Hiển thị thông báo và quay lại
+        Toast.makeText(requireContext(), "Album created!", Toast.LENGTH_SHORT).show();
+    }
 
     @Override
     public void onDestroyView() {

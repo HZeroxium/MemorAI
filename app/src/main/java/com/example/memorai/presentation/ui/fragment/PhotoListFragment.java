@@ -60,6 +60,12 @@ public class PhotoListFragment extends Fragment {
     }
 
     @Override
+    public void onResume() {
+        super.onResume();
+        photoViewModel.loadAllPhotos();
+    }
+
+    @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 

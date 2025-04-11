@@ -2,6 +2,7 @@
 package com.example.memorai.presentation.ui.fragment;
 
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -65,6 +66,7 @@ public class AlbumListFragment extends Fragment {
             Bundle args = new Bundle();
             args.putString("album_id", album.getId());
             photoViewModel.clearAlbumPhoto();
+            albumViewModel.clearAlbum();
             Navigation.findNavController(view).navigate(R.id.albumDetailFragment, args);
         });
 
