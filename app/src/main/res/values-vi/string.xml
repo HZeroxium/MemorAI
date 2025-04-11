@@ -171,4 +171,5 @@
     <string name="sync_success">Đồng bộ thành công</string>
     <string name="sync_notification_title">Đồng bộ thành công</string>
     <string name="sync_notification_message">Dữ liệu đã được đồng bộ với đám mây</string>
+    <string name="art">Nghệ thuật</string>
 </resources>

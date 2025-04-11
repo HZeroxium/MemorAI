@@ -197,6 +197,10 @@ public class MainActivity extends AppCompatActivity {
                 if (albumsItem != null) albumsItem.setTitle(R.string.albums);
                 if (searchItem != null) searchItem.setTitle(R.string.search);
 
+                if (userViewModel.getUserLiveData().getValue() == null) {
+                    updateUI(null);
+                }
+
                 userViewModel.getUserLiveData().observe(this, user -> {
                     updateUI(user);
                 });
