@@ -102,6 +102,7 @@ public class AlbumDetailFragment extends Fragment {
                 if (prev != null && prev.isAdded()) {
                     return;
                 }
+                updateMenuVisibility(album.isPrivate());
                 displayAlbumInfo(album.getId(), album.getCreatedAt(), album.getName());
                 Log.d("AlbumPrivate", String.valueOf(album.isPrivate()));
                 if (album.isPrivate()) {
@@ -111,6 +112,17 @@ public class AlbumDetailFragment extends Fragment {
                 }
             }
         });
+    }
+
+    private void updateMenuVisibility(boolean isPrivate) {
+        if (isPrivate) {
+            binding.toolbarAlbumDetail.getMenu().clear(); // Xóa toàn bộ menu
+        } else {
+            // Đảm bảo menu được inflate và set listener
+            binding.toolbarAlbumDetail.getMenu().clear();
+            binding.toolbarAlbumDetail.inflateMenu(R.menu.menu_album_detail);
+            binding.toolbarAlbumDetail.setOnMenuItemClickListener(this::onMenuItemClick);
+        }
     }
 
     private void loadAlbumPhotos(boolean showPrivatePhotos) {
