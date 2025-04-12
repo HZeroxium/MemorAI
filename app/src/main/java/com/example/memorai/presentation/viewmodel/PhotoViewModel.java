@@ -103,6 +103,24 @@ public class PhotoViewModel extends ViewModel {
         return photos != null ? photos.size() : 0;
     }
 
+    public int getPublicPhotoCount() {
+        List<Photo> photos = allPhotos.getValue();
+        if (photos == null) return 0;
+
+        return (int) photos.stream()
+                .filter(photo -> !photo.isPrivate())
+                .count();
+    }
+
+    public int getPrivatePhotoCount() {
+        List<Photo> photos = allPhotos.getValue();
+        if (photos == null) return 0;
+
+        return (int) photos.stream()
+                .filter(Photo::isPrivate)
+                .count();
+    }
+
     public void searchPhotosByTag(String query, Context context) {
         if (query.isEmpty()) {
             Toast.makeText(context, "Enter a tag to search", Toast.LENGTH_SHORT).show();

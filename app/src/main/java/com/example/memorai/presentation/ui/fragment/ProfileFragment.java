@@ -170,6 +170,20 @@ public class ProfileFragment extends Fragment {
         // Update stats
         binding.photosCountText.setText(String.valueOf(photoViewModel.getPhotoCount()));
         binding.albumsCountText.setText(String.valueOf(albumViewModel.getAlbumCount()));
+        binding.albumPrivate.setText(String.valueOf(photoViewModel.getPrivatePhotoCount()));
+        // Setup buttons
+        binding.btnAddMedia.setOnClickListener(v -> showAddMediaDialog());
+        binding.btnEditProfile.setOnClickListener(v -> openEditProfile(user));
+    }
+
+
+    private void showAddMediaDialog() {
+        // Implement your add media dialog
+    }
+
+    private void openEditProfile(FirebaseUser user) {
+        // Implement edit profile functionality
+=======
 
         // We could update private count here if we have a method to get that count
         // binding.privatesCountText.setText(String.valueOf(photoViewModel.getPrivatePhotoCount()));
