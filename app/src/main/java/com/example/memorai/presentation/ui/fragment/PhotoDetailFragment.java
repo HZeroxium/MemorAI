@@ -1,6 +1,12 @@
 // presentation/ui/fragment/PhotoDetailFragment.java
 package com.example.memorai.presentation.ui.fragment;
 
+import android.app.ProgressDialog;
+import android.content.ActivityNotFoundException;
+import android.content.pm.PackageManager;
+import android.content.pm.ResolveInfo;
+import android.os.Build;
+import android.os.Environment;
 import android.os.Handler;
 import android.os.Looper;
 import android.view.MenuItem;
@@ -110,7 +116,7 @@ public class PhotoDetailFragment extends Fragment {
             }
 
             if (item.getItemId() == R.id.action_share_photo) {
-                sharePhoto(photoUrl);
+                sharePhoto(currentPhoto.getBitmap());
                 return true;
             }
 
@@ -173,33 +179,63 @@ public class PhotoDetailFragment extends Fragment {
             return;
         }
 
+        // Sử dụng cả hai phương án cho thiết bị thật và giả lập
+        File file;
+        Uri contentUri;
+
         try {
-            File file = new File(requireContext().getCacheDir(), "shared_photo.png");
-            FileOutputStream fos = new FileOutputStream(file);
+            String fileName = "share_" + System.currentTimeMillis() + ".jpg";
 
-            // Chuyển Bitmap thành ByteArrayOutputStream
-            ByteArrayOutputStream bos = new ByteArrayOutputStream();
-            bitmap.compress(Bitmap.CompressFormat.PNG, 100, bos);
-            byte[] bitmapData = bos.toByteArray();
+            // Thử phương án ưu tiên (external storage)
+            File externalDir = requireContext().getExternalFilesDir(Environment.DIRECTORY_PICTURES);
+            if (externalDir != null) {
+                file = new File(externalDir, fileName);
+            } else {
+                // Fallback cho giả lập
+                file = new File(requireContext().getFilesDir(), fileName);
+            }
 
-            fos.write(bitmapData);
-            fos.flush();
-            fos.close();
+            try (FileOutputStream fos = new FileOutputStream(file)) {
+                bitmap.compress(Bitmap.CompressFormat.JPEG, 100, fos);
+                fos.flush();
+            }
 
-            Uri uri = FileProvider.getUriForFile(requireContext(), "com.example.memorai.fileprovider", file);
+            // Kiểm tra xem có phải giả lập không
+            boolean isEmulator = Build.FINGERPRINT.startsWith("generic")
+                    || Build.FINGERPRINT.startsWith("unknown")
+                    || Build.MODEL.contains("google_sdk")
+                    || Build.MODEL.contains("Emulator")
+                    || Build.MODEL.contains("Android SDK");
+
+            if (isEmulator) {
+                // Giả lập thường cần file:// URI thay vì content:// URI
+                contentUri = Uri.fromFile(file);
+            } else {
+                // Thiết bị thật dùng FileProvider
+                contentUri = FileProvider.getUriForFile(
+                        requireContext(),
+                        requireContext().getPackageName() + ".fileprovider",
+                        file
+                );
+            }
 
             Intent shareIntent = new Intent(Intent.ACTION_SEND);
-            shareIntent.setType("image/png");
-            shareIntent.putExtra(Intent.EXTRA_STREAM, uri);
+            shareIntent.setType("image/jpeg");
+            shareIntent.putExtra(Intent.EXTRA_STREAM, contentUri);
             shareIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
 
-            startActivity(Intent.createChooser(shareIntent, getString(R.string.share_with)));
-        } catch (IOException e) {
-            e.printStackTrace();
-            Toast.makeText(requireContext(), "Failed to share photo", Toast.LENGTH_SHORT).show();
+            // Xử lý đặc biệt cho giả lập
+            if (isEmulator) {
+                shareIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            }
+
+            startActivity(Intent.createChooser(shareIntent, "Share photo"));
+
+        } catch (Exception e) {
+            Toast.makeText(requireContext(), "Error: " + e.getMessage(), Toast.LENGTH_LONG).show();
+            Log.e("PhotoShare", "Sharing error", e);
         }
     }
-
 
     private void setSharedElementTransition() {
         setSharedElementEnterTransition(

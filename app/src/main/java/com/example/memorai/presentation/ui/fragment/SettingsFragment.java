@@ -157,6 +157,26 @@ public class SettingsFragment extends Fragment {
             }
         });
 
+        binding.btnResetSystem.setOnClickListener(v -> {
+            // Đặt lại dark mode về mặc định (tắt)
+            AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO);
+            editor.putBoolean("night", false);
+            editor.apply();
+            binding.switchDarkMode.setChecked(false);
+
+            // Đặt lại ngôn ngữ về mặc định (English)
+            setLocale("en");
+            binding.spinnerLanguage.setSelection(2); // English ở vị trí 2
+
+            // Xóa cài đặt CloudSync nếu muốn reset hoàn toàn (tuỳ chọn)
+            SharedPreferences prefs = requireContext().getSharedPreferences("Settings", Context.MODE_PRIVATE);
+            SharedPreferences.Editor prefsEditor = prefs.edit();
+            prefsEditor.putBoolean("CloudSync", false);
+            prefsEditor.putString("Language", "en"); // Cập nhật ngôn ngữ mặc định
+            prefsEditor.apply();
+
+            Toast.makeText(requireContext(), getString(R.string.system_reset_success), Toast.LENGTH_SHORT).show();
+        });
         return binding.getRoot();
     }
 
@@ -228,6 +248,8 @@ public class SettingsFragment extends Fragment {
                 binding.btnResetSystem.setText(getString(R.string.reset_system));
                 binding.btnSave.setText(getString(R.string.exit_save));
             }
+
+
 
             @Override
             public void onNothingSelected(AdapterView<?> parent) {

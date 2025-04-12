@@ -30,6 +30,7 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.MemorAI"
         android:name="com.example.memorai.MemoraiApplication"
+        android:requestLegacyExternalStorage="true"
         tools:targetApi="31">
 
         <!-- Khai báo MainActivity -->
