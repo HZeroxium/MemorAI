@@ -44,7 +44,10 @@ public class PhotoViewModel extends ViewModel {
     private final Handler mainHandler = new Handler(Looper.getMainLooper());
 
     private MutableLiveData<Boolean> _isSyncing = new MutableLiveData<>(false);
-    public LiveData<Boolean> isSyncing() { return _isSyncing; }
+
+    public LiveData<Boolean> isSyncing() {
+        return _isSyncing;
+    }
 
     @Inject
     public PhotoViewModel(PhotoRepository photoRepository, @ApplicationContext Context context) {
@@ -149,15 +152,12 @@ public class PhotoViewModel extends ViewModel {
 
                 // Thông báo nếu không tìm thấy kết quả
                 if (matchedPhotos.isEmpty()) {
-                    mainHandler.post(() ->
-                            Toast.makeText(context, "No photos found with tag: " + query, Toast.LENGTH_SHORT).show()
-                    );
+                    mainHandler.post(() -> Toast
+                            .makeText(context, "No photos found with tag: " + query, Toast.LENGTH_SHORT).show());
                 }
             } catch (Exception e) {
                 Log.e("PhotoViewModel", "Error searching photos by tag", e);
-                mainHandler.post(() ->
-                        Toast.makeText(context, "Error searching photos", Toast.LENGTH_SHORT).show()
-                );
+                mainHandler.post(() -> Toast.makeText(context, "Error searching photos", Toast.LENGTH_SHORT).show());
             }
         });
     }
@@ -167,7 +167,8 @@ public class PhotoViewModel extends ViewModel {
             try {
                 String base64Image = convertBitmapToBase64(bitmap);
                 String photoId = UUID.randomUUID().toString();
-                Photo photo = new Photo(photoId, base64Image, tags, System.currentTimeMillis(), System.currentTimeMillis());
+                Photo photo = new Photo(photoId, base64Image, tags, System.currentTimeMillis(),
+                        System.currentTimeMillis());
                 photoRepository.addPhoto(photo);
                 updateLocalPhotos(photo);
                 toastEvent.postValue("Photo added successfully");
@@ -333,12 +334,16 @@ public class PhotoViewModel extends ViewModel {
         });
     }
 
+    public void getPrivateAlbumId(PhotoRepositoryImpl.OnResultCallback<String> callback) {
+        photoRepository.getPrivateAlbumId(callback);
+    }
+
     // Interface callback
     public interface SyncCallback {
         void onSyncStarted();
+
         void onSyncCompleted(boolean isSuccess);
     }
-
 
     @Override
     protected void onCleared() {

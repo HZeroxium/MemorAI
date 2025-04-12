@@ -172,4 +172,11 @@
     <string name="sync_notification_title">Đồng bộ thành công</string>
     <string name="sync_notification_message">Dữ liệu đã được đồng bộ với đám mây</string>
     <string name="art">Nghệ thuật</string>
+    <string name="settings_saved">Đã lưu cài đặt thành công</string>
+
+    <!-- Logout confirmation -->
+    <string name="logout_confirmation_title">Xác nhận đăng xuất</string>
+    <string name="logout_confirmation_message">Cảnh báo: Ảnh và thay đổi được thêm vào kể từ lần đồng bộ hóa cuối cùng của bạn sẽ không được tự động đồng bộ hóa. Bạn có chắc chắn muốn đăng xuất không?</string>
+    <string name="yes">Có</string>
+    <string name="no">Không</string>
 </resources>

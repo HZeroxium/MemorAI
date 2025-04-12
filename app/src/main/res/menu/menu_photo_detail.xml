@@ -1,6 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?><!--res/menu/menu_photo_detail.xml-->
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <item
+        android:id="@+id/action_info"
+        android:icon="@drawable/ic_info"
+        android:title="Infomation"
+        app:showAsAction="always" />
     <item
         android:id="@+id/action_share_photo"
         android:icon="@drawable/ic_share"
@@ -9,7 +15,7 @@
     <item
         android:id="@+id/action_edit_photo"
         android:icon="@drawable/ic_edit"
-        app:showAsAction="ifRoom"
+        app:showAsAction="always"
         style="@style/content"
         android:title="@string/edit" />
     <item

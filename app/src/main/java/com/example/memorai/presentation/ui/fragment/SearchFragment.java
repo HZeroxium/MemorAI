@@ -2,7 +2,6 @@
 package com.example.memorai.presentation.ui.fragment;
 
 import android.os.Bundle;
-import android.view.MenuItem;
 import android.view.View;
 import android.widget.Toast;
 
@@ -86,9 +85,6 @@ public class SearchFragment extends Fragment {
             }
         });
 
-        // Menu click on SearchBar
-        binding.searchBar.setOnMenuItemClickListener(this::onMenuItemClick);
-
         // Update the hint to indicate tag-based search
         binding.searchBar.setHint(R.string.search_by_tags);
         binding.searchView.setHint(R.string.enter_tag_to_search);
@@ -99,10 +95,40 @@ public class SearchFragment extends Fragment {
         // Link searchView with searchBar
         binding.searchView.setupWithSearchBar(binding.searchBar);
 
+        // Configure onBackPressed behavior for the SearchView
+        binding.searchView.addTransitionListener((searchView, previousState, newState) -> {
+            if (newState == com.google.android.material.search.SearchView.TransitionState.HIDING) {
+                if (isSearchActive) {
+                    // If search was active, clear it when hiding the search view
+                    clearSearch();
+                    isSearchActive = false;
+                }
+            }
+        });
+
         // When user presses "enter" or "search" on the keyboard
         binding.searchView.getEditText().setOnEditorActionListener((v, actionId, event) -> {
             performSearch();
             return true;
+        });
+
+        // Add a listener to the SearchView's clear button
+        binding.searchView.getEditText().addTextChangedListener(new android.text.TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+            }
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+            }
+
+            @Override
+            public void afterTextChanged(android.text.Editable s) {
+                if (s.length() == 0) {
+                    // When text is cleared in SearchView, also clear in SearchBar
+                    binding.searchBar.setText("");
+                }
+            }
         });
 
         // RecyclerView + adapter
@@ -129,16 +155,9 @@ public class SearchFragment extends Fragment {
         photoViewModel.getSearchResults().observe(getViewLifecycleOwner(), this::handleSearchResults);
     }
 
-    private boolean onMenuItemClick(MenuItem item) {
-        if (item.getItemId() == R.id.action_clear_search) {
-            clearSearch();
-            return true;
-        }
-        return false;
-    }
-
     private void clearSearch() {
         binding.searchView.setText("");
+        binding.searchBar.setText(""); // Also clear the SearchBar text
         photoViewModel.clearSearch();
         isSearchActive = false;
 
@@ -185,7 +204,8 @@ public class SearchFragment extends Fragment {
             // Show results count
             int resultCount = photos.size();
             binding.textViewResultCount.setVisibility(View.VISIBLE);
-            binding.textViewResultCount.setText(getString(R.string.photos_found, resultCount, binding.searchView.getText().toString().trim()));
+            binding.textViewResultCount.setText(
+                    getString(R.string.photos_found, resultCount, binding.searchView.getText().toString().trim()));
 
             // Show results
             searchAdapter.submitList(photos);
@@ -195,7 +215,8 @@ public class SearchFragment extends Fragment {
             searchAdapter.submitList(null);
             binding.textViewNoResults.setVisibility(View.VISIBLE);
             binding.textViewResultCount.setVisibility(View.GONE);
-            binding.textViewNoResults.setText(getString(R.string.no_photos_found, binding.searchView.getText().toString().trim()));
+            binding.textViewNoResults
+                    .setText(getString(R.string.no_photos_found, binding.searchView.getText().toString().trim()));
         }
     }
 
