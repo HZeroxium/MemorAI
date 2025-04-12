@@ -29,7 +29,7 @@ public class SecurityFragment extends BottomSheetDialogFragment {
     private String userId;
     // Cờ để đảm bảo dismiss chỉ được gọi một lần
     private boolean isDismissed = false;
-
+    private boolean isVerified = false;
     public void setPinVerificationListener(PinVerificationListener listener) {
         this.pinVerificationListener = listener;
     }
@@ -55,6 +55,10 @@ public class SecurityFragment extends BottomSheetDialogFragment {
         return rootView;
     }
 
+    public boolean isVerified() {
+        return isVerified;
+    }
+
     private void openPinFragment(){
         PinFragment pinFragment = new PinFragment();
         Bundle args = new Bundle();
@@ -62,6 +66,7 @@ public class SecurityFragment extends BottomSheetDialogFragment {
         args.putString("userId", userId);
         pinFragment.setArguments(args);
         pinFragment.setOnPinVerifiedListener(() -> {
+            isVerified = true;
             if(pinVerificationListener != null){
                 pinVerificationListener.onPinVerified();
             }
@@ -81,6 +86,7 @@ public class SecurityFragment extends BottomSheetDialogFragment {
         args.putString("userId", userId);
         biometricFragment.setArguments(args);
         biometricFragment.setOnBiometricVerifiedListener(() -> {
+            isVerified = true;
             if(pinVerificationListener != null){
                 pinVerificationListener.onPinVerified();
             }

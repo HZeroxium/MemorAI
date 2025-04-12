@@ -23,7 +23,7 @@ public interface AlbumDao {
     @Query("SELECT * FROM album WHERE id = :albumId LIMIT 1")
     AlbumEntity getAlbumById(String albumId);
 
-    @Insert
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
     void insertAlbum(AlbumEntity album);
 
     @Update

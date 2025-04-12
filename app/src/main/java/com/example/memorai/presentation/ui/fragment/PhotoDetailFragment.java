@@ -78,6 +78,7 @@ public class PhotoDetailFragment extends Fragment {
             @Nullable ViewGroup container,
             @Nullable Bundle savedInstanceState) {
         binding = FragmentPhotoDetailBinding.inflate(inflater, container, false);
+        popupBinding = FragmentBottomPhotoInfoBinding.inflate(inflater, container, false);
         return binding.getRoot();
     }
 
@@ -278,17 +279,17 @@ public class PhotoDetailFragment extends Fragment {
     @Override
     public void onDestroyView() {
         super.onDestroyView();
+        photoViewModel.loadAllPhotos();
         binding = null;
     }
 
     private void togglePrivate() {
         if (currentPhoto != null) {
             boolean newPrivacy = !currentPhoto.isPrivate();
-            currentPhoto.setIsPrivate(newPrivacy);
+            currentPhoto.setPrivate(newPrivacy);
 
             // Gọi phương thức update trạng thái của ảnh và album private
             photoViewModel.setPhotoPrivacy(currentPhoto.getId(), newPrivacy);
-            photoViewModel.loadAllPhotos();
 
             // Hiển thị thông báo và cập nhật giao diện
             Toast.makeText(requireContext(),
@@ -300,6 +301,7 @@ public class PhotoDetailFragment extends Fragment {
             popupBinding.textViewPrivacyStatus.setCompoundDrawablesWithIntrinsicBounds(
                     newPrivacy ? R.drawable.ic_lock : R.drawable.ic_lock_open,
                     0, 0, 0);
+            Navigation.findNavController(requireView()).popBackStack();
         }
     }
 
@@ -364,10 +366,12 @@ public class PhotoDetailFragment extends Fragment {
                 .setMessage("Are you sure you want to delete this photo?")
                 .setPositiveButton("Yes", (dialog, which) -> {
                     photoViewModel.deletePhoto(photoId);
+
                     Toast.makeText(requireContext(), "Photo deleted", Toast.LENGTH_SHORT).show();
                     Navigation.findNavController(requireView()).popBackStack();
                 })
                 .setNegativeButton("No", null)
                 .show();
     }
+
 }

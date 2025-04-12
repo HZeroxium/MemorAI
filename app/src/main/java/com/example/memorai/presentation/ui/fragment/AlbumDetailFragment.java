@@ -46,6 +46,7 @@ public class AlbumDetailFragment extends Fragment {
     private String albumId;
     private Album currentAlbum;
 
+
     @Nullable
     @Override
     public View onCreateView(@NonNull android.view.LayoutInflater inflater,
@@ -70,9 +71,7 @@ public class AlbumDetailFragment extends Fragment {
 
         setupToolbar(view);
         setupRecyclerView();
-
         observeViewModels();
-        // Ảnh chỉ được load sau khi xác thực thành công (ở callback)
     }
 
     private void setupToolbar(View view) {
@@ -104,12 +103,13 @@ public class AlbumDetailFragment extends Fragment {
                 }
                 updateMenuVisibility(album.isPrivate());
                 displayAlbumInfo(album.getId(), album.getCreatedAt(), album.getName());
-                Log.d("AlbumPrivate", String.valueOf(album.isPrivate()));
-                if (album.isPrivate()) {
-                    openSecurityFragment(album);
-                } else {
-                    loadAlbumPhotos(false);
-                }
+                albumViewModel.getIsAuthenticated().observe(getViewLifecycleOwner(), isAuthenticated -> {
+                    if (album.isPrivate() && !isAuthenticated) {
+                        openSecurityFragment(album);
+                    } else {
+                        loadAlbumPhotos(isAuthenticated);
+                    }
+                });
             }
         });
     }
@@ -209,6 +209,8 @@ public class AlbumDetailFragment extends Fragment {
         String userId = firebaseUser.getUid();
 
         SecurityFragment securityFragment = new SecurityFragment();
+
+        if(securityFragment.isVerified()) return;
         Bundle args = new Bundle();
         args.putString("albumId", album.getId());
         args.putString("userId", userId);
@@ -216,6 +218,7 @@ public class AlbumDetailFragment extends Fragment {
 
         securityFragment.setPinVerificationListener(() -> {
             loadAlbumPhotos(true);
+            albumViewModel.setAuthenticated(true);
             securityFragment.dismiss();
         });
         securityFragment.show(getParentFragmentManager(), "SecurityFragment");
@@ -224,6 +227,7 @@ public class AlbumDetailFragment extends Fragment {
     @Override
     public void onDestroyView() {
         super.onDestroyView();
+        albumViewModel.loadAlbums();
         binding = null;
     }
 }

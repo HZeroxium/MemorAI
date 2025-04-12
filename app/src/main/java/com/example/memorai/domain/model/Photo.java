@@ -3,6 +3,8 @@ package com.example.memorai.domain.model;
 import android.graphics.Bitmap;
 import android.util.Base64;
 
+import com.google.firebase.firestore.PropertyName;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -91,9 +93,10 @@ public final class Photo {
     public long getUpdatedAt() {
         return updatedAt;
     }
-
+    @PropertyName("isPrivate")
     public boolean isPrivate() { return isPrivate; }
-    public void setIsPrivate(boolean state) {
+    @PropertyName("isPrivate")
+    public void setPrivate(boolean state) {
         this.isPrivate = state;
     }
 
