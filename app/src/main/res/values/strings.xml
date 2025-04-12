@@ -580,4 +580,10 @@
     <string name="art">Art</string>
     <string name="system_reset_success">Settings reset to default</string>
     <string name="settings_saved">Settings saved successfully</string>
+
+    <!-- Logout confirmation -->
+    <string name="logout_confirmation_title">Confirm Logout</string>
+    <string name="logout_confirmation_message">Warning: Photos and changes added since your last sync will not be automatically synchronized. Are you sure you want to logout?</string>
+    <string name="yes">Yes</string>
+    <string name="no">No</string>
 </resources>
