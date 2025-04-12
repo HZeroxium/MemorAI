@@ -183,7 +183,7 @@ public class AlbumViewModel extends ViewModel {
                         Album newAlbum = new Album(album.getId(), album.getName(),
                                 album.getDescription(), album.getPhotos(),
                                 album.getCoverPhotoUrl(), album.getCreatedAt(),
-                                album.getUpdatedAt());
+                                album.getUpdatedAt(), album.isPrivate());
 
                         if (newAlbum.getCoverPhotoUrl() != null) {
                             Bitmap bitmap = decodeBase64ToImage(newAlbum.getCoverPhotoUrl());

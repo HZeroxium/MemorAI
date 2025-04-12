@@ -64,7 +64,6 @@ public class SettingsFragment extends Fragment {
         settingsViewModel = new ViewModelProvider(this).get(SettingsViewModel.class);
         photoViewModel = new ViewModelProvider(requireActivity()).get(PhotoViewModel.class);
 
-
         darkMode = sharedPreferences.getBoolean("night", false);
         if (darkMode) {
             binding.switchDarkMode.setChecked(true);
@@ -130,7 +129,10 @@ public class SettingsFragment extends Fragment {
                                     Toast.makeText(requireContext(),
                                             getString(R.string.sync_failed,
                                                     (!isPhotoSyncSuccess ? getString(R.string.photos) : "") +
-                                                            (!isPhotoSyncSuccess && !isAlbumSyncSuccess ? getString(R.string.and) : "") +
+                                                            (!isPhotoSyncSuccess && !isAlbumSyncSuccess
+                                                                    ? getString(R.string.and)
+                                                                    : "")
+                                                            +
                                                             (!isAlbumSyncSuccess ? getString(R.string.albums) : "")),
                                             Toast.LENGTH_SHORT).show();
                                 } else {
@@ -139,22 +141,68 @@ public class SettingsFragment extends Fragment {
                                     if (getContext() != null) {
                                         NotificationHelper.createNotificationChannel(getContext(), "sync_channel");
                                         Intent intent = new Intent(requireContext(), MainActivity.class);
-                                        intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
+                                        intent.setFlags(
+                                                Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
                                         intent.putExtra("REFRESH_UI", true); // Thêm extra để yêu cầu làm mới UI
                                         NotificationHelper.sendSystemNotification(
                                                 requireContext(),
                                                 "sync_channel",
                                                 getString(R.string.sync_notification_title),
                                                 getString(R.string.sync_notification_message),
-                                                intent
-                                        );
+                                                intent);
                                     }
-                             }
+                                }
                             }
                         });
                     }
                 });
             }
+        });
+
+        binding.btnResetSystem.setOnClickListener(v -> {
+            // Đặt lại dark mode về mặc định (tắt)
+            AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO);
+            editor.putBoolean("night", false);
+            editor.apply();
+            binding.switchDarkMode.setChecked(false);
+
+            // Đặt lại ngôn ngữ về mặc định (English)
+            setLocale("en");
+            binding.spinnerLanguage.setSelection(2); // English ở vị trí 2
+
+            // Xóa cài đặt CloudSync nếu muốn reset hoàn toàn (tuỳ chọn)
+            SharedPreferences prefs = requireContext().getSharedPreferences("Settings", Context.MODE_PRIVATE);
+            SharedPreferences.Editor prefsEditor = prefs.edit();
+            prefsEditor.putBoolean("CloudSync", false);
+            prefsEditor.putString("Language", "en"); // Cập nhật ngôn ngữ mặc định
+            prefsEditor.apply();
+
+            Toast.makeText(requireContext(), getString(R.string.system_reset_success), Toast.LENGTH_SHORT).show();
+        });
+
+        // Add click listener for the Exit & Save button
+        binding.btnSave.setOnClickListener(v -> {
+            // Save all current settings
+            editor.apply(); // Ensure dark mode settings are applied
+
+            // Get and save other settings
+            SharedPreferences prefs = requireContext().getSharedPreferences("Settings", Context.MODE_PRIVATE);
+            String language = prefs.getString("Language", "en");
+            boolean cloudSyncEnabled = prefs.getBoolean("CloudSync", false);
+
+            // Update settings in ViewModel for persistence
+            if (settingsViewModel != null) {
+                settingsViewModel.setDarkModeEnabled(darkMode);
+                settingsViewModel.setLanguage(language);
+                settingsViewModel.setCloudSyncEnabled(cloudSyncEnabled);
+
+                // Show success message to user
+                Toast.makeText(requireContext(), R.string.settings_saved, Toast.LENGTH_SHORT).show();
+            }
+
+            // Navigate back to previous screen
+            NavController navController = NavHostFragment.findNavController(this);
+            navController.navigateUp();
         });
 
         return binding.getRoot();
@@ -190,8 +238,9 @@ public class SettingsFragment extends Fragment {
         String savedLanguage = prefs.getString("Language", "en");
 
         // Cài đặt Spinner ngôn ngữ
-        String[] languages = {"Tiếng Việt", "中文", "English"};
-        ArrayAdapter<String> adapter = new ArrayAdapter<>(requireContext(), android.R.layout.simple_spinner_dropdown_item, languages);
+        String[] languages = { "Tiếng Việt", "中文", "English" };
+        ArrayAdapter<String> adapter = new ArrayAdapter<>(requireContext(),
+                android.R.layout.simple_spinner_dropdown_item, languages);
         binding.spinnerLanguage.setAdapter(adapter);
 
         int position = 2; // Mặc định là English

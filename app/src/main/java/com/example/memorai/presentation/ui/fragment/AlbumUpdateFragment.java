@@ -55,15 +55,15 @@ public class AlbumUpdateFragment extends Fragment {
     @Nullable
     @Override
     public View onCreateView(@NonNull android.view.LayoutInflater inflater,
-                             @Nullable android.view.ViewGroup container,
-                             @Nullable Bundle savedInstanceState) {
+            @Nullable android.view.ViewGroup container,
+            @Nullable Bundle savedInstanceState) {
         binding = FragmentAlbumUpdateBinding.inflate(inflater, container, false);
         return binding.getRoot();
     }
 
     @Override
     public void onViewCreated(@NonNull View view,
-                              @Nullable Bundle savedInstanceState) {
+            @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
         albumViewModel = new ViewModelProvider(requireActivity()).get(AlbumViewModel.class);
@@ -83,9 +83,7 @@ public class AlbumUpdateFragment extends Fragment {
     }
 
     private void setupToolbar(View view) {
-        binding.toolbarAlbumUpdate.setNavigationOnClickListener(v ->
-                Navigation.findNavController(view).popBackStack()
-        );
+        binding.toolbarAlbumUpdate.setNavigationOnClickListener(v -> Navigation.findNavController(view).popBackStack());
     }
 
     private void setupRecyclerView() {
@@ -112,10 +110,12 @@ public class AlbumUpdateFragment extends Fragment {
             @Override
             public void beforeTextChanged(CharSequence s, int start, int count, int after) {
             }
+
             @Override
             public void onTextChanged(CharSequence s, int start, int before, int count) {
                 validateForm();
             }
+
             @Override
             public void afterTextChanged(android.text.Editable s) {
             }
@@ -123,7 +123,8 @@ public class AlbumUpdateFragment extends Fragment {
 
         // Observe album data
         albumViewModel.getAlbumLiveData().observe(getViewLifecycleOwner(), album -> {
-            if (album == null) return;
+            if (album == null)
+                return;
             currentAlbum = album;
             binding.editTextAlbumTitle.setText(album.getName());
         });
@@ -145,7 +146,8 @@ public class AlbumUpdateFragment extends Fragment {
     }
 
     private void loadAlbumAndPhotos() {
-        if (albumId == null) return;
+        if (albumId == null)
+            return;
 
         // Load album details from local (Room)
         albumViewModel.loadAlbumById(albumId);
@@ -178,20 +180,19 @@ public class AlbumUpdateFragment extends Fragment {
                 return;
             }
 
-            // Lấy cover photo từ ảnh đầu tiên trong danh sách
-            Uri contentUri = Uri.parse(selectedPhotos.get(0).getFilePath());
-            String base64 = convertImageToBase64(requireContext(), contentUri);
+            // Directly use the first selected photo's Base64 string as the album cover
+            String coverPhotoBase64 = selectedPhotos.get(0).getFilePath();
 
-            // Tạo album mới với thông tin cập nhật
+            // Create updated album with new information
             Album updatedAlbum = new Album(
                     albumId,
                     title,
                     description,
-                    currentAlbum.getPhotos(), // Giữ nguyên danh sách photo cũ để cập nhật sau
-                    base64,
+                    currentAlbum.getPhotos(), // Keep the old photo list for now, will update later
+                    coverPhotoBase64,
                     currentAlbum.getCreatedAt(),
                     System.currentTimeMillis(),
-                    false
+                    currentAlbum.isPrivate() // Maintain the same privacy setting
             );
 
             // Cập nhật album với danh sách ảnh mới
