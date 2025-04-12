@@ -17,6 +17,7 @@
     <string name="albums">Albums</string>
     <string name="root_album_id">1</string>
     <string name="hi">Hi %1$s! \nHave a nice day</string>
+    <string name="info">Photo Information</string>
 
     <string name="label_brush">Brush</string>
     <string name="label_shape">Shape</string>
@@ -586,4 +587,5 @@
     <string name="logout_confirmation_message">Warning: Photos and changes added since your last sync will not be automatically synchronized. Are you sure you want to logout?</string>
     <string name="yes">Yes</string>
     <string name="no">No</string>
+    <string name="scale">Scale</string>
 </resources>
