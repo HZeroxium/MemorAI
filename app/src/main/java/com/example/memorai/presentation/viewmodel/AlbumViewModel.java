@@ -38,6 +38,9 @@ public class AlbumViewModel extends ViewModel {
     private final Handler mainHandler = new Handler(Looper.getMainLooper());
     private final MutableLiveData<String> syncStatus = new MutableLiveData<>();
 
+    private final MutableLiveData<Boolean> isAuthenticated = new MutableLiveData<>(false);
+
+
     @Inject
     public AlbumViewModel(AlbumRepositoryImpl albumRepository) {
         this.albumRepository = albumRepository;
@@ -167,6 +170,13 @@ public class AlbumViewModel extends ViewModel {
         });
     }
 
+    public void setAuthenticated(boolean authenticated) {
+        isAuthenticated.setValue(authenticated);
+    }
+
+    public LiveData<Boolean> getIsAuthenticated() {
+        return isAuthenticated;
+    }
 
     public void syncAllPendingChanges(SyncCallback callback) {
         callback.onSyncStarted();
