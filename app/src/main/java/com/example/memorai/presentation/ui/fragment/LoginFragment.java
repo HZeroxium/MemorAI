@@ -179,13 +179,12 @@ public class LoginFragment extends BottomSheetDialogFragment {
 
         // Create new album
         String albumId = UUID.randomUUID().toString();
-        String drawableUri = "android.resource://" + requireContext().getPackageName() + "/" + R.drawable.ic_lock;
         Album newAlbum = new Album(
                 albumId,
                 "Private",
                 "",
                 photoIds,
-                drawableUri,
+                null,
                 System.currentTimeMillis(),
                 System.currentTimeMillis(),
                 true
