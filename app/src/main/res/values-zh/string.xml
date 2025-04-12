@@ -169,4 +169,11 @@
     <string name="sync_notification_title">同步成功</string>
     <string name="sync_notification_message">数据已与云端同步</string>
     <string name="art">艺术</string>
+    <string name="settings_saved">设置已成功保存</string>
+
+    <!-- Logout confirmation -->
+    <string name="logout_confirmation_title">确认登出</string>
+    <string name="logout_confirmation_message">警告：自上次同步以来添加的照片和更改将不会自动同步。您确定要登出吗？</string>
+    <string name="yes">是</string>
+    <string name="no">否</string>
 </resources>

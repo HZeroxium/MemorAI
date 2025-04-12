@@ -43,7 +43,6 @@ import com.google.firebase.auth.FirebaseUser;
 import com.google.android.gms.auth.api.signin.GoogleSignInClient;
 import com.google.firebase.auth.GoogleAuthProvider;
 
-
 import java.util.Locale;
 
 import dagger.hilt.android.AndroidEntryPoint;
@@ -87,17 +86,18 @@ public class MainActivity extends AppCompatActivity {
             albumViewModel.loadAlbums();
         }
 
-
         if (getIntent().getBooleanExtra("REFRESH_UI", false)) {
             refreshUI();
         }
         GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
-                .requestIdToken("619405178592-3ri6lcne9ejli7bt6dt6elj3vo0132t0.apps.googleusercontent.com") // Lấy ID Token để xác thực Firebase
+                .requestIdToken("619405178592-3ri6lcne9ejli7bt6dt6elj3vo0132t0.apps.googleusercontent.com") // Lấy ID
+                                                                                                            // Token để
+                                                                                                            // xác thực
+                                                                                                            // Firebase
                 .requestEmail()
                 .build();
 
         googleSignInClient = GoogleSignIn.getClient(this, gso);
-
 
         setupObservers();
         setupNavigation();
@@ -130,15 +130,16 @@ public class MainActivity extends AppCompatActivity {
 
     private void requestNotificationPermission() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) { // Android 13+
-            if (ContextCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS)
-                    != PackageManager.PERMISSION_GRANTED) {
+            if (ContextCompat.checkSelfPermission(this,
+                    Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
                 ActivityCompat.requestPermissions(this,
-                        new String[]{Manifest.permission.POST_NOTIFICATIONS}, 101);
+                        new String[] { Manifest.permission.POST_NOTIFICATIONS }, 101);
             }
         }
     }
+
     private void setupObservers() {
-        if(userViewModel.getUserLiveData().getValue() == null) {
+        if (userViewModel.getUserLiveData().getValue() == null) {
             updateUI(null);
         }
         userViewModel.getUserLiveData().observe(this, user -> {
@@ -193,9 +194,12 @@ public class MainActivity extends AppCompatActivity {
                 MenuItem albumsItem = binding.bottomNavigation.getMenu().findItem(R.id.albumListFragment);
                 MenuItem searchItem = binding.bottomNavigation.getMenu().findItem(R.id.searchFragment);
 
-                if (photosItem != null) photosItem.setTitle(R.string.photos);
-                if (albumsItem != null) albumsItem.setTitle(R.string.albums);
-                if (searchItem != null) searchItem.setTitle(R.string.search);
+                if (photosItem != null)
+                    photosItem.setTitle(R.string.photos);
+                if (albumsItem != null)
+                    albumsItem.setTitle(R.string.albums);
+                if (searchItem != null)
+                    searchItem.setTitle(R.string.search);
 
                 if (userViewModel.getUserLiveData().getValue() == null) {
                     updateUI(null);
@@ -220,7 +224,6 @@ public class MainActivity extends AppCompatActivity {
         binding.bottomNavigation.setVisibility(visibility);
         binding.header.setVisibility(visibility);
     }
-
 
     private void setupProfileIcon() {
         binding.profileIcon.setOnClickListener(this::showProfileMenu);
@@ -259,7 +262,8 @@ public class MainActivity extends AppCompatActivity {
      * Handle Profile Menu Item Clicks.
      */
     private boolean handleProfileMenuClick(MenuItem item) {
-        if (navController == null) return false;
+        if (navController == null)
+            return false;
         FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
 
         int itemId = item.getItemId();
@@ -270,7 +274,15 @@ public class MainActivity extends AppCompatActivity {
             toggleUIVisibility(false);
         } else if (itemId == R.id.menu_login) {
             if (user != null) {
-                logout();
+                // Show confirmation dialog before logging out
+                new androidx.appcompat.app.AlertDialog.Builder(this)
+                        .setTitle(R.string.logout_confirmation_title)
+                        .setMessage(R.string.logout_confirmation_message)
+                        .setPositiveButton(R.string.yes, (dialog, which) -> {
+                            logout();
+                        })
+                        .setNegativeButton(R.string.no, null)
+                        .show();
             } else {
                 LoginFragment loginFragment = new LoginFragment();
                 loginFragment.show(getSupportFragmentManager(), "LoginFragment");
@@ -281,8 +293,6 @@ public class MainActivity extends AppCompatActivity {
         }
         return true;
     }
-
-
 
     /**
      * Show BottomSheet when clicking Add Button.
@@ -296,30 +306,31 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void showAddMenuBottomSheet() {
-        ModalBottomSheetAddMenu bottomSheet = new ModalBottomSheetAddMenu(new ModalBottomSheetAddMenu.BottomSheetListener() {
-            @Override
-            public void onAddAlbum() {
-                navController.navigate(R.id.albumCreateFragment);
-            }
+        ModalBottomSheetAddMenu bottomSheet = new ModalBottomSheetAddMenu(
+                new ModalBottomSheetAddMenu.BottomSheetListener() {
+                    @Override
+                    public void onAddAlbum() {
+                        navController.navigate(R.id.albumCreateFragment);
+                    }
 
-            @Override
-            public void onImportPhoto() {
-                navController.navigate(R.id.importPhotoFragment);
-            }
+                    @Override
+                    public void onImportPhoto() {
+                        navController.navigate(R.id.importPhotoFragment);
+                    }
 
-            @Override
-            public void onTakePhoto() {
-                navController.navigate(R.id.takePhotoFragment);
-            }
-        });
+                    @Override
+                    public void onTakePhoto() {
+                        navController.navigate(R.id.takePhotoFragment);
+                    }
+                });
 
         bottomSheet.show(getSupportFragmentManager(), "ModalBottomSheetAddMenu");
     }
 
-
     private void logout() {
         FirebaseAuth.getInstance().signOut();
-        GoogleSignIn.getClient(this, new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN).build()).signOut()
+        GoogleSignIn.getClient(this, new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN).build())
+                .signOut()
                 .addOnCompleteListener(this, task -> {
                     binding.headerText.setText(getString(R.string.hi, getString(R.string.you)));
                     binding.profileIcon.setImageResource(R.drawable.ic_profile);
@@ -328,7 +339,6 @@ public class MainActivity extends AppCompatActivity {
                     setupProfileIcon();
                 });
     }
-
 
     private void updateUI(FirebaseUser user) {
         if (user != null) {
