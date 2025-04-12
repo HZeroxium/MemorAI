@@ -123,7 +123,7 @@ public class EditPhotoFragment extends Fragment {
         super.onViewCreated(view, savedInstanceState);
 
         // Initialize rootView using the binding
-        rootView = (ConstraintLayout) binding.getRoot();
+        rootView = binding.getRoot();
 
         // Initialize constraintSet
         constraintSet = new ConstraintSet();
@@ -136,8 +136,7 @@ public class EditPhotoFragment extends Fragment {
                 .setPinchTextScalable(true)
                 .build();
 
-        // Khởi tạo ShapeBuilder
-        shapeBuilder = new ShapeBuilder();
+
         var photoEditorView = binding.photoEditorView;
         photoEditorView.setOnTouchListener((v, event) -> {
             Log.d("EditPhoto", "Touch event: " + event.getAction());
@@ -485,7 +484,11 @@ public class EditPhotoFragment extends Fragment {
                     brushBundle.putInt("color", brushColor);
                     brushBundle.putFloat("size", brushSize);
                     brushBundle.putInt("opacity", brushOpacity);
-                    brushBundle.putString("shapeType", brushShapeType.toString());
+                    if (brushShapeType instanceof ShapeType.Arrow) {
+                        ShapeType.Arrow arrow = (ShapeType.Arrow) brushShapeType;
+                        brushBundle.putString("shapeType", "Arrow");
+                        brushBundle.putString("arrowPointerLocation", arrow.getPointerLocation().toString());
+                    }
                     shapeBSFragment.setArguments(brushBundle);
 
                     shapeBSFragment.setPropertiesChangeListener(new ShapeBSFragment.Properties() {

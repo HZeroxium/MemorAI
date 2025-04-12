@@ -7,6 +7,8 @@ import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
 import android.os.Build;
 import android.os.Environment;
+import android.os.Handler;
+import android.os.Looper;
 import android.view.MenuItem;
 import android.app.AlertDialog;
 import android.content.Intent;
@@ -95,7 +97,7 @@ public class PhotoDetailFragment extends Fragment {
                                     .into(binding.imageViewDetailPhoto);
                         }
                         updateUI(photo);
-                        isPrivate = photo.getIsPrivate(); // Update the isPrivate state
+                        isPrivate = photo.isPrivate(); // Update the isPrivate state
                         updatePrivateIcon(); // Update the privacy icon
                     }
                 });
@@ -140,9 +142,9 @@ public class PhotoDetailFragment extends Fragment {
         binding.textViewCreatedDate.setText(getString(R.string.modified) + " " + dateFormat.format(new Date(photo.getUpdatedAt())));
 
         // Set privacy status
-        binding.textViewPrivacyStatus.setText(photo.getIsPrivate() ? R.string.private_photo : R.string.public_photo);
+        binding.textViewPrivacyStatus.setText(photo.isPrivate() ? R.string.private_photo : R.string.public_photo);
         binding.textViewPrivacyStatus.setCompoundDrawablesWithIntrinsicBounds(
-                photo.getIsPrivate() ? R.drawable.ic_lock : R.drawable.ic_lock_open,
+                photo.isPrivate() ? R.drawable.ic_lock : R.drawable.ic_lock_open,
                 0, 0, 0);
 
         // Update tags
@@ -250,22 +252,25 @@ public class PhotoDetailFragment extends Fragment {
     }
 
     private void togglePrivate() {
-        isPrivate = !isPrivate;
+        if (currentPhoto != null) {
+            boolean newPrivacy = !currentPhoto.isPrivate();
+            currentPhoto.setIsPrivate(newPrivacy);
 
-        // Call ViewModel to update status
-        photoViewModel.setPhotoPrivacy(photoId, isPrivate);
+            // Gọi phương thức update trạng thái của ảnh và album private
+            photoViewModel.setPhotoPrivacy(currentPhoto.getId(), newPrivacy);
+            photoViewModel.loadAllPhotos();
 
-        // Show notification
-        Toast.makeText(requireContext(),
-                isPrivate ? "Photo set to private" : "Photo set to public",
-                Toast.LENGTH_SHORT).show();
+            // Hiển thị thông báo và cập nhật giao diện
+            Toast.makeText(requireContext(),
+                    newPrivacy ? "Photo set to private" : "Photo set to public",
+                    Toast.LENGTH_SHORT).show();
 
-        // Update icon and text
-        updatePrivateIcon();
-        binding.textViewPrivacyStatus.setText(isPrivate ? R.string.privates : R.string.public_photo);
-        binding.textViewPrivacyStatus.setCompoundDrawablesWithIntrinsicBounds(
-                isPrivate ? R.drawable.ic_lock : R.drawable.ic_lock_open,
-                0, 0, 0);
+            updatePrivateIcon();
+            binding.textViewPrivacyStatus.setText(newPrivacy ? "Private" : "Public");
+            binding.textViewPrivacyStatus.setCompoundDrawablesWithIntrinsicBounds(
+                    newPrivacy ? R.drawable.ic_lock : R.drawable.ic_lock_open,
+                    0, 0, 0);
+        }
     }
 
     private void updatePrivateIcon() {

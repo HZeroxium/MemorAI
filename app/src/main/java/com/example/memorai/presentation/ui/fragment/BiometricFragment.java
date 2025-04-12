@@ -8,143 +8,146 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Toast;
 
-import androidx.activity.OnBackPressedCallback;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.fragment.app.Fragment;
-import androidx.fragment.app.FragmentTransaction;
 import androidx.biometric.BiometricPrompt;
+import androidx.coordinatorlayout.widget.CoordinatorLayout;
 import androidx.core.content.ContextCompat;
-
 import com.example.memorai.R;
+import com.google.android.material.bottomsheet.BottomSheetBehavior;
+import com.google.android.material.bottomsheet.BottomSheetDialog;
+import com.google.android.material.bottomsheet.BottomSheetDialogFragment;
 
-public class BiometricFragment extends Fragment {
+import android.widget.FrameLayout;
+import android.view.ViewGroup.LayoutParams;
 
+public class BiometricFragment extends BottomSheetDialogFragment {
+
+    public interface OnBiometricVerifiedListener {
+        void onBiometricVerified();
+    }
+
+    private OnBiometricVerifiedListener onBiometricVerifiedListener;
     private BiometricPrompt biometricPrompt;
     private boolean isAuthenticationInProgress = false;
+    private String userId;
+    private String mode;
+
+    public void setOnBiometricVerifiedListener(OnBiometricVerifiedListener listener) {
+        this.onBiometricVerifiedListener = listener;
+    }
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
-        // Xử lý nút back khi đang xác thực
-        requireActivity().getOnBackPressedDispatcher().addCallback(this, new OnBackPressedCallback(true) {
-            @Override
-            public void handleOnBackPressed() {
-                if (isAuthenticationInProgress) {
-                    cancelBiometricAuth();
-                } else {
-                    requireActivity().finish();
-                }
-            }
-        });
+        if(getArguments() != null){
+            userId = getArguments().getString("userId");
+            mode = getArguments().getString("mode", "verify");
+        }
     }
 
     @Override
-    public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container,
-                             Bundle savedInstanceState) {
+    public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container,
+                             @Nullable Bundle savedInstanceState) {
+        // Inflate layout cho BiometricFragment (đảm bảo R.layout.fragment_biometric tồn tại)
         return inflater.inflate(R.layout.fragment_biometric, container, false);
     }
 
     @Override
-    public void onStart() {
+    public void onStart(){
         super.onStart();
         startBiometricAuthWithDelay();
+        BottomSheetDialog dialog = (BottomSheetDialog) getDialog();
+        if(dialog != null){
+            FrameLayout bottomSheet = dialog.findViewById(com.google.android.material.R.id.design_bottom_sheet);
+            if(bottomSheet != null){
+                CoordinatorLayout.LayoutParams params = (CoordinatorLayout.LayoutParams) bottomSheet.getLayoutParams();
+                params.width = LayoutParams.MATCH_PARENT;
+                bottomSheet.setLayoutParams(params);
+                BottomSheetBehavior<?> behavior = BottomSheetBehavior.from(bottomSheet);
+                behavior.setSkipCollapsed(true);
+                behavior.setHideable(false);
+                behavior.setState(BottomSheetBehavior.STATE_EXPANDED);
+            }
+        }
     }
 
     @Override
-    public void onStop() {
+    public void onStop(){
         super.onStop();
         cancelBiometricAuth();
     }
 
-    private void startBiometricAuthWithDelay() {
-        if (!isBiometricAvailable()) {
+    private void startBiometricAuthWithDelay(){
+        if(!isBiometricAvailable()){
             Toast.makeText(requireContext(), "Thiết bị không hỗ trợ xác thực sinh trắc học", Toast.LENGTH_SHORT).show();
             return;
         }
-
         new Handler(Looper.getMainLooper()).postDelayed(() -> {
-            if (getView() != null && !isAuthenticationInProgress) {
+            if(getView() != null && !isAuthenticationInProgress){
                 initializeBiometricPrompt();
                 showBiometricPrompt();
             }
-        }, 500); // Tăng delay để đảm bảo Fragment hoàn toàn ổn định
+        }, 500);
     }
 
-    private void initializeBiometricPrompt() {
+    private void initializeBiometricPrompt(){
         biometricPrompt = new BiometricPrompt(this,
                 ContextCompat.getMainExecutor(requireContext()),
-                new BiometricPrompt.AuthenticationCallback() {
+                new BiometricPrompt.AuthenticationCallback(){
                     @Override
-                    public void onAuthenticationSucceeded(BiometricPrompt.AuthenticationResult result) {
+                    public void onAuthenticationSucceeded(@NonNull BiometricPrompt.AuthenticationResult result) {
                         super.onAuthenticationSucceeded(result);
                         isAuthenticationInProgress = false;
-                        openPrivateAlbumFragment();
+                        if(onBiometricVerifiedListener != null){
+                            onBiometricVerifiedListener.onBiometricVerified();
+                        }
+                        dismiss();
                     }
-
                     @Override
-                    public void onAuthenticationFailed() {
+                    public void onAuthenticationFailed(){
                         super.onAuthenticationFailed();
                         isAuthenticationInProgress = false;
                         Toast.makeText(requireContext(), "Xác thực thất bại", Toast.LENGTH_SHORT).show();
                     }
-
                     @Override
-                    public void onAuthenticationError(int errorCode, CharSequence errString) {
+                    public void onAuthenticationError(int errorCode, @NonNull CharSequence errString){
                         super.onAuthenticationError(errorCode, errString);
                         isAuthenticationInProgress = false;
-                        if (errorCode != BiometricPrompt.ERROR_USER_CANCELED) {
+                        if(errorCode != BiometricPrompt.ERROR_USER_CANCELED){
                             Toast.makeText(requireContext(), "Lỗi xác thực: " + errString, Toast.LENGTH_SHORT).show();
                         }
                     }
                 });
     }
 
-    private void showBiometricPrompt() {
+    private void showBiometricPrompt(){
         BiometricPrompt.PromptInfo promptInfo = new BiometricPrompt.PromptInfo.Builder()
                 .setTitle("Xác thực vân tay hoặc nhận diện khuôn mặt")
                 .setSubtitle("Sử dụng vân tay hoặc khuôn mặt để đăng nhập")
                 .setDeviceCredentialAllowed(true)
                 .build();
-
         isAuthenticationInProgress = true;
         biometricPrompt.authenticate(promptInfo);
     }
 
-    private void cancelBiometricAuth() {
-        if (isAuthenticationInProgress && biometricPrompt != null) {
+    private void cancelBiometricAuth(){
+        if(isAuthenticationInProgress && biometricPrompt != null){
             biometricPrompt.cancelAuthentication();
             isAuthenticationInProgress = false;
         }
     }
 
-    private boolean isBiometricAvailable() {
-        try {
+    private boolean isBiometricAvailable(){
+        try{
             androidx.biometric.BiometricManager biometricManager =
                     androidx.biometric.BiometricManager.from(requireContext());
             return biometricManager.canAuthenticate(
                     androidx.biometric.BiometricManager.Authenticators.BIOMETRIC_STRONG |
                             androidx.biometric.BiometricManager.Authenticators.DEVICE_CREDENTIAL)
                     == androidx.biometric.BiometricManager.BIOMETRIC_SUCCESS;
-        } catch (Exception e) {
+        } catch(Exception e){
             return false;
-        }
-    }
-
-    private void openPrivateAlbumFragment() {
-        if (isAdded() && !requireActivity().isFinishing()) {
-            new Handler(Looper.getMainLooper()).post(() -> {
-                try {
-                    FragmentTransaction transaction =
-                            requireActivity().getSupportFragmentManager().beginTransaction();
-                    transaction.replace(R.id.nav_host_fragment, new PrivateAlbumFragment());
-                    transaction.addToBackStack(null);
-                    transaction.commitAllowingStateLoss();
-                } catch (IllegalStateException e) {
-                    // Xử lý exception nếu FragmentManager đang bận
-                }
-            });
         }
     }
 }

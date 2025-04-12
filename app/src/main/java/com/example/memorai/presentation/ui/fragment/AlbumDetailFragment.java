@@ -3,6 +3,7 @@ package com.example.memorai.presentation.ui.fragment;
 import android.app.AlertDialog;
 import android.os.Bundle;
 import android.text.InputType;
+import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.EditText;
@@ -17,6 +18,8 @@ import androidx.recyclerview.widget.GridLayoutManager;
 
 import com.example.memorai.R;
 import com.example.memorai.databinding.FragmentAlbumDetailBinding;
+import com.example.memorai.domain.model.Album;
+import com.example.memorai.domain.model.Photo;
 import com.example.memorai.presentation.ui.adapter.PhotoAdapter;
 import com.example.memorai.presentation.viewmodel.AlbumViewModel;
 import com.example.memorai.presentation.viewmodel.PhotoViewModel;
@@ -24,7 +27,9 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 import java.util.Locale;
 
 import dagger.hilt.android.AndroidEntryPoint;
@@ -39,6 +44,7 @@ public class AlbumDetailFragment extends Fragment {
 
     private PhotoAdapter photoAdapter;
     private String albumId;
+    private Album currentAlbum;
 
     @Nullable
     @Override
@@ -59,14 +65,14 @@ public class AlbumDetailFragment extends Fragment {
 
         if (getArguments() != null) {
             albumId = getArguments().getString("album_id", "");
+            albumViewModel.loadAlbumById(albumId);
         }
 
         setupToolbar(view);
         setupRecyclerView();
-        observeViewModels();
 
-        albumViewModel.loadAlbumById(albumId);
-        photoViewModel.loadPhotosByAlbum(albumId);
+        observeViewModels();
+        // Ảnh chỉ được load sau khi xác thực thành công (ở callback)
     }
 
     private void setupToolbar(View view) {
@@ -92,20 +98,33 @@ public class AlbumDetailFragment extends Fragment {
     private void observeViewModels() {
         albumViewModel.getAlbumLiveData().observe(getViewLifecycleOwner(), album -> {
             if (album != null) {
+                Fragment prev = getParentFragmentManager().findFragmentByTag("SecurityFragment");
+                if (prev != null && prev.isAdded()) {
+                    return;
+                }
                 displayAlbumInfo(album.getId(), album.getCreatedAt(), album.getName());
+                Log.d("AlbumPrivate", String.valueOf(album.isPrivate()));
+                if (album.isPrivate()) {
+                    openSecurityFragment(album);
+                } else {
+                    loadAlbumPhotos(false);
+                }
             }
         });
+    }
 
-        photoViewModel.observePhotosByAlbum().observe(getViewLifecycleOwner(), albumPhotos -> {
-            if (albumPhotos != null && !albumPhotos.isEmpty()) {
-                photoAdapter.submitList(albumPhotos);
-                binding.recyclerViewAlbumPhotos.setVisibility(View.VISIBLE);
-                binding.textViewNoPhotos.setVisibility(View.GONE);
-            } else {
-                binding.recyclerViewAlbumPhotos.setVisibility(View.GONE);
-                binding.textViewNoPhotos.setVisibility(View.VISIBLE);
-            }
-        });
+    private void loadAlbumPhotos(boolean showPrivatePhotos) {
+        photoViewModel.observePhotosByAlbum(albumId, showPrivatePhotos)
+                .observe(getViewLifecycleOwner(), photos -> {
+                    if (photos != null && !photos.isEmpty()) {
+                        photoAdapter.submitList(photos);
+                        binding.recyclerViewAlbumPhotos.setVisibility(View.VISIBLE);
+                        binding.textViewNoPhotos.setVisibility(View.GONE);
+                    } else {
+                        binding.recyclerViewAlbumPhotos.setVisibility(View.GONE);
+                        binding.textViewNoPhotos.setVisibility(View.VISIBLE);
+                    }
+                });
     }
 
     private void displayAlbumInfo(String id, long createdAt, String name) {
@@ -167,6 +186,27 @@ public class AlbumDetailFragment extends Fragment {
             builder.setNegativeButton("Cancel", (dialog, which) -> dialog.dismiss());
             builder.show();
         });
+    }
+
+    private void openSecurityFragment(Album album) {
+        FirebaseUser firebaseUser = FirebaseAuth.getInstance().getCurrentUser();
+        if (firebaseUser == null) {
+            Toast.makeText(requireContext(), "Người dùng chưa đăng nhập", Toast.LENGTH_SHORT).show();
+            return;
+        }
+        String userId = firebaseUser.getUid();
+
+        SecurityFragment securityFragment = new SecurityFragment();
+        Bundle args = new Bundle();
+        args.putString("albumId", album.getId());
+        args.putString("userId", userId);
+        securityFragment.setArguments(args);
+
+        securityFragment.setPinVerificationListener(() -> {
+            loadAlbumPhotos(true);
+            securityFragment.dismiss();
+        });
+        securityFragment.show(getParentFragmentManager(), "SecurityFragment");
     }
 
     @Override

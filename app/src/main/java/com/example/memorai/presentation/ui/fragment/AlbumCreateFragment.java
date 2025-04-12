@@ -140,7 +140,8 @@ public class AlbumCreateFragment extends Fragment {
                 photoIds,
                 coverPhotoUrl,
                 System.currentTimeMillis(),
-                System.currentTimeMillis()
+                System.currentTimeMillis(),
+                false
         );
 
         // Sử dụng AlbumViewModel để tạo album

@@ -190,7 +190,8 @@ public class AlbumUpdateFragment extends Fragment {
                     currentAlbum.getPhotos(), // Giữ nguyên danh sách photo cũ để cập nhật sau
                     base64,
                     currentAlbum.getCreatedAt(),
-                    System.currentTimeMillis()
+                    System.currentTimeMillis(),
+                    false
             );
 
             // Cập nhật album với danh sách ảnh mới

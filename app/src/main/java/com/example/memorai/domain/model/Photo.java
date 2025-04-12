@@ -12,7 +12,7 @@ public final class Photo {
     final private String id;
     private String filePath;
     private Bitmap bitmap;
-    private boolean isPrivate;
+    private boolean isPrivate = false;
     private List<String> tags; // Removed the final modifier
     final private long createdAt;
     final private long updatedAt;
@@ -92,11 +92,8 @@ public final class Photo {
         return updatedAt;
     }
 
-    public boolean getIsPrivate() {
-        return isPrivate;
-    }
-
-    public void seIsPrivate(boolean state) {
+    public boolean isPrivate() { return isPrivate; }
+    public void setIsPrivate(boolean state) {
         this.isPrivate = state;
     }
 

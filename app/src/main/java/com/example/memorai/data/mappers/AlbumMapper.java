@@ -14,7 +14,8 @@ public class AlbumMapper {
                 entity.photos != null ? entity.photos : new ArrayList<>(),  // Ensure non-null list
                 entity.coverPhotoUrl,
                 entity.createdAt,
-                entity.updatedAt
+                entity.updatedAt,
+                entity.isPrivate
         );
     }
 

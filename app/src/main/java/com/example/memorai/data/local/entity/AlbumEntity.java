@@ -40,4 +40,7 @@ public class AlbumEntity {
 
     @ColumnInfo(name = "isSynced")
     public boolean isSynced;
+  
+    @ColumnInfo(name = "is_private")
+    public boolean isPrivate;
 }

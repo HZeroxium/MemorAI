@@ -16,13 +16,13 @@ import com.example.memorai.data.local.entity.PhotoEntity;
 import com.example.memorai.data.local.entity.UserEntity;
 
 @Database(entities = {AlbumEntity.class, PhotoEntity.class, UserEntity.class, PhotoAlbumCrossRef.class},
-        version = 4,  // Tăng version từ 3 lên 4
+        version = 5,  // Tăng version từ 3 lên 4
         exportSchema = false)
 @TypeConverters({Converters.class})
 public abstract class AppDatabase extends RoomDatabase {
 
     // Migration từ version 3 lên 4 (thêm cột is_private)
-    public static final Migration MIGRATION_3_4 = new Migration(3, 4) {
+    public static final Migration MIGRATION_4_5 = new Migration(4, 5) {
         @Override
         public void migrate(SupportSQLiteDatabase database) {
             database.execSQL("ALTER TABLE photos ADD COLUMN is_private INTEGER NOT NULL DEFAULT 0");
