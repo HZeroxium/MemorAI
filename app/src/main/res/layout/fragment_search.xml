@@ -2,8 +2,8 @@
 <androidx.coordinatorlayout.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto" android:layout_width="match_parent" android:layout_height="match_parent">
 
-    <!-- Material Search Bar -->
-    <com.google.android.material.search.SearchBar android:id="@+id/searchBar" android:layout_width="match_parent" android:layout_height="wrap_content" android:backgroundTint="?attr/colorSurface" android:hint="@string/search_your_photos" android:paddingHorizontal="16dp" app:menu="@menu/menu_search" />
+    <!-- Material Search Bar - removed app:menu attribute -->
+    <com.google.android.material.search.SearchBar android:id="@+id/searchBar" android:layout_width="match_parent" android:layout_height="wrap_content" android:backgroundTint="?attr/colorSurface" android:hint="@string/search_your_photos" android:paddingHorizontal="16dp" />
 
     <!-- Material Search View -->
     <com.google.android.material.search.SearchView android:id="@+id/searchView" android:layout_width="match_parent" android:layout_height="match_parent" android:hint="@string/search_your_photos" app:autoShowKeyboard="true" app:hideNavigationIcon="false" app:layout_anchor="@id/searchBar" app:searchPrefixText="" app:useDrawerArrowDrawable="false">
