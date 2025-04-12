@@ -169,4 +169,5 @@
     <string name="sync_notification_title">同步成功</string>
     <string name="sync_notification_message">数据已与云端同步</string>
     <string name="art">艺术</string>
+    <string name="settings_saved">设置已成功保存</string>
 </resources>
