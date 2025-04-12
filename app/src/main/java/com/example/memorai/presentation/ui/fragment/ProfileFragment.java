@@ -150,7 +150,7 @@ public class ProfileFragment extends Fragment {
         // Update stats
         binding.photosCountText.setText(String.valueOf(photoViewModel.getPhotoCount()));
         binding.albumsCountText.setText(String.valueOf(albumViewModel.getAlbumCount()));
-
+        binding.albumPrivate.setText(String.valueOf(photoViewModel.getPrivatePhotoCount()));
         // Setup buttons
         binding.btnAddMedia.setOnClickListener(v -> showAddMediaDialog());
         binding.btnEditProfile.setOnClickListener(v -> openEditProfile(user));
