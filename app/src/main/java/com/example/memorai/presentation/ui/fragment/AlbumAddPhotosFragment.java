@@ -2,7 +2,6 @@
 package com.example.memorai.presentation.ui.fragment;
 
 import android.os.Bundle;
-import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -47,8 +46,8 @@ public class AlbumAddPhotosFragment extends Fragment {
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater,
-                             @Nullable ViewGroup container,
-                             @Nullable Bundle savedInstanceState) {
+            @Nullable ViewGroup container,
+            @Nullable Bundle savedInstanceState) {
         binding = FragmentAlbumAddPhotosBinding.inflate(inflater, container, false);
         return binding.getRoot();
     }
@@ -62,7 +61,6 @@ public class AlbumAddPhotosFragment extends Fragment {
 
         setupToolbar();
         setupRecyclerView();
-        setupSearch();
         user = FirebaseAuth.getInstance().getCurrentUser();
         if (user == null) {
             Toast.makeText(requireContext(), "User not authenticated", Toast.LENGTH_SHORT).show();
@@ -89,7 +87,8 @@ public class AlbumAddPhotosFragment extends Fragment {
             // 4) re-apply selection in the adapter
             photoAdapter.setSelectedPhotoIds(newValidSelections);
 
-            // 5) also cross-check with the AlbumCreationViewModel in case user previously selected
+            // 5) also cross-check with the AlbumCreationViewModel in case user previously
+            // selected
             List<Photo> previouslySelected = albumCreationViewModel.getSelectedPhotos().getValue();
             if (previouslySelected != null) {
                 for (Photo p : previouslySelected) {
@@ -136,18 +135,6 @@ public class AlbumAddPhotosFragment extends Fragment {
         photoAdapter.setSelectionMode(true); // Force checkboxes always visible
         binding.recyclerViewAllPhotosForSelection.setLayoutManager(new GridLayoutManager(requireContext(), 3));
         binding.recyclerViewAllPhotosForSelection.setAdapter(photoAdapter);
-    }
-
-    private void setupSearch() {
-        binding.editTextSearchPhotos.setOnEditorActionListener((textView, actionId, event) -> {
-            String query = textView.getText().toString().trim();
-            if (!TextUtils.isEmpty(query)) {
-                photoViewModel.searchPhotos(query);
-            } else {
-                photoViewModel.loadAllPhotos();
-            }
-            return true;
-        });
     }
 
     @Override
