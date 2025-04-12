@@ -41,7 +41,7 @@ public class DatabaseModule {
     @Provides
     @Singleton
     public AppDatabase provideAppDatabase(@ApplicationContext Context context) {
-        return Room.databaseBuilder(context, AppDatabase.class, "memorai_database")
+        return Room.databaseBuilder(context, AppDatabase.class, "memorai-db")
                 .fallbackToDestructiveMigration()
                 .build();
     }
