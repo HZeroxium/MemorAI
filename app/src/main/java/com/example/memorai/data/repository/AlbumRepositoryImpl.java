@@ -50,10 +50,9 @@ public class AlbumRepositoryImpl implements AlbumRepository {
     }
 
     private String getUserId() {
-        if (firebaseAuth.getCurrentUser() == null) {
-            throw new IllegalStateException("User not authenticated");
-        }
-        return firebaseAuth.getCurrentUser().getUid();
+        return (firebaseAuth.getCurrentUser() != null)
+                ? firebaseAuth.getCurrentUser().getUid()
+                : null;
     }
 
     private CollectionReference getUserAlbumsRef() {
@@ -78,7 +77,9 @@ public class AlbumRepositoryImpl implements AlbumRepository {
         AlbumEntity entity = AlbumMapper.fromDomain(album);
         entity.isSynced = false;
         albumDao.insertAlbum(entity);
-        syncAlbumToFirebase(entity);
+        if (getUserId() != null) {
+            syncAlbumToFirebase(entity);
+        }
     }
 
     @Override
@@ -158,7 +159,7 @@ public class AlbumRepositoryImpl implements AlbumRepository {
     }
 
     private void deleteAlbumFromFirebase(String albumId) {
-        if (firebaseAuth.getCurrentUser() == null) return;
+        if (getUserId() == null) return;
 
         executorService.execute(() -> {
             getUserAlbumsRef().document(albumId).delete()
@@ -171,6 +172,11 @@ public class AlbumRepositoryImpl implements AlbumRepository {
 
     public CompletableFuture<Void> syncFromFirebaseAsync() {
         CompletableFuture<Void> future = new CompletableFuture<>();
+
+        if (getUserId() == null) {
+            future.complete(null);
+            return future;
+        }
 
         executorService.execute(() -> {
             try {
@@ -216,6 +222,13 @@ public class AlbumRepositoryImpl implements AlbumRepository {
     private void syncAlbumToFirebase(AlbumEntity entity) {
         if (entity.isSynced) {
             return;
+        }
+
+        String userId = getUserId();
+
+        if (userId == null) {
+            entity.isSynced = false; // Đánh dấu chưa đồng bộ (vì không có user)
+            return; // Không thực hiện đồng bộ
         }
 
         getUserAlbumsRef().document(entity.id).get()

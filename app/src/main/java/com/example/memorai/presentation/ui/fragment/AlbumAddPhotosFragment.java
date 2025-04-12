@@ -64,11 +64,6 @@ public class AlbumAddPhotosFragment extends Fragment {
         setupRecyclerView();
         setupSearch();
         user = FirebaseAuth.getInstance().getCurrentUser();
-        if (user == null) {
-            Toast.makeText(requireContext(), "User not authenticated", Toast.LENGTH_SHORT).show();
-            return;
-        }
-
         photoViewModel.loadAllPhotos();
 
         photoViewModel.observeAllPhotos().observe(getViewLifecycleOwner(), photos -> {
