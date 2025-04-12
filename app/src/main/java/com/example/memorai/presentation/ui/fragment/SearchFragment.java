@@ -99,6 +99,17 @@ public class SearchFragment extends Fragment {
         // Link searchView with searchBar
         binding.searchView.setupWithSearchBar(binding.searchBar);
 
+        // Configure onBackPressed behavior for the SearchView
+        binding.searchView.addTransitionListener((searchView, previousState, newState) -> {
+            if (newState == com.google.android.material.search.SearchView.TransitionState.HIDING) {
+                if (isSearchActive) {
+                    // If search was active, clear it when hiding the search view
+                    clearSearch();
+                    isSearchActive = false;
+                }
+            }
+        });
+
         // When user presses "enter" or "search" on the keyboard
         binding.searchView.getEditText().setOnEditorActionListener((v, actionId, event) -> {
             performSearch();
@@ -185,7 +196,8 @@ public class SearchFragment extends Fragment {
             // Show results count
             int resultCount = photos.size();
             binding.textViewResultCount.setVisibility(View.VISIBLE);
-            binding.textViewResultCount.setText(getString(R.string.photos_found, resultCount, binding.searchView.getText().toString().trim()));
+            binding.textViewResultCount.setText(
+                    getString(R.string.photos_found, resultCount, binding.searchView.getText().toString().trim()));
 
             // Show results
             searchAdapter.submitList(photos);
@@ -195,7 +207,8 @@ public class SearchFragment extends Fragment {
             searchAdapter.submitList(null);
             binding.textViewNoResults.setVisibility(View.VISIBLE);
             binding.textViewResultCount.setVisibility(View.GONE);
-            binding.textViewNoResults.setText(getString(R.string.no_photos_found, binding.searchView.getText().toString().trim()));
+            binding.textViewNoResults
+                    .setText(getString(R.string.no_photos_found, binding.searchView.getText().toString().trim()));
         }
     }
 
