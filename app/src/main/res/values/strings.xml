@@ -586,4 +586,12 @@
     <string name="logout_confirmation_message">Warning: Photos and changes added since your last sync will not be automatically synchronized. Are you sure you want to logout?</string>
     <string name="yes">Yes</string>
     <string name="no">No</string>
+    <string name="verified_pin">Verified Pin</string>
+    <string name="forgot_pin">Forgot PIN?</string>
+    <string name="incorrect_pin">Incorrect Pin</string>
+    <string name="error_reading_pin">Error Reading Pin</string>
+    <string name="email_not_found">User email not found</string>
+    <string name="no_pin_set">No PIN set</string>
+    <string name="email_sent_success">Email sent successfully</string>
+    <string name="email_sent_failure">Failed to send email</string>
 </resources>
