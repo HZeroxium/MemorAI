@@ -212,25 +212,25 @@ public class EditPhotoFragment extends Fragment {
                 });
             }
         }
-        SeekBar sizeSlider = binding.sizeSlider;
-        sizeSlider.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
-            @Override
-            public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-                float scale = progress / 100.0f;
-                binding.photoEditorView.getSource().setScaleX(scale);
-                binding.photoEditorView.getSource().setScaleY(scale);
-            }
-
-            @Override
-            public void onStartTrackingTouch(SeekBar seekBar) {
-                // No-op
-            }
-
-            @Override
-            public void onStopTrackingTouch(SeekBar seekBar) {
-                // No-op
-            }
-        });
+//        SeekBar sizeSlider = binding.sizeSlider;
+//        sizeSlider.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+//            @Override
+//            public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+//                float scale = progress / 100.0f;
+//                binding.photoEditorView.getSource().setScaleX(scale);
+//                binding.photoEditorView.getSource().setScaleY(scale);
+//            }
+//
+//            @Override
+//            public void onStartTrackingTouch(SeekBar seekBar) {
+//                // No-op
+//            }
+//
+//            @Override
+//            public void onStopTrackingTouch(SeekBar seekBar) {
+//                // No-op
+//            }
+//        });
 
         // Lắng nghe thay đổi từ ViewModel khi ảnh được chỉnh sửa
         editPhotoViewModel.getEditedPhoto().observe(getViewLifecycleOwner(), this::updatePhotoUI);
