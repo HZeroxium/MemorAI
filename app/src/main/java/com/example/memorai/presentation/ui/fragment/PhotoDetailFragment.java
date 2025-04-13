@@ -170,7 +170,7 @@ public class PhotoDetailFragment extends Fragment {
     }
     private void updatePopupUI(Photo photo) {
         popupBinding.textViewCreatedDate.setText(getString(R.string.created) + " " + dateFormat.format(new Date(photo.getCreatedAt())));
-        popupBinding.textViewCreatedDate.setText(getString(R.string.modified) + " " + dateFormat.format(new Date(photo.getUpdatedAt())));
+        popupBinding.textViewModifiedDate.setText(getString(R.string.modified) + " " + dateFormat.format(new Date(photo.getUpdatedAt())));
 
         // Set privacy status
         popupBinding.textViewPrivacyStatus.setText(photo.isPrivate() ? R.string.private_photo : R.string.public_photo);
