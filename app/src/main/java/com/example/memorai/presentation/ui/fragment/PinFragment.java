@@ -2,7 +2,6 @@ package com.example.memorai.presentation.ui.fragment;
 
 import android.content.Intent;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -72,7 +71,11 @@ public class PinFragment extends BottomSheetDialogFragment {
         userRef.child("pin").setValue(pin)
                 .addOnSuccessListener(aVoid -> {
                     Toast.makeText(requireContext(), R.string.pin_saved, Toast.LENGTH_SHORT).show();
-                    navigateToMainActivity();
+                    if (mode.equals("create") && !isAdded()) {
+                        navigateToMainActivity();
+                    } else {
+                        dismiss();
+                    }
                 })
                 .addOnFailureListener(e -> Toast.makeText(requireContext(), R.string.error_saving_pin, Toast.LENGTH_SHORT).show());
     }
@@ -90,15 +93,13 @@ public class PinFragment extends BottomSheetDialogFragment {
             String storedPin = dataSnapshot.getValue(String.class);
             if (enteredPin.equals(storedPin)) {
                 if (onPinVerifiedListener != null) {
-                    onPinVerifiedListener.onPinVerified(); // Gọi callback khi xác thực thành công
+                    onPinVerifiedListener.onPinVerified();
                 }
                 dismiss();
             } else {
-                Toast.makeText(requireContext(), "Sai mã Pin", Toast.LENGTH_SHORT).show();
+                Toast.makeText(requireContext(), R.string.incorrect_pin, Toast.LENGTH_SHORT).show();
             }
-        }).addOnFailureListener(e -> {
-            Toast.makeText(requireContext(), "Lỗi đọc mã PIN", Toast.LENGTH_SHORT).show();
-        });
+        }).addOnFailureListener(e -> Toast.makeText(requireContext(), R.string.error_reading_pin, Toast.LENGTH_SHORT).show());
     }
 
     private void navigateToMainActivity() {

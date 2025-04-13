@@ -1,24 +1,16 @@
 package com.example.memorai.presentation.ui.fragment;
 
-import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.res.Configuration;
 import android.content.res.Resources;
-import android.graphics.Bitmap;
-import android.graphics.Canvas;
-import android.graphics.Color;
-import android.graphics.Paint;
-import android.graphics.drawable.BitmapDrawable;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
-import android.widget.SeekBar;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
@@ -37,6 +29,8 @@ import com.example.memorai.presentation.viewmodel.PhotoViewModel;
 import com.example.memorai.presentation.viewmodel.SettingsViewModel;
 import com.example.memorai.presentation.viewmodel.AlbumViewModel;
 import com.example.memorai.utils.notification.NotificationHelper;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 
 import java.util.Locale;
 
@@ -72,6 +66,17 @@ public class SettingsFragment extends Fragment {
             binding.switchDarkMode.setChecked(false);
             AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO);
         }
+
+        binding.btnChangePin.setOnClickListener(v -> {
+            FirebaseUser firebaseUser = FirebaseAuth.getInstance().getCurrentUser();
+            if (firebaseUser == null) {
+                Toast.makeText(requireContext(), "Người dùng chưa đăng nhập", Toast.LENGTH_SHORT).show();
+                return;
+            }
+            String userId = firebaseUser.getUid();
+
+            showPinFragmentForVerification(userId);
+        });
 
         // Listener cho switchDarkMode
         binding.switchDarkMode.setOnClickListener(v -> {
@@ -206,6 +211,31 @@ public class SettingsFragment extends Fragment {
         });
 
         return binding.getRoot();
+    }
+
+    private void showPinFragmentForVerification(String userId) {
+        PinFragment pinFragment = new PinFragment();
+        Bundle args = new Bundle();
+        args.putString("userId", userId);
+        args.putString("mode", "verify");
+        pinFragment.setArguments(args);
+
+        // Thiết lập listener khi xác thực thành công
+        pinFragment.setOnPinVerifiedListener(() -> {
+            // Sau khi xác thực thành công, hiển thị PinFragment ở chế độ create
+            showPinFragmentForCreation(userId);
+        });
+
+        pinFragment.show(getParentFragmentManager(), "PinFragment");
+    }
+
+    private void showPinFragmentForCreation(String userId) {
+        PinFragment pinFragment = new PinFragment();
+        Bundle args = new Bundle();
+        args.putString("userId", userId);
+        args.putString("mode", "create");
+        pinFragment.setArguments(args);
+        pinFragment.show(getParentFragmentManager(), "PinFragment");
     }
 
     private void setLocale(String lang) {
