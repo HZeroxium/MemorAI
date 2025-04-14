@@ -184,4 +184,8 @@
     <string name="no_pin_set">未设置PIN码</string>
     <string name="email_sent_success">邮件发送成功</string>
     <string name="email_sent_failure">邮件发送失败</string>
+    <string name="no_notifications_available">没有可用的通知</string>
+    <string name="delete_notification">删除通知</string>
+    <string name="unlock_to_access_your_private_photos">解锁以访问您的私人照片</string>
+    <string name="use_fingerprint">使用指纹</string>
 </resources>

@@ -187,4 +187,8 @@
     <string name="no_pin_set">Chưa cài đặt mã PIN</string>
     <string name="email_sent_success">Email đã được gửi thành công</string>
     <string name="email_sent_failure">Lỗi khi gửi email</string>
+    <string name="no_notifications_available">Không có thông báo nào</string>
+    <string name="delete_notification">Xóa thông báo</string>
+    <string name="unlock_to_access_your_private_photos">Mở khóa để truy cập ảnh riêng tư của bạn</string>
+    <string name="use_fingerprint">Sử dụng vân tay</string>
 </resources>
