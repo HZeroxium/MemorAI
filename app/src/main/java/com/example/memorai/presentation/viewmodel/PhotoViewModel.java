@@ -23,6 +23,7 @@ import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 import javax.inject.Inject;
@@ -103,6 +104,28 @@ public class PhotoViewModel extends ViewModel {
         return photos != null ? photos.size() : 0;
     }
 
+    public int getPublicPhotoCount() {
+        List<Photo> photos = allPhotos.getValue();
+        if (photos == null) return 0;
+
+        return (int) photos.stream()
+                .filter(photo -> !photo.isPrivate())
+                .count();
+    }
+
+    public void getPrivatePhotoCount(Consumer<Integer> callback) {
+        executorService.execute(() -> {
+            List<Photo> photos = photoRepository.getAllPhotos();
+            int count = (int) photos.stream()
+                    .filter(Photo::isPrivate)
+                    .count();
+
+            new Handler(Looper.getMainLooper()).post(() -> {
+                callback.accept(count);  // Trả kết quả về UI thread
+            });
+        });
+    }
+
     public void searchPhotosByTag(String query, Context context) {
         if (query.isEmpty()) {
             Toast.makeText(context, "Enter a tag to search", Toast.LENGTH_SHORT).show();
@@ -117,6 +140,9 @@ public class PhotoViewModel extends ViewModel {
 
                 // Lọc ảnh có chứa tag trùng khớp (không phân biệt hoa thường)
                 for (Photo photo : allPhotosList) {
+                    if (photo.isPrivate()) {
+                        continue;
+                    }
                     if (photo.getTags() != null) {
                         for (String tag : photo.getTags()) {
                             if (tag.toLowerCase().contains(query.toLowerCase())) {
@@ -198,7 +224,7 @@ public class PhotoViewModel extends ViewModel {
         if (currentPhotos != null) {
             for (Photo photo : currentPhotos) {
                 if (photo.getId().equals(photoId)) {
-                    photo.setIsPrivate(isPrivate);
+                    photo.setPrivate(isPrivate);
                     break;
                 }
             }

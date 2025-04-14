@@ -5,6 +5,8 @@ import android.graphics.Bitmap;
 
 import androidx.annotation.NonNull;
 
+import com.google.firebase.firestore.PropertyName;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -15,7 +17,10 @@ public final class Album {
     private final String description;
     private String coverPhotoUrl;
     private Bitmap bitmap;
-    private boolean isPrivate = false;
+    @PropertyName("private")  // ⚠️ Map với field "private" trong Firestore
+    private boolean isPrivate;
+
+
     private final long createdAt;
     private final List<String> photos;
 
@@ -83,10 +88,15 @@ public final class Album {
         return updatedAt;
     }
 
+    @PropertyName("private")
     public boolean isPrivate() {
         return isPrivate;
     }
 
+    @PropertyName("private")
+    public void setPrivate(boolean isPrivate) {
+        this.isPrivate = isPrivate;
+    }
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;

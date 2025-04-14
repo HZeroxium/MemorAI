@@ -1,6 +1,7 @@
 // presentation/ui/fragment/PhotoDetailFragment.java
 package com.example.memorai.presentation.ui.fragment;
 
+import android.app.Dialog;
 import android.app.ProgressDialog;
 import android.content.ActivityNotFoundException;
 import android.content.pm.PackageManager;
@@ -22,6 +23,7 @@ import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.WindowManager;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
@@ -37,6 +39,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.bumptech.glide.Glide;
 import com.example.memorai.R;
 import com.example.memorai.databinding.FragmentPhotoDetailBinding;
+import com.example.memorai.databinding.FragmentBottomPhotoInfoBinding;
 import com.example.memorai.domain.model.Photo;
 import com.example.memorai.presentation.viewmodel.PhotoViewModel;
 import com.google.android.material.chip.Chip;
@@ -52,6 +55,7 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
+import java.util.Objects;
 
 import dagger.hilt.android.AndroidEntryPoint;
 
@@ -59,12 +63,14 @@ import dagger.hilt.android.AndroidEntryPoint;
 public class PhotoDetailFragment extends Fragment {
 
     private FragmentPhotoDetailBinding binding;
+    private FragmentBottomPhotoInfoBinding popupBinding;
     private PhotoViewModel photoViewModel;
     private Bitmap photoUrl;
     private String photoId;
     private boolean isPrivate = false;
     private Photo currentPhoto;
     private SimpleDateFormat dateFormat = new SimpleDateFormat("dd MMM yyyy, HH:mm", Locale.getDefault());
+    private Dialog infoDialog;
 
     @Nullable
     @Override
@@ -72,6 +78,7 @@ public class PhotoDetailFragment extends Fragment {
             @Nullable ViewGroup container,
             @Nullable Bundle savedInstanceState) {
         binding = FragmentPhotoDetailBinding.inflate(inflater, container, false);
+        popupBinding = FragmentBottomPhotoInfoBinding.inflate(inflater, container, false);
         return binding.getRoot();
     }
 
@@ -96,7 +103,7 @@ public class PhotoDetailFragment extends Fragment {
                                     .error(R.drawable.error_image)
                                     .into(binding.imageViewDetailPhoto);
                         }
-                        updateUI(photo);
+                        //updatePopupUI(photo);
                         isPrivate = photo.isPrivate(); // Update the isPrivate state
                         updatePrivateIcon(); // Update the privacy icon
                     }
@@ -110,6 +117,11 @@ public class PhotoDetailFragment extends Fragment {
 
         // Attach menu to toolbar
         binding.toolbar.setOnMenuItemClickListener(item -> {
+            if (item.getItemId() == R.id.action_info) {
+                showPhotoInfoPopup(); // Hiển thị popup khi nhấn icon info
+                return true;
+            }
+
             if (item.getItemId() == R.id.action_private) {
                 togglePrivate();
                 return true;
@@ -136,22 +148,41 @@ public class PhotoDetailFragment extends Fragment {
         });
 
     }
+    private void showPhotoInfoPopup() {
+        if (currentPhoto == null) return;
 
-    private void updateUI(Photo photo) {
-        binding.textViewCreatedDate.setText(getString(R.string.created) + " " + dateFormat.format(new Date(photo.getCreatedAt())));
-        binding.textViewCreatedDate.setText(getString(R.string.modified) + " " + dateFormat.format(new Date(photo.getUpdatedAt())));
+        // Tạo dialog cho popup
+        infoDialog = new Dialog(requireContext());
+        popupBinding = FragmentBottomPhotoInfoBinding.inflate(getLayoutInflater());
+        infoDialog.setContentView(popupBinding.getRoot());
+        Objects.requireNonNull(infoDialog.getWindow()).setBackgroundDrawableResource(android.R.color.transparent);
+
+        // Điều chỉnh kích thước của Dialog
+        WindowManager.LayoutParams params = infoDialog.getWindow().getAttributes();
+        params.width = (int) (requireActivity().getResources().getDisplayMetrics().widthPixels * 0.9); // 90% chiều rộng màn hình
+        //params.height = WindowManager.LayoutParams.WRAP_CONTENT; // Chiều cao tự động theo nội dung
+        infoDialog.getWindow().setAttributes(params);
+        // Cập nhật thông tin trong popup
+        updatePopupUI(currentPhoto);
+
+        // Hiển thị dialog
+        infoDialog.show();
+    }
+    private void updatePopupUI(Photo photo) {
+        popupBinding.textViewCreatedDate.setText(getString(R.string.created) + " " + dateFormat.format(new Date(photo.getCreatedAt())));
+        popupBinding.textViewCreatedDate.setText(getString(R.string.modified) + " " + dateFormat.format(new Date(photo.getUpdatedAt())));
 
         // Set privacy status
-        binding.textViewPrivacyStatus.setText(photo.isPrivate() ? R.string.private_photo : R.string.public_photo);
-        binding.textViewPrivacyStatus.setCompoundDrawablesWithIntrinsicBounds(
+        popupBinding.textViewPrivacyStatus.setText(photo.isPrivate() ? R.string.private_photo : R.string.public_photo);
+        popupBinding.textViewPrivacyStatus.setCompoundDrawablesWithIntrinsicBounds(
                 photo.isPrivate() ? R.drawable.ic_lock : R.drawable.ic_lock_open,
                 0, 0, 0);
 
         // Update tags
-        binding.chipGroupTags.removeAllViews();
+        popupBinding.chipGroupTags.removeAllViews();
         if (photo.getTags() != null && !photo.getTags().isEmpty()) {
-            binding.textViewNoTags.setVisibility(View.GONE);
-            binding.chipGroupTags.setVisibility(View.VISIBLE);
+            popupBinding.textViewNoTags.setVisibility(View.GONE);
+            popupBinding.chipGroupTags.setVisibility(View.VISIBLE);
 
             List<String> tagsToShow = photo.getTags().subList(0, Math.min(5, photo.getTags().size()));
 
@@ -162,15 +193,15 @@ public class PhotoDetailFragment extends Fragment {
                 chip.setClickable(false);
                 chip.setChipBackgroundColorResource(R.color.blue_color_picker);
                 chip.setTextColor(getResources().getColor(R.color.white, null));
-                binding.chipGroupTags.addView(chip);
+                popupBinding.chipGroupTags.addView(chip);
             }
         } else {
-            binding.textViewNoTags.setVisibility(View.VISIBLE);
-            binding.chipGroupTags.setVisibility(View.GONE);
+            popupBinding.textViewNoTags.setVisibility(View.VISIBLE);
+            popupBinding.chipGroupTags.setVisibility(View.GONE);
         }
 
-        // Show the details container now that we have data
-        binding.containerPhotoDetails.setVisibility(View.VISIBLE);
+//        // Show the details container now that we have data
+//        popupBinding.containerPhotoDetails.setVisibility(View.VISIBLE);
     }
 
     private void sharePhoto(Bitmap bitmap) {
@@ -248,17 +279,17 @@ public class PhotoDetailFragment extends Fragment {
     @Override
     public void onDestroyView() {
         super.onDestroyView();
+        photoViewModel.loadAllPhotos();
         binding = null;
     }
 
     private void togglePrivate() {
         if (currentPhoto != null) {
             boolean newPrivacy = !currentPhoto.isPrivate();
-            currentPhoto.setIsPrivate(newPrivacy);
+            currentPhoto.setPrivate(newPrivacy);
 
             // Gọi phương thức update trạng thái của ảnh và album private
             photoViewModel.setPhotoPrivacy(currentPhoto.getId(), newPrivacy);
-            photoViewModel.loadAllPhotos();
 
             // Hiển thị thông báo và cập nhật giao diện
             Toast.makeText(requireContext(),
@@ -266,10 +297,11 @@ public class PhotoDetailFragment extends Fragment {
                     Toast.LENGTH_SHORT).show();
 
             updatePrivateIcon();
-            binding.textViewPrivacyStatus.setText(newPrivacy ? "Private" : "Public");
-            binding.textViewPrivacyStatus.setCompoundDrawablesWithIntrinsicBounds(
+            popupBinding.textViewPrivacyStatus.setText(newPrivacy ? "Private" : "Public");
+            popupBinding.textViewPrivacyStatus.setCompoundDrawablesWithIntrinsicBounds(
                     newPrivacy ? R.drawable.ic_lock : R.drawable.ic_lock_open,
                     0, 0, 0);
+            Navigation.findNavController(requireView()).popBackStack();
         }
     }
 
@@ -334,10 +366,12 @@ public class PhotoDetailFragment extends Fragment {
                 .setMessage("Are you sure you want to delete this photo?")
                 .setPositiveButton("Yes", (dialog, which) -> {
                     photoViewModel.deletePhoto(photoId);
+
                     Toast.makeText(requireContext(), "Photo deleted", Toast.LENGTH_SHORT).show();
                     Navigation.findNavController(requireView()).popBackStack();
                 })
                 .setNegativeButton("No", null)
                 .show();
     }
+
 }

@@ -29,6 +29,7 @@ public class AlbumMapper {
         entity.createdAt = album.getCreatedAt();
         entity.updatedAt = album.getUpdatedAt();
         entity.isSynced = true;
+        entity.isPrivate = album.isPrivate();
         return entity;
     }
 }

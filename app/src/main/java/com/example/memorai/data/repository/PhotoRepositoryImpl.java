@@ -68,14 +68,80 @@ public class PhotoRepositoryImpl implements PhotoRepository {
     @Override
     public void setPhotoPrivacy(String photoId, boolean isPrivate) {
         executorService.execute(() -> {
+            // Cập nhật trạng thái private trong Room
             photoDao.updatePhotoPrivacy(photoId, isPrivate);
+
             String userId = getCurrentUserId();
-            if (userId != null) {
-                firestore.collection("photos")
+            if (userId == null) return;
+
+            // Cập nhật trạng thái private trong Firestore
+            firestore.collection("photos")
+                    .document(userId)
+                    .collection("user_photos")
+                    .document(photoId)
+                    .update("isPrivate", isPrivate)
+                    .addOnFailureListener(e -> Log.e("PhotoRepository", "Failed to update photo privacy in Firestore", e));
+
+            // Nếu đặt thành private, kiểm tra và cập nhật ảnh bìa của album
+            if (isPrivate) {
+                CollectionReference albumsRef = firestore.collection("photos")
                         .document(userId)
-                        .collection("user_photos")
-                        .document(photoId)
-                        .update("is_private", isPrivate);
+                        .collection("user_albums");
+
+                albumsRef.get()
+                        .addOnSuccessListener(querySnapshot -> {
+                            // Di chuyển logic truy vấn Room vào executorService
+                            executorService.execute(() -> {
+                                for (DocumentSnapshot document : querySnapshot.getDocuments()) {
+                                    List<String> photoIds = (List<String>) document.get("photos");
+                                    String currentCover = document.getString("coverPhotoUrl");
+                                    PhotoEntity photoEntity = photoDao.getPhotoById(photoId); // Chạy trên background thread
+                                    String photoUrl = photoEntity != null ? photoEntity.filePath : null;
+
+                                    // Kiểm tra xem ảnh có phải là ảnh bìa không
+                                    if (photoIds != null && photoUrl != null && currentCover != null && currentCover.equals(photoUrl)) {
+                                        // Tìm ảnh không private đầu tiên để làm ảnh bìa mới
+                                        String newCoverId = null;
+                                        String newCoverUrl = null;
+                                        for (String pid : photoIds) {
+                                            if (!pid.equals(photoId)) {
+                                                PhotoEntity candidate = photoDao.getPhotoById(pid); // Chạy trên background thread
+                                                if (candidate != null && !candidate.isPrivate) {
+                                                    newCoverId = pid;
+                                                    newCoverUrl = candidate.filePath;
+                                                    break;
+                                                }
+                                            }
+                                        }
+
+                                        // Tạo Map mới cho updates
+                                        Map<String, Object> updates = new HashMap<>();
+                                        updates.put("updatedAt", System.currentTimeMillis());
+
+                                        // Biến final để sử dụng trong lambda
+                                        final String finalCoverUrl = newCoverUrl != null ? newCoverUrl : "";
+
+                                        // Cập nhật ảnh bìa
+                                        updates.put("coverPhotoUrl", finalCoverUrl);
+
+                                        // Cập nhật Room
+                                        AlbumEntity albumEntity = albumDao.getAlbumById(document.getId());
+                                        if (albumEntity != null) {
+                                            albumEntity.coverPhotoUrl = finalCoverUrl;
+                                            albumEntity.isSynced = false;
+                                            albumDao.updateAlbum(albumEntity);
+                                        }
+
+                                        // Cập nhật Firestore
+                                        albumsRef.document(document.getId())
+                                                .update(updates)
+                                                .addOnSuccessListener(aVoid -> Log.d("PhotoRepository", "Updated cover for album: " + document.getId()))
+                                                .addOnFailureListener(e -> Log.e("PhotoRepository", "Failed to update album cover: " + document.getId(), e));
+                                    }
+                                }
+                            });
+                        })
+                        .addOnFailureListener(e -> Log.e("PhotoRepository", "Failed to fetch albums for cover update", e));
             }
         });
     }
@@ -105,7 +171,7 @@ public class PhotoRepositoryImpl implements PhotoRepository {
                 Map<String, Object> photoData = new HashMap<>();
                 photoData.put("id", photo.getId());
                 photoData.put("filePath", photo.getFilePath());
-                photoData.put("is_private", false);
+                photoData.put("isPrivate", false);
                 photoData.put("tags", photo.getTags());
                 photoData.put("createdAt", photo.getCreatedAt());
                 photoData.put("updatedAt", System.currentTimeMillis());
@@ -154,6 +220,7 @@ public class PhotoRepositoryImpl implements PhotoRepository {
         executorService.execute(() -> {
             // Xóa photo từ Room
             PhotoEntity entity = photoDao.getPhotoById(photoId);
+            String photoUrl = entity.filePath;
             if (entity != null) {
                 photoDao.deletePhoto(entity);
             }
@@ -178,11 +245,53 @@ public class PhotoRepositoryImpl implements PhotoRepository {
                                 List<String> photoIds = (List<String>) document.get("photos");
                                 if (photoIds != null && photoIds.contains(photoId)) {
                                     photoIds.remove(photoId);
+                                    boolean needUpdateCover = false;
+                                    String currentCover = document.getString("coverPhotoUrl");
+                                    if (currentCover != null && currentCover.equals(photoUrl)) {
+                                        needUpdateCover = true;
+                                    }
 
-                                    albumsRef.document(document.getId())
-                                            .update("photos", photoIds, "updatedAt", System.currentTimeMillis())
-                                            .addOnSuccessListener(aVoid -> Log.d("AlbumRepository", "Removed photoId from album: " + document.getId()))
-                                            .addOnFailureListener(e -> Log.e("AlbumRepository", "Failed to update album: " + document.getId(), e));
+                                    Map<String, Object> updates = new HashMap<>();
+                                    updates.put("photos", photoIds);
+                                    updates.put("updatedAt", System.currentTimeMillis());
+
+                                    if (needUpdateCover && !photoIds.isEmpty()) {
+                                        executorService.execute(() -> {
+                                            String newCoverId = photoIds.get(0);
+                                            PhotoEntity newCoverEntity = photoDao.getPhotoById(newCoverId);
+                                            if (newCoverEntity != null) {
+                                                updates.put("coverPhotoUrl", newCoverEntity.filePath);
+                                                executorService.execute(() -> {
+                                                    AlbumEntity albumEntity = albumDao.getAlbumById(document.getId());
+                                                    if (albumEntity != null) {
+                                                        albumEntity.coverPhotoUrl = newCoverEntity.filePath;
+                                                        albumDao.updateAlbum(albumEntity);
+                                                    }
+                                                });
+                                            }
+
+                                            albumsRef.document(document.getId())
+                                                    .update(updates)
+                                                    .addOnSuccessListener(aVoid -> Log.d("AlbumRepository", "Removed photoId and updated cover: " + document.getId()))
+                                                    .addOnFailureListener(e -> Log.e("AlbumRepository", "Failed to update album: " + document.getId(), e));
+                                        });
+                                    } else {
+                                        if (needUpdateCover) {
+                                            updates.put("coverPhotoUrl", "");
+                                            executorService.execute(() -> {
+                                                AlbumEntity albumEntity = albumDao.getAlbumById(document.getId());
+                                                if (albumEntity != null) {
+                                                    albumEntity.coverPhotoUrl = "";
+                                                    albumDao.updateAlbum(albumEntity);
+                                                }
+                                            });
+                                        }
+
+                                        albumsRef.document(document.getId())
+                                                .update(updates)
+                                                .addOnSuccessListener(aVoid -> Log.d("AlbumRepository", "Removed photoId from album: " + document.getId()))
+                                                .addOnFailureListener(e -> Log.e("AlbumRepository", "Failed to update album: " + document.getId(), e));
+                                    }
                                 }
                             }
                         })

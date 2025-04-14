@@ -61,6 +61,7 @@ public class AlbumListFragment extends Fragment {
         binding.recyclerViewAlbums.setAdapter(albumAdapter);
         photoViewModel = new ViewModelProvider(requireActivity()).get(PhotoViewModel.class);
 
+
         // Handle album click
         albumAdapter.setOnAlbumClickListener(album -> {
             Bundle args = new Bundle();
@@ -72,6 +73,7 @@ public class AlbumListFragment extends Fragment {
 
         // ViewModel to observe albums
         albumViewModel = new ViewModelProvider(requireActivity()).get(AlbumViewModel.class);
+        albumViewModel.setAuthenticated(false);
         user = FirebaseAuth.getInstance().getCurrentUser();
 
         albumViewModel.getAlbums().observe(getViewLifecycleOwner(), albums ->
