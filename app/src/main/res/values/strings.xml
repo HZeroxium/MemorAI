@@ -594,4 +594,8 @@
     <string name="no_pin_set">No PIN set</string>
     <string name="email_sent_success">Email sent successfully</string>
     <string name="email_sent_failure">Failed to send email</string>
+    <string name="no_notifications_available">No notifications available</string>
+    <string name="delete_notification">Delete Notification</string>
+    <string name="unlock_to_access_your_private_photos">Unlock to access your private photos</string>
+    <string name="use_fingerprint">Use Fingerprint</string>
 </resources>
