@@ -24,7 +24,9 @@ import androidx.navigation.fragment.NavHostFragment;
 import com.example.memorai.R;
 import com.example.memorai.databinding.FragmentSettingsBinding;
 import com.example.memorai.domain.model.AppSettings;
+import com.example.memorai.domain.model.Notification;
 import com.example.memorai.presentation.ui.activity.MainActivity;
+import com.example.memorai.presentation.viewmodel.NotificationViewModel;
 import com.example.memorai.presentation.viewmodel.PhotoViewModel;
 import com.example.memorai.presentation.viewmodel.SettingsViewModel;
 import com.example.memorai.presentation.viewmodel.AlbumViewModel;
@@ -33,6 +35,7 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 
 import java.util.Locale;
+import java.util.UUID;
 
 import dagger.hilt.android.AndroidEntryPoint;
 
@@ -40,6 +43,7 @@ import dagger.hilt.android.AndroidEntryPoint;
 public class SettingsFragment extends Fragment {
     private FragmentSettingsBinding binding;
     private AlbumViewModel albumViewModel;
+    private NotificationViewModel notificationViewModel;
 
     private PhotoViewModel photoViewModel;
     private SettingsViewModel settingsViewModel;
@@ -57,6 +61,7 @@ public class SettingsFragment extends Fragment {
         albumViewModel = new ViewModelProvider(requireActivity()).get(AlbumViewModel.class);
         settingsViewModel = new ViewModelProvider(this).get(SettingsViewModel.class);
         photoViewModel = new ViewModelProvider(requireActivity()).get(PhotoViewModel.class);
+        notificationViewModel = new ViewModelProvider(requireActivity()).get(NotificationViewModel.class);
 
         darkMode = sharedPreferences.getBoolean("night", false);
         if (darkMode) {
@@ -155,6 +160,14 @@ public class SettingsFragment extends Fragment {
                                                 getString(R.string.sync_notification_title),
                                                 getString(R.string.sync_notification_message),
                                                 intent);
+                                        String notificationId = UUID.randomUUID().toString();
+                                        Notification notification = new Notification(
+                                                notificationId,
+                                                getString(R.string.sync_notification_title),
+                                                getString(R.string.sync_notification_message),
+                                                System.currentTimeMillis()
+                                        );
+                                        notificationViewModel.sendNotification(notification);
                                     }
                                 }
                             }

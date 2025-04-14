@@ -14,12 +14,14 @@ import com.example.memorai.data.local.dao.UserDao;
 import com.example.memorai.data.repository.AlbumRepositoryImpl;
 import com.example.memorai.data.repository.AuthRepositoryImpl;
 import com.example.memorai.data.repository.CloudSyncRepositoryImpl;
+import com.example.memorai.data.repository.NotificationRepositoryImpl;
 import com.example.memorai.data.repository.PhotoRepositoryImpl;
 import com.example.memorai.data.repository.SettingsRepositoryImpl;
 import com.example.memorai.data.repository.UserRepositoryImpl;
 import com.example.memorai.domain.repository.AlbumRepository;
 import com.example.memorai.domain.repository.AuthRepository;
 import com.example.memorai.domain.repository.CloudSyncRepository;
+import com.example.memorai.domain.repository.NotificationRepository;
 import com.example.memorai.domain.repository.PhotoRepository;
 import com.example.memorai.domain.repository.SettingsRepository;
 import com.example.memorai.domain.repository.UserRepository;
@@ -118,5 +120,12 @@ public class DatabaseModule {
     @Provides
     public AuthRepository provideTagRepository() {
         return new AuthRepositoryImpl();
+    }
+
+
+    @Provides
+    @Singleton
+    public NotificationRepository provideNotificationRepository(FirebaseFirestore db, FirebaseAuth auth) {
+        return new NotificationRepositoryImpl(db, auth);
     }
 }

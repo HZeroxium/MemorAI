@@ -15,12 +15,6 @@ public class Notification {
         this.timestamp = timestamp;
     }
 
-    public Notification(String title, String message, long timestamp) {
-        this.title = title;
-        this.message = message;
-        this.timestamp = timestamp;
-    }
-
     public String getId() { return id; }
     public void setId(String id) { this.id = id; }
 
