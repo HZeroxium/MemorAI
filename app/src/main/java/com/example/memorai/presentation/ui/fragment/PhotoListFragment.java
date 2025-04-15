@@ -53,8 +53,8 @@ public class PhotoListFragment extends Fragment {
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater,
-                             @Nullable ViewGroup container,
-                             @Nullable Bundle savedInstanceState) {
+            @Nullable ViewGroup container,
+            @Nullable Bundle savedInstanceState) {
         binding = FragmentPhotoListBinding.inflate(inflater, container, false);
         return binding.getRoot();
     }
@@ -71,7 +71,8 @@ public class PhotoListFragment extends Fragment {
         // Ẩn "Select All" mặc định
         binding.checkBoxSelectAll.setVisibility(View.GONE);
         binding.checkBoxSelectAll.setOnCheckedChangeListener((buttonView, isChecked) -> {
-            if (!isSelectionMode) return;
+            if (!isSelectionMode)
+                return;
             if (isChecked) {
                 adapter.selectAllInSection(0);
             } else {
@@ -112,7 +113,6 @@ public class PhotoListFragment extends Fragment {
         binding.recyclerViewPhotos.setAdapter(adapter);
         applyLayoutManager();
     }
-
 
     private void applyLayoutManager() {
         final int spanCount = 3; // 3 cột cho giao diện kiểu Google Photos
@@ -197,7 +197,7 @@ public class PhotoListFragment extends Fragment {
 
         if (enable) {
             binding.toolbarPhotoList.setNavigationIcon(R.drawable.ic_close);
-            binding.toolbarPhotoList.setTitle("Select photos");
+            binding.toolbarPhotoList.setTitle("");
             binding.toolbarPhotoList.setNavigationOnClickListener(v -> toggleSelectionMode(false));
             binding.buttonDeleteSelected.setVisibility(View.VISIBLE);
             binding.checkBoxSelectAll.setVisibility(View.VISIBLE);
@@ -254,7 +254,8 @@ public class PhotoListFragment extends Fragment {
         } else {
             new AlertDialog.Builder(requireContext())
                     .setTitle("Delete Photos")
-                    .setMessage("Are you sure you want to delete " + adapter.getSelectedPhotoIds().size() + " selected photos?")
+                    .setMessage("Are you sure you want to delete " + adapter.getSelectedPhotoIds().size()
+                            + " selected photos?")
                     .setPositiveButton("Yes", (dialog, which) -> {
                         for (String photoId : adapter.getSelectedPhotoIds()) {
                             photoViewModel.deletePhoto(photoId);
@@ -269,7 +270,8 @@ public class PhotoListFragment extends Fragment {
     }
 
     private void showViewModePopup(View anchor) {
-        if (isSelectionMode) return;
+        if (isSelectionMode)
+            return;
         PopupMenu popup = new PopupMenu(requireContext(), anchor);
         popup.getMenuInflater().inflate(R.menu.menu_photo_list, popup.getMenu());
 
