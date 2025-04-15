@@ -46,6 +46,7 @@ public class PhotoListFragment extends Fragment {
     private boolean isSelectionMode = false;
 
     private static final String VIEW_MODE_COMFORTABLE = "COMFORTABLE";
+    private static final String VIEW_MODE_TWO_COLUMN = "TWO_COLUMN";
     private static final String VIEW_MODE_DAY = "DAY";
     private static final String VIEW_MODE_MONTH = "MONTH";
     private String currentViewMode = VIEW_MODE_COMFORTABLE;
@@ -53,8 +54,8 @@ public class PhotoListFragment extends Fragment {
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater,
-                             @Nullable ViewGroup container,
-                             @Nullable Bundle savedInstanceState) {
+            @Nullable ViewGroup container,
+            @Nullable Bundle savedInstanceState) {
         binding = FragmentPhotoListBinding.inflate(inflater, container, false);
         return binding.getRoot();
     }
@@ -71,7 +72,8 @@ public class PhotoListFragment extends Fragment {
         // Ẩn "Select All" mặc định
         binding.checkBoxSelectAll.setVisibility(View.GONE);
         binding.checkBoxSelectAll.setOnCheckedChangeListener((buttonView, isChecked) -> {
-            if (!isSelectionMode) return;
+            if (!isSelectionMode)
+                return;
             if (isChecked) {
                 adapter.selectAllInSection(0);
             } else {
@@ -113,9 +115,10 @@ public class PhotoListFragment extends Fragment {
         applyLayoutManager();
     }
 
-
     private void applyLayoutManager() {
-        final int spanCount = 3; // 3 cột cho giao diện kiểu Google Photos
+        // Determine span count based on selected view mode
+        final int spanCount = currentViewMode.equals(VIEW_MODE_TWO_COLUMN) ? 2 : 3;
+
         GridLayoutManager layoutManager = new GridLayoutManager(requireContext(), spanCount);
         layoutManager.setSpanSizeLookup(new GridLayoutManager.SpanSizeLookup() {
             @Override
@@ -197,7 +200,7 @@ public class PhotoListFragment extends Fragment {
 
         if (enable) {
             binding.toolbarPhotoList.setNavigationIcon(R.drawable.ic_close);
-            binding.toolbarPhotoList.setTitle("Select photos");
+            binding.toolbarPhotoList.setTitle("");
             binding.toolbarPhotoList.setNavigationOnClickListener(v -> toggleSelectionMode(false));
             binding.buttonDeleteSelected.setVisibility(View.VISIBLE);
             binding.checkBoxSelectAll.setVisibility(View.VISIBLE);
@@ -228,6 +231,10 @@ public class PhotoListFragment extends Fragment {
                         currentViewMode = VIEW_MODE_COMFORTABLE;
                         applyLayoutManager();
                         return true;
+                    } else if (itemId == R.id.action_view_mode_two_column) {
+                        currentViewMode = VIEW_MODE_TWO_COLUMN;
+                        applyLayoutManager();
+                        return true;
                     } else if (itemId == R.id.action_view_mode_day) {
                         currentViewMode = VIEW_MODE_DAY;
                         applyLayoutManager();
@@ -254,7 +261,8 @@ public class PhotoListFragment extends Fragment {
         } else {
             new AlertDialog.Builder(requireContext())
                     .setTitle("Delete Photos")
-                    .setMessage("Are you sure you want to delete " + adapter.getSelectedPhotoIds().size() + " selected photos?")
+                    .setMessage("Are you sure you want to delete " + adapter.getSelectedPhotoIds().size()
+                            + " selected photos?")
                     .setPositiveButton("Yes", (dialog, which) -> {
                         for (String photoId : adapter.getSelectedPhotoIds()) {
                             photoViewModel.deletePhoto(photoId);
@@ -269,7 +277,8 @@ public class PhotoListFragment extends Fragment {
     }
 
     private void showViewModePopup(View anchor) {
-        if (isSelectionMode) return;
+        if (isSelectionMode)
+            return;
         PopupMenu popup = new PopupMenu(requireContext(), anchor);
         popup.getMenuInflater().inflate(R.menu.menu_photo_list, popup.getMenu());
 
@@ -294,6 +303,8 @@ public class PhotoListFragment extends Fragment {
             int itemId = menuItem.getItemId();
             if (itemId == R.id.action_view_mode_comfortable) {
                 currentViewMode = VIEW_MODE_COMFORTABLE;
+            } else if (itemId == R.id.action_view_mode_two_column) {
+                currentViewMode = VIEW_MODE_TWO_COLUMN;
             } else if (itemId == R.id.action_view_mode_day) {
                 currentViewMode = VIEW_MODE_DAY;
             } else if (itemId == R.id.action_view_mode_month) {

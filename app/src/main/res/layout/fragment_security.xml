@@ -7,7 +7,7 @@
     android:layout_height="wrap_content"
     android:layout_margin="16dp"
     android:padding="24dp"
-    android:background="@android:color/white"
+    android:background="?attr/colorSurface"
     android:elevation="8dp">
 
     <!-- Thanh handle kéo thả nhỏ -->
@@ -15,7 +15,7 @@
         android:id="@+id/handle"
         android:layout_width="40dp"
         android:layout_height="4dp"
-        android:background="#CCCCCC"
+        android:background="?android:attr/textColorSecondary"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent" />
@@ -27,6 +27,7 @@
         android:layout_height="56dp"
         android:layout_marginTop="16dp"
         android:src="@android:drawable/ic_lock_lock"
+        app:tint="?attr/colorPrimary"
         app:layout_constraintTop_toBottomOf="@id/handle"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent" />
@@ -38,7 +39,7 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="16dp"
         android:text="Private Folder"
-        android:textColor="@android:color/black"
+        android:textColor="?android:attr/textColorPrimary"
         android:textSize="20sp"
         android:textStyle="bold"
         android:gravity="center"
@@ -53,7 +54,7 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="8dp"
         android:text="@string/unlock_to_access_your_private_photos"
-        android:textColor="#757575"
+        android:textColor="?android:attr/textColorSecondary"
         android:textSize="14sp"
         android:gravity="center"
         app:layout_constraintTop_toBottomOf="@id/tvTitle"
@@ -78,8 +79,7 @@
             android:layout_weight="1"
             android:text="@string/enter_pin"
             android:textAllCaps="false"
-            android:backgroundTint="@color/colorPrimary"
-            android:textColor="@android:color/white"
+            style="@style/Widget.MaterialComponents.Button"
             android:padding="12dp" />
 
         <Space
@@ -93,8 +93,7 @@
             android:layout_weight="1"
             android:text="@string/use_fingerprint"
             android:textAllCaps="false"
-            android:backgroundTint="@color/colorPrimary"
-            android:textColor="@android:color/white"
+            style="@style/Widget.MaterialComponents.Button"
             android:padding="12dp" />
     </LinearLayout>
 

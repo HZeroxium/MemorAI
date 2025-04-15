@@ -191,4 +191,10 @@
     <string name="delete_notification">Xóa thông báo</string>
     <string name="unlock_to_access_your_private_photos">Mở khóa để truy cập ảnh riêng tư của bạn</string>
     <string name="use_fingerprint">Sử dụng vân tay</string>
+    <string name="biometric_instruction">Đặt ngón tay của bạn lên cảm biến vân tay để mở khóa</string>
+    <string name="biometric_not_supported">Biometric authentication not supported on this device</string>
+    <string name="biometric_authentication_failed">Biometric authentication failed</string>
+    <string name="biometric_authentication_error">Biometric authentication error</string>
+    <string name="biometric_prompt_title">Biometric Authentication</string>
+    <string name="biometric_prompt_subtitle">Use your fingerprint to unlock the app</string>
 </resources>
