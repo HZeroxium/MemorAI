@@ -46,6 +46,7 @@ public class PhotoListFragment extends Fragment {
     private boolean isSelectionMode = false;
 
     private static final String VIEW_MODE_COMFORTABLE = "COMFORTABLE";
+    private static final String VIEW_MODE_TWO_COLUMN = "TWO_COLUMN";
     private static final String VIEW_MODE_DAY = "DAY";
     private static final String VIEW_MODE_MONTH = "MONTH";
     private String currentViewMode = VIEW_MODE_COMFORTABLE;
@@ -115,7 +116,9 @@ public class PhotoListFragment extends Fragment {
     }
 
     private void applyLayoutManager() {
-        final int spanCount = 3; // 3 cột cho giao diện kiểu Google Photos
+        // Determine span count based on selected view mode
+        final int spanCount = currentViewMode.equals(VIEW_MODE_TWO_COLUMN) ? 2 : 3;
+
         GridLayoutManager layoutManager = new GridLayoutManager(requireContext(), spanCount);
         layoutManager.setSpanSizeLookup(new GridLayoutManager.SpanSizeLookup() {
             @Override
@@ -228,6 +231,10 @@ public class PhotoListFragment extends Fragment {
                         currentViewMode = VIEW_MODE_COMFORTABLE;
                         applyLayoutManager();
                         return true;
+                    } else if (itemId == R.id.action_view_mode_two_column) {
+                        currentViewMode = VIEW_MODE_TWO_COLUMN;
+                        applyLayoutManager();
+                        return true;
                     } else if (itemId == R.id.action_view_mode_day) {
                         currentViewMode = VIEW_MODE_DAY;
                         applyLayoutManager();
@@ -296,6 +303,8 @@ public class PhotoListFragment extends Fragment {
             int itemId = menuItem.getItemId();
             if (itemId == R.id.action_view_mode_comfortable) {
                 currentViewMode = VIEW_MODE_COMFORTABLE;
+            } else if (itemId == R.id.action_view_mode_two_column) {
+                currentViewMode = VIEW_MODE_TWO_COLUMN;
             } else if (itemId == R.id.action_view_mode_day) {
                 currentViewMode = VIEW_MODE_DAY;
             } else if (itemId == R.id.action_view_mode_month) {

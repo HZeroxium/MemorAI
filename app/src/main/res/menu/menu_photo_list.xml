@@ -1,15 +1,24 @@
 <?xml version="1.0" encoding="utf-8"?><!--res/menu/menu_photo_list.xml-->
-<menu xmlns:android="http://schemas.android.com/apk/res/android">
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+      xmlns:app="http://schemas.android.com/apk/res-auto">
     <item
         android:id="@+id/action_view_mode_comfortable"
         android:icon="@drawable/ic_comfortable"
-        android:title="@string/comfortable" />
+        android:title="@string/comfortable"
+        app:iconTint="?attr/colorControlNormal" />
+    <item
+        android:id="@+id/action_view_mode_two_column"
+        android:icon="@drawable/ic_two_column"
+        android:title="@string/two_column"
+        app:iconTint="?attr/colorControlNormal" />
     <item
         android:id="@+id/action_view_mode_day"
         android:icon="@drawable/ic_day"
-        android:title="@string/day" />
+        android:title="@string/day"
+        app:iconTint="?attr/colorControlNormal" />
     <item
         android:id="@+id/action_view_mode_month"
         android:icon="@drawable/ic_month"
-        android:title="@string/month" />
+        android:title="@string/month"
+        app:iconTint="?attr/colorControlNormal" />
 </menu>

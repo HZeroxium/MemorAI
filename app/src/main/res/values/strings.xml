@@ -604,5 +604,5 @@
     <string name="biometric_authentication_error">Biometric authentication error</string>
     <string name="biometric_prompt_title">Biometric Authentication</string>
     <string name="biometric_prompt_subtitle">Use your fingerprint to unlock the app</string>
-
+    <string name="two_column">Two Columns</string>
 </resources>
