@@ -162,7 +162,7 @@ public class TakePhotoFragment extends Fragment {
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container,
-                             @Nullable Bundle savedInstanceState) {
+            @Nullable Bundle savedInstanceState) {
         binding = FragmentTakePhotoBinding.inflate(inflater, container, false);
         return binding.getRoot();
     }
@@ -188,7 +188,8 @@ public class TakePhotoFragment extends Fragment {
         binding.recyclerViewCapturedPhotos.setAdapter(selectedPhotoAdapter);
 
         selectedPhotoAdapter.setOnRemoveClickListener(photo -> {
-            photoViewModel.deletePhoto(photo.getId());
+            // Don't try to delete from database - these are temporary photos
+            // that haven't been saved to the database yet
             tempPhotoList.remove(photo);
             selectedPhotoAdapter.submitList(new ArrayList<>(tempPhotoList));
         });
