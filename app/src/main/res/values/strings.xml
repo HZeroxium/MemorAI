@@ -568,7 +568,7 @@
     <string name="tags">Tags</string>
     <string name="add_photo_album">Add Photo Into Album</string>
     <string name="tooltip_update_album">Enter album title and select photos</string>
-    <string name="enter_pin">Nhập mã PIN</string>
+    <string name="enter_pin">Enter PIN</string>
     <string name="privates">Privates</string>
     <string name="add_media">+ Add media</string>
     <string name="edit_profile">Edit Profile</string>
