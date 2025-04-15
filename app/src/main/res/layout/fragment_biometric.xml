@@ -4,13 +4,15 @@
     android:layout_height="match_parent"
     android:orientation="vertical"
     android:padding="16dp"
+    android:background="?attr/colorSurface"
     android:gravity="center">
 
     <TextView
         android:id="@+id/biometric_prompt"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Sử dụng vân tay hoặc Face ID để xác thực"
+        android:text="@string/biometric_instruction"
+        android:textColor="?android:attr/textColorPrimary"
         android:textSize="18sp"
         android:layout_marginBottom="20dp"/>
 </LinearLayout>
