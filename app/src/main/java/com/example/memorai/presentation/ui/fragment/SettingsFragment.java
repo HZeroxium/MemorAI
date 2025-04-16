@@ -75,7 +75,7 @@ public class SettingsFragment extends Fragment {
         binding.btnChangePin.setOnClickListener(v -> {
             FirebaseUser firebaseUser = FirebaseAuth.getInstance().getCurrentUser();
             if (firebaseUser == null) {
-                Toast.makeText(requireContext(), "Người dùng chưa đăng nhập", Toast.LENGTH_SHORT).show();
+                Toast.makeText(requireContext(), R.string.user_not_found, Toast.LENGTH_SHORT).show();
                 return;
             }
             String userId = firebaseUser.getUid();

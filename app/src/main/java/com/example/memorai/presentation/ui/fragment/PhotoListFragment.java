@@ -257,21 +257,20 @@ public class PhotoListFragment extends Fragment {
 
     private void handleDeleteSelected() {
         if (adapter.getSelectedPhotoIds().isEmpty()) {
-            Toast.makeText(requireContext(), "No photos selected", Toast.LENGTH_SHORT).show();
+            Toast.makeText(requireContext(), R.string.no_photos_selected, Toast.LENGTH_SHORT).show();
         } else {
             new AlertDialog.Builder(requireContext())
-                    .setTitle("Delete Photos")
-                    .setMessage("Are you sure you want to delete " + adapter.getSelectedPhotoIds().size()
-                            + " selected photos?")
-                    .setPositiveButton("Yes", (dialog, which) -> {
+                    .setTitle(R.string.delete_photos_title)
+                    .setMessage(getString(R.string.confirm_delete_photos, adapter.getSelectedPhotoIds().size()))
+                    .setPositiveButton(R.string.yes, (dialog, which) -> {
                         for (String photoId : adapter.getSelectedPhotoIds()) {
                             photoViewModel.deletePhoto(photoId);
                         }
                         adapter.clearSelection();
                         toggleSelectionMode(false);
-                        Toast.makeText(requireContext(), "Photos deleted", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(requireContext(), R.string.photos_deleted, Toast.LENGTH_SHORT).show();
                     })
-                    .setNegativeButton("No", null)
+                    .setNegativeButton(R.string.no, null)
                     .show();
         }
     }

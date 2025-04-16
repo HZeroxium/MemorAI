@@ -197,4 +197,23 @@
     <string name="biometric_authentication_error">Biometric authentication error</string>
     <string name="biometric_prompt_title">Biometric Authentication</string>
     <string name="biometric_prompt_subtitle">Use your fingerprint to unlock the app</string>
+    <string name="two_column">Hai cột</string>
+
+
+    <string name="please_enter_album_title">Vui lòng nhập tiêu đề album</string>
+    <string name="album_created">Đã tạo album!</string>
+    <string name="photo_removed">Ảnh đã bị xóa khỏi lựa chọn</string>
+
+    <string name="album_name_hint">Tên album</string>
+    <string name="album_deleted">Album đã được xóa</string>
+    <string name="album_name_incorrect">Tên album không đúng</string>
+    <string name="album_info">Mã album: %1$s\nNgày tạo: %2$s\nTên: %3$s</string>
+    <string name="toast_album_options">Đã nhấn tùy chọn album</string>
+    <string name="album_updated">Album đã cập nhật!</string>
+    <string name="notification_clicked">Đã nhấn: %1$s</string>
+    <string name="notification_deleted">Đã xóa thông báo</string>
+    <string name="no_notifications">Không có thông báo nào</string>
+    <string name="delete_photos_title">Xóa ảnh</string>
+    <string name="confirm_delete_photos">Bạn có chắc chắn muốn xóa %d ảnh đã chọn không?</string>
+    <string name="photos_deleted">Ảnh đã xóa</string>
 </resources>

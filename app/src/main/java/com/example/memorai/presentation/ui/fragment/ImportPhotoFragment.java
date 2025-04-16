@@ -29,8 +29,10 @@ import androidx.recyclerview.widget.GridLayoutManager;
 
 import com.example.memorai.R;
 import com.example.memorai.databinding.FragmentImportPhotoBinding;
+import com.example.memorai.domain.model.Notification;
 import com.example.memorai.domain.model.Photo;
 import com.example.memorai.presentation.ui.adapter.SelectedPhotoAdapter;
+import com.example.memorai.presentation.viewmodel.NotificationViewModel;
 import com.example.memorai.presentation.viewmodel.PhotoViewModel;
 import com.example.memorai.utils.ImageClassifierHelper;
 import com.example.memorai.utils.ImageUtils;
@@ -61,6 +63,8 @@ public class ImportPhotoFragment extends Fragment {
     private PhotoViewModel photoViewModel;
     private SelectedPhotoAdapter selectedPhotoAdapter;
     private ImageClassifierHelper imageClassifier;
+
+    private NotificationViewModel notificationViewModel;
 
     private final ActivityResultLauncher<String> galleryLauncher = registerForActivityResult(
             new ActivityResultContracts.GetMultipleContents(), uris -> {
@@ -174,6 +178,7 @@ public class ImportPhotoFragment extends Fragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
         photoViewModel = new ViewModelProvider(requireActivity()).get(PhotoViewModel.class);
+        notificationViewModel = new ViewModelProvider(requireActivity()).get(NotificationViewModel.class);
         setupRecyclerView();
         binding.buttonSelectFromGallery.setOnClickListener(v -> galleryLauncher.launch("image/*"));
         binding.buttonConfirmImport.setOnClickListener(v -> confirmImport());
@@ -209,6 +214,14 @@ public class ImportPhotoFragment extends Fragment {
                     importedPhotos.clear();
                     selectedPhotoAdapter.submitList(new ArrayList<>(importedPhotos));
                     binding.buttonConfirmImport.setEnabled(false); // Vô hiệu hóa nút sau khi xác nhận
+                    String notificationId = UUID.randomUUID().toString();
+                    Notification notification = new Notification(
+                            notificationId,
+                            getString(R.string.photos_saved_success),
+                            getString(R.string.photos_saved_success),
+                            System.currentTimeMillis()
+                    );
+                    notificationViewModel.sendNotification(notification);
                     NavController navController = Navigation.findNavController(requireView());
                     navController.navigateUp();
                 })

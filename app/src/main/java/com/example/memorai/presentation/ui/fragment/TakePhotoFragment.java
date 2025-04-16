@@ -29,8 +29,10 @@ import androidx.recyclerview.widget.GridLayoutManager;
 
 import com.example.memorai.R;
 import com.example.memorai.databinding.FragmentTakePhotoBinding;
+import com.example.memorai.domain.model.Notification;
 import com.example.memorai.domain.model.Photo;
 import com.example.memorai.presentation.ui.adapter.SelectedPhotoAdapter;
+import com.example.memorai.presentation.viewmodel.NotificationViewModel;
 import com.example.memorai.presentation.viewmodel.PhotoViewModel;
 import com.example.memorai.utils.ImageUtils;
 import com.example.memorai.utils.ImageClassifierHelper;
@@ -58,6 +60,8 @@ public class TakePhotoFragment extends Fragment {
     private ImageClassifierHelper imageClassifier;
 
     private final List<Photo> tempPhotoList = new ArrayList<>();
+
+    private NotificationViewModel notificationViewModel;
 
     private final ActivityResultLauncher<Uri> cameraLauncher = registerForActivityResult(
             new ActivityResultContracts.TakePicture(), success -> {
@@ -174,6 +178,7 @@ public class TakePhotoFragment extends Fragment {
             currentPhotoUri = savedInstanceState.getParcelable("currentPhotoUri");
         }
         photoViewModel = new ViewModelProvider(requireActivity()).get(PhotoViewModel.class);
+        notificationViewModel = new ViewModelProvider(requireActivity()).get(NotificationViewModel.class);
         setupRecyclerView();
         binding.buttonCapture.setOnClickListener(v -> openCamera());
         binding.buttonConfirm.setOnClickListener(v -> confirmPhotos());
@@ -248,6 +253,14 @@ public class TakePhotoFragment extends Fragment {
         }
 
         Toast.makeText(requireContext(), R.string.photos_saved_success, Toast.LENGTH_SHORT).show();
+        String notificationId = UUID.randomUUID().toString();
+        Notification notification = new Notification(
+                notificationId,
+                getString(R.string.sync_notification_title),
+                getString(R.string.sync_notification_message),
+                System.currentTimeMillis()
+        );
+        notificationViewModel.sendNotification(notification);
         requireActivity().onBackPressed();
     }
 

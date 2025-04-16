@@ -91,6 +91,15 @@
     <string name="sync_success">Sync completed successfully</string>
     <string name="sync_notification_title">Sync successful</string>
     <string name="sync_notification_message">Data has been synced with cloud</string>
+    <string name="please_enter_album_title">Please enter an album title</string>
+    <string name="album_created">Album created!</string>
+    <string name="photo_removed">Photo removed from selection</string>
+    <string name="album_name_hint">Album Name</string>
+    <string name="album_deleted">Album deleted</string>
+    <string name="album_name_incorrect">Album name incorrect</string>
+    <string name="album_info">Album ID: %1$s\nCreated: %2$s\nName: %3$s</string>
+    <string name="toast_album_options">Album options clicked</string>
+    <string name="album_updated">Album Updated!</string>
     <string-array name="photo_editor_emoji">
 
 
@@ -605,4 +614,10 @@
     <string name="biometric_prompt_title">Biometric Authentication</string>
     <string name="biometric_prompt_subtitle">Use your fingerprint to unlock the app</string>
     <string name="two_column">Two Columns</string>
+    <string name="notification_clicked">Clicked: %1$s</string>
+    <string name="notification_deleted">Notification deleted</string>
+    <string name="no_notifications">No notifications available</string>
+    <string name="delete_photos_title">Delete Photos</string>
+    <string name="confirm_delete_photos">Are you sure you want to delete %d selected photos?</string>
+    <string name="photos_deleted">Photos deleted</string>
 </resources>

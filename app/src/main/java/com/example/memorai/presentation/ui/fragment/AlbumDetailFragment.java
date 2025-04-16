@@ -108,7 +108,6 @@ public class AlbumDetailFragment extends Fragment {
                         openSecurityFragment(album);
                     } else {
                         loadAlbumPhotos(isAuthenticated);
-                        Log.d("Count", "jjjjj");
                     }
                 });
             }
@@ -144,9 +143,7 @@ public class AlbumDetailFragment extends Fragment {
         SimpleDateFormat sdf = new SimpleDateFormat("dd-MM-yyyy", Locale.getDefault());
         String formattedDate = sdf.format(new Date(createdAt));
 
-        String info = "Album ID: " + id + "\n" +
-                "Created: " + formattedDate + "\n" +
-                "Name: " + name;
+        String info = getString(R.string.album_info, id, formattedDate, name);
         binding.textViewAlbumInfo.setText(info);
     }
 
@@ -156,7 +153,7 @@ public class AlbumDetailFragment extends Fragment {
             navigateToEditAlbum();
             return true;
         } else if (id == R.id.action_album_options) {
-            Toast.makeText(requireContext(), "Album options clicked", Toast.LENGTH_SHORT).show();
+            Toast.makeText(requireContext(), R.string.toast_album_options, Toast.LENGTH_SHORT).show();
             return true;
         } else if (id == R.id.action_delete_album) {
             showDeleteConfirmationDialog();
@@ -176,27 +173,27 @@ public class AlbumDetailFragment extends Fragment {
             if (album == null) return;
 
             AlertDialog.Builder builder = new AlertDialog.Builder(requireContext());
-            builder.setTitle("Delete Album");
-            builder.setMessage("Enter the album name to confirm deletion:");
+            builder.setTitle(getString(R.string.delete_album));
+            builder.setMessage(getString(R.string.enter_album_name));
 
             final EditText input = new EditText(requireContext());
             input.setInputType(InputType.TYPE_CLASS_TEXT);
-            input.setHint("Album Name");
+            input.setHint(getString(R.string.album_name_hint));
             builder.setView(input);
 
-            builder.setPositiveButton("Delete", (dialog, which) -> {
+            builder.setPositiveButton(R.string.delete, (dialog, which) -> {
                 String enteredName = input.getText().toString().trim();
                 if (enteredName.equals(album.getName())) {
                     user = FirebaseAuth.getInstance().getCurrentUser();
                     albumViewModel.deleteAlbum(albumId);
-                    Toast.makeText(requireContext(), "Album deleted", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(requireContext(), R.string.album_deleted, Toast.LENGTH_SHORT).show();
                     Navigation.findNavController(requireView()).popBackStack();
                 } else {
-                    Toast.makeText(requireContext(), "Album name incorrect", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(requireContext(), R.string.album_name_incorrect, Toast.LENGTH_SHORT).show();
                 }
             });
 
-            builder.setNegativeButton("Cancel", (dialog, which) -> dialog.dismiss());
+            builder.setNegativeButton(R.string.cancel, (dialog, which) -> dialog.dismiss());
             builder.show();
         });
     }
@@ -204,7 +201,7 @@ public class AlbumDetailFragment extends Fragment {
     private void openSecurityFragment(Album album) {
         FirebaseUser firebaseUser = FirebaseAuth.getInstance().getCurrentUser();
         if (firebaseUser == null) {
-            Toast.makeText(requireContext(), "Người dùng chưa đăng nhập", Toast.LENGTH_SHORT).show();
+            Toast.makeText(requireContext(), R.string.user_not_found, Toast.LENGTH_SHORT).show();
             return;
         }
         String userId = firebaseUser.getUid();

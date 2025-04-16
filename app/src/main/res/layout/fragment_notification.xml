@@ -12,7 +12,7 @@
         android:layout_height="?attr/actionBarSize"
         app:layout_constraintTop_toTopOf="parent"
         app:navigationIcon="@drawable/ic_back"
-        app:title="Notifications" />
+        app:title="@string/notification" />
 
     <!-- ProgressBar khi tải -->
     <ProgressBar

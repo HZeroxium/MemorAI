@@ -196,7 +196,7 @@ public class LoginFragment extends BottomSheetDialogFragment {
         albumViewModel.loadAlbums();
 
         // Hiển thị thông báo và quay lại
-        Toast.makeText(requireContext(), "Album created!", Toast.LENGTH_SHORT).show();
+        Toast.makeText(requireContext(), R.string.album_created, Toast.LENGTH_SHORT).show();
     }
 
     @Override

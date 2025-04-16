@@ -13,6 +13,7 @@ import androidx.lifecycle.ViewModelProvider;
 import androidx.navigation.Navigation;
 import androidx.recyclerview.widget.LinearLayoutManager;
 
+import com.example.memorai.R;
 import com.example.memorai.databinding.FragmentNotificationBinding;
 import com.example.memorai.domain.model.Notification;
 import com.example.memorai.presentation.ui.adapter.NotificationAdapter;
@@ -57,20 +58,25 @@ public class NotificationFragment extends Fragment {
         adapter.setOnNotificationClickListener(new NotificationAdapter.OnNotificationClickListener() {
             @Override
             public void onNotificationClick(Notification notification) {
-                Toast.makeText(requireContext(), "Clicked: " + notification.getTitle(), Toast.LENGTH_SHORT).show();
+                Toast.makeText(requireContext(), getString(R.string.notification_clicked,notification.getTitle()) , Toast.LENGTH_SHORT).show();
                 // Có thể điều hướng đến chi tiết thông báo nếu cần
             }
 
             @Override
             public void onNotificationDelete(Notification notification) {
                 viewModel.deleteNotification(notification.getId());
-                Toast.makeText(requireContext(), "Notification deleted", Toast.LENGTH_SHORT).show();
+                Toast.makeText(requireContext(), R.string.notification_deleted, Toast.LENGTH_SHORT).show();
             }
         });
     }
 
     private void observeViewModel() {
         binding.progressBar.setVisibility(View.VISIBLE);
+        if (viewModel.getNotifications() == null) {
+            binding.recyclerViewNotifications.setVisibility(View.GONE);
+            binding.textViewNoNotifications.setVisibility(View.VISIBLE);
+            return;
+        }
         viewModel.getNotifications().observe(getViewLifecycleOwner(), notifications -> {
             binding.progressBar.setVisibility(View.GONE);
             if (notifications != null && !notifications.isEmpty()) {
