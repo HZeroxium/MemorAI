@@ -29,6 +29,9 @@ public class NotificationRepositoryImpl implements NotificationRepository {
     }
 
     private CollectionReference getNotificationsCollection(String userId) {
+        if (userId == null) {
+            return null;
+        }
         return db.collection("photos")
                 .document(userId)
                 .collection("user_notifications");
@@ -36,6 +39,7 @@ public class NotificationRepositoryImpl implements NotificationRepository {
     @Override
     public LiveData<List<Notification>> getNotifications(String userId) {
         MutableLiveData<List<Notification>> notificationsLiveData = new MutableLiveData<>();
+        if (userId == null) return null;
         getNotificationsCollection(userId)
                 .orderBy("timestamp", Query.Direction.DESCENDING)
                 .addSnapshotListener((snapshot, error) -> {

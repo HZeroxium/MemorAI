@@ -32,6 +32,9 @@ public class NotificationViewModel extends ViewModel {
     }
 
     public void sendNotification(Notification notification) {
+        if (notification == null) {
+            return;
+        }
         repository.sendNotification(getCurrentUserId(), notification);
     }
 
@@ -40,6 +43,10 @@ public class NotificationViewModel extends ViewModel {
     }
 
     private String getCurrentUserId() {
-        return Objects.requireNonNull(FirebaseAuth.getInstance().getCurrentUser()).getUid();
+        if (FirebaseAuth.getInstance().getCurrentUser() == null) {
+            Log.e("NotificationViewModel", "User not logged in");
+            return null;
+        }
+        return FirebaseAuth.getInstance().getCurrentUser().getUid();
     }
 }

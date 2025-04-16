@@ -18,6 +18,7 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.FieldValue;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.Query;
 import com.google.firebase.firestore.QuerySnapshot;
@@ -119,7 +120,7 @@ public class PhotoRepositoryImpl implements PhotoRepository {
                                         updates.put("updatedAt", System.currentTimeMillis());
 
                                         // Biến final để sử dụng trong lambda
-                                        final String finalCoverUrl = newCoverUrl != null ? newCoverUrl : "";
+                                        final String finalCoverUrl = newCoverUrl != null ? newCoverUrl : null;
 
                                         // Cập nhật ảnh bìa
                                         updates.put("coverPhotoUrl", finalCoverUrl);
@@ -143,8 +144,70 @@ public class PhotoRepositoryImpl implements PhotoRepository {
                         })
                         .addOnFailureListener(e -> Log.e("PhotoRepository", "Failed to fetch albums for cover update", e));
             }
+            else {
+                List<PhotoAlbumCrossRef> crossRefs = crossRefDao.getCrossRefsForPhoto(photoId);
+
+                for (PhotoAlbumCrossRef crossRef : crossRefs) {
+                    AlbumEntity album = albumDao.getAlbumById(crossRef.getAlbumId());
+
+                    // Nếu album là private, xóa liên kết
+                    if (album != null && album.isPrivate) {
+                        // Xóa liên kết trong Room
+                        crossRefDao.deleteCrossRef(photoId, album.id);
+
+                        // Xóa liên kết trong Firestore
+                        firestore.collection("photos")
+                                .document(userId)
+                                .collection("user_albums")
+                                .document(album.id)
+                                .update("photos", FieldValue.arrayRemove(photoId));
+                    }
+                    else {
+                        if(album.coverPhotoUrl == null) {
+                            updateAlbumCoverAfterPhotoChange(crossRef.getAlbumId(), userId);
+                        }
+                    }
+                }
+
+            }
         });
     }
+
+    private void updateAlbumCoverAfterPhotoChange(String albumId, String userId) {
+        // Tìm ảnh không private đầu tiên trong album để làm ảnh bìa mới
+        List<PhotoAlbumCrossRef> crossRefs = crossRefDao.getCrossRefsForAlbum(albumId);
+        String newCoverId = null;
+        String newCoverUrl = null;
+
+        for (PhotoAlbumCrossRef crossRef : crossRefs) {
+            PhotoEntity photo = photoDao.getPhotoById(crossRef.getPhotoId());
+            if (photo != null && !photo.isPrivate) {
+                newCoverId = photo.id;
+                newCoverUrl = photo.filePath;
+                break;
+            }
+        }
+
+        // Cập nhật ảnh bìa mới
+        Map<String, Object> updates = new HashMap<>();
+        updates.put("coverPhotoUrl", newCoverUrl);
+        updates.put("updatedAt", System.currentTimeMillis());
+
+        // Cập nhật trong Room
+        AlbumEntity album = albumDao.getAlbumById(albumId);
+        if (album != null) {
+            album.coverPhotoUrl = newCoverUrl;
+            albumDao.updateAlbum(album);
+        }
+
+        // Cập nhật trong Firestore
+        firestore.collection("photos")
+                .document(userId)
+                .collection("user_albums")
+                .document(albumId)
+                .update(updates);
+    }
+
 
     @Override
     public Photo getPhotoById(String photoId) {
@@ -277,11 +340,11 @@ public class PhotoRepositoryImpl implements PhotoRepository {
                                         });
                                     } else {
                                         if (needUpdateCover) {
-                                            updates.put("coverPhotoUrl", "");
+                                            updates.put("coverPhotoUrl", null);
                                             executorService.execute(() -> {
                                                 AlbumEntity albumEntity = albumDao.getAlbumById(document.getId());
                                                 if (albumEntity != null) {
-                                                    albumEntity.coverPhotoUrl = "";
+                                                    albumEntity.coverPhotoUrl = null;
                                                     albumDao.updateAlbum(albumEntity);
                                                 }
                                             });

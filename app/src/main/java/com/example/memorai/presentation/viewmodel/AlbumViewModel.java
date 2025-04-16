@@ -178,6 +178,8 @@ public class AlbumViewModel extends ViewModel {
         return isAuthenticated;
     }
 
+
+
     public void syncAllPendingChanges(SyncCallback callback) {
         callback.onSyncStarted();
 
