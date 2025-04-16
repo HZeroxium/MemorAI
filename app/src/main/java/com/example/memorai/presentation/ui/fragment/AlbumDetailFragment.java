@@ -108,6 +108,7 @@ public class AlbumDetailFragment extends Fragment {
                         openSecurityFragment(album);
                     } else {
                         loadAlbumPhotos(isAuthenticated);
+                        Log.d("Count", "jjjjj");
                     }
                 });
             }
