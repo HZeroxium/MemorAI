@@ -19,11 +19,8 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.EditText;
 import android.widget.ImageView;
-import android.widget.SeekBar;
 import android.widget.Toast;
 
-import androidx.activity.result.ActivityResultLauncher;
-import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.constraintlayout.widget.ConstraintLayout;
@@ -34,10 +31,9 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.transition.ChangeBounds;
 import androidx.transition.TransitionManager;
-import androidx.activity.OnBackPressedCallback;
 import androidx.appcompat.app.AlertDialog;
 import ja.burhanrashid52.photoeditor.PhotoEditor;
-import ja.burhanrashid52.photoeditor.SaveSettings;
+
 import com.bumptech.glide.Glide;
 import com.example.memorai.R;
 import com.example.memorai.databinding.FragmentEditPhotoBinding;
@@ -45,7 +41,6 @@ import com.example.memorai.domain.model.Photo;
 import com.example.memorai.domain.model.ToolIcon;
 import com.example.memorai.presentation.ui.adapter.filters.FilterListener;
 import com.example.memorai.presentation.ui.adapter.filters.FilterViewAdapter;
-import com.example.memorai.presentation.ui.dialog.PropertiesBSFragment;
 import com.example.memorai.presentation.ui.dialog.StickerBSFragment;
 import com.example.memorai.presentation.ui.dialog.TextEditorDialogFragment;
 import com.example.memorai.presentation.viewmodel.EditPhotoViewModel;
@@ -54,28 +49,21 @@ import com.example.memorai.presentation.viewmodel.PhotoViewModel;
 import com.example.memorai.presentation.ui.dialog.ShapeBSFragment;
 import com.example.memorai.presentation.ui.dialog.EmojiBSFragment;
 import com.example.memorai.utils.ShapeTypeWrapper;
-import com.google.android.gms.tasks.Tasks;
 
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
-import java.util.Objects;
-import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 import ja.burhanrashid52.photoeditor.OnPhotoEditorListener;
-import ja.burhanrashid52.photoeditor.PhotoEditor;
 import dagger.hilt.android.AndroidEntryPoint;
-import ja.burhanrashid52.photoeditor.PhotoEditorView;
 import ja.burhanrashid52.photoeditor.PhotoFilter;
+import ja.burhanrashid52.photoeditor.TextStyleBuilder;
 import ja.burhanrashid52.photoeditor.ViewType;
 import ja.burhanrashid52.photoeditor.shape.ShapeBuilder;
 import ja.burhanrashid52.photoeditor.shape.ShapeType;
@@ -156,18 +144,27 @@ public class EditPhotoFragment extends Fragment {
             @Override
             public void onEditTextChangeListener(View rootView, String text, int colorCode) {
                 Log.d("EditPhoto", "Text edited: " + text);
-                photoEditor.editText(rootView, text, colorCode);
+                //photoEditor.editText(rootView, text, colorCode);
+                TextEditorDialogFragment textEditorDialogFragment = TextEditorDialogFragment.show(EditPhotoFragment.this, text, colorCode);
+                textEditorDialogFragment.setOnTextEditorListener((inputText, color) -> {
+
+                        TextStyleBuilder styleBuilder = new TextStyleBuilder();
+                        styleBuilder.withTextColor(color);
+                        photoEditor.editText(rootView, inputText, styleBuilder);
+                        binding.txtCurrentTool.setText(R.string.label_text);
+
+                });
             }
 
             @Override
             public void onAddViewListener(ViewType viewType, int numberOfAddedViews) {
                 Log.d("EditPhoto", "View added: " + viewType + ", number: " + numberOfAddedViews);
-                if (viewType == ViewType.BRUSH_DRAWING) {
+                //if (viewType == ViewType.BRUSH_DRAWING) {
                     undoCount++;
-                    redoCount = 0;
+                    //redoCount = 0;
                     updateUndoRedoButtons();
-                    Log.d("EditPhoto", "Brush drawing added. Undo count: " + undoCount);
-                }
+                    //Log.d("EditPhoto", "Brush drawing added. Undo count: " + undoCount);
+                //}
             }
 
             @Override
@@ -237,7 +234,7 @@ public class EditPhotoFragment extends Fragment {
         // Xử lý sự kiện Undo
         binding.imgUndo.setOnClickListener(v -> {
             // Gọi cả undo của PhotoEditor và ViewModel
-            boolean canUndo = photoEditor.undo();
+            boolean canUndo = editPhotoViewModel.canUndo();;
             if (undoCount > 0 || canUndo) {
                 photoEditor.undo();
                 undoCount--;
@@ -248,7 +245,7 @@ public class EditPhotoFragment extends Fragment {
 
         // Xử lý sự kiện Redo
         binding.imgRedo.setOnClickListener(v -> {
-            boolean canRedo = photoEditor.redo();
+            boolean canRedo = editPhotoViewModel.canRedo();
             if (redoCount > 0 || canRedo) {
                 photoEditor.redo();
                 redoCount--;
@@ -526,19 +523,33 @@ public class EditPhotoFragment extends Fragment {
                         }
                     });
                     shapeBSFragment.show(getParentFragmentManager(), "ShapeBSFragment");
+                    //undoCount++;
+                    //updateUndoRedoButtons();
                     break;
                 case "Text":
-                    TextEditorDialogFragment textEditorDialog = TextEditorDialogFragment.show();
-                    textEditorDialog.setOnTextEditorListener((inputText, colorCode) -> {
-                        addTextToPhoto(inputText, colorCode);
+                    TextEditorDialogFragment textEditorDialog = TextEditorDialogFragment.show(this);
+//                    textEditorDialog.setOnTextEditorListener((inputText, colorCode) -> {
+//                        addTextToPhoto(inputText, colorCode);
+//                    });
+//                    textEditorDialog.show(getParentFragmentManager(), "TextEditorDialogFragment");
+                    textEditorDialog.setOnTextEditorListener(new TextEditorDialogFragment.TextEditorListener() {
+                        @Override
+                        public void onDone(String inputText, int colorCode) {
+                            TextStyleBuilder styleBuilder = new TextStyleBuilder();
+                            styleBuilder.withTextColor(colorCode);
+                            photoEditor.addText(inputText, styleBuilder);
+                            binding.txtCurrentTool.setText(R.string.label_text);
+                        }
                     });
-                    textEditorDialog.show(getParentFragmentManager(), "TextEditorDialogFragment");
+                    //undoCount++;
+                   // redoCount = 0;
+                    //updateUndoRedoButtons();
                     break;
                 case "Eraser":
                     photoEditor.brushEraser();
-                    undoCount++;
-                    redoCount = 0;
-                    updateUndoRedoButtons();
+                    //undoCount++;
+                   // redoCount = 0;
+                    //updateUndoRedoButtons();
                     binding.txtCurrentTool.setText(R.string.label_eraser);                    break;
                 case "Filter":
                     // Hiển thị rvFilterView với hiệu ứng
@@ -555,9 +566,9 @@ public class EditPhotoFragment extends Fragment {
                                 photoEditor.setFilterEffect(photoFilter);
                                 Log.d("EditPhoto", "Applied filter: " + photoFilter.name());
                                 // Update undo/redo counts
-                                undoCount++;
-                                redoCount = 0;
-                                updateUndoRedoButtons();
+                                //undoCount++;
+                               // redoCount = 0;
+                                //updateUndoRedoButtons();
                             }
                         }
                     });
@@ -569,10 +580,16 @@ public class EditPhotoFragment extends Fragment {
                         photoEditor.addText(emojiUnicode, Color.BLACK);
                     });
                     emojiBSFragment.show(getParentFragmentManager(), "EmojiBSFragment");
+                    //undoCount++;
+                   // redoCount = 0;
+                    //updateUndoRedoButtons();
                     break;
                 case "Sticker":
                     showStickerFragment();
                     binding.txtCurrentTool.setText(R.string.label_sticker);
+                    //undoCount++;
+                   // redoCount = 0;
+                    //updateUndoRedoButtons();
                     break;
                 default:
                     Toast.makeText(getContext(), R.string.error_unknown_tool, Toast.LENGTH_SHORT).show();
@@ -594,9 +611,9 @@ public class EditPhotoFragment extends Fragment {
                 Bitmap resizedBitmap = resizeBitmap(bitmap, 0.2f);
                 photoEditor.addImage(resizedBitmap);
 
-                undoCount++;
-                redoCount = 0;
-                updateUndoRedoButtons();
+                //undoCount++;
+                //redoCount = 0;
+                //updateUndoRedoButtons();
             }
         });
         stickerFragment.show(getParentFragmentManager(), "StickerBSFragment");
@@ -648,7 +665,7 @@ public class EditPhotoFragment extends Fragment {
 
         }
         undoCount++;
-        redoCount = 0; // Reset redo khi có thay đổi mới
+      //  redoCount = 0; // Reset redo khi có thay đổi mới
         updateUndoRedoButtons();
     }
 
@@ -738,6 +755,7 @@ public class EditPhotoFragment extends Fragment {
 //        binding.imgRedo.setEnabled(editPhotoViewModel.canRedo());
         binding.imgUndo.setEnabled(undoCount > 0);
         binding.imgRedo.setEnabled(redoCount > 0);
+        Log.d("EditPhoto", "Undo/Redo buttons updated. Undo enabled: " + (undoCount > 0) + ", Redo enabled: " + (redoCount > 0));
 
     }
 

@@ -17,7 +17,9 @@ import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.DialogFragment;
+import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -25,6 +27,8 @@ import com.example.memorai.R;
 import com.example.memorai.presentation.ui.adapter.ColorPickerAdapter;
 
 import java.util.Objects;
+
+import ja.burhanrashid52.photoeditor.OnPhotoEditorListener;
 
 public class TextEditorDialogFragment extends DialogFragment {
 
@@ -38,7 +42,7 @@ public class TextEditorDialogFragment extends DialogFragment {
     private RecyclerView colorPickerRecyclerView;
     private int selectedColor = Color.WHITE;
 
-    public static TextEditorDialogFragment show() {
+    public static TextEditorDialogFragment show(OnPhotoEditorListener onPhotoEditorListener, String text, int colorCode) {
         return new TextEditorDialogFragment();
     }
 
@@ -65,6 +69,15 @@ public class TextEditorDialogFragment extends DialogFragment {
         editText = view.findViewById(R.id.add_text_edit_text);
         addTextButton = view.findViewById(R.id.add_text_done_tv);
         colorPickerRecyclerView = view.findViewById(R.id.add_text_color_picker_recycler_layout);
+
+        // Nhận giá trị text và color từ arguments
+        if (getArguments() != null) {
+            String text = getArguments().getString("text", "");
+            int color = getArguments().getInt("color", Color.WHITE);
+            editText.setText(text);
+            editText.setTextColor(color);
+            selectedColor = color;
+        }
 
         setupColorPicker();
         setupListeners();
@@ -135,5 +148,25 @@ public class TextEditorDialogFragment extends DialogFragment {
         Dialog dialog = super.onCreateDialog(savedInstanceState);
         dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
         return dialog;
+    }
+
+    // Trường hợp KHÔNG có dữ liệu ban đầu
+    public static TextEditorDialogFragment show(Fragment parentFragment) {
+        TextEditorDialogFragment fragment = new TextEditorDialogFragment();
+        fragment.show(parentFragment.getParentFragmentManager(), fragment.getTag());
+        return fragment;
+    }
+
+    // Trường hợp CÓ dữ liệu text + color ban đầu
+    public static TextEditorDialogFragment show(Fragment parentFragment, String inputText, int colorCode) {
+        TextEditorDialogFragment fragment = new TextEditorDialogFragment();
+
+        Bundle args = new Bundle();
+        args.putString("text", inputText);
+        args.putInt("color", colorCode);
+        fragment.setArguments(args);
+
+        fragment.show(parentFragment.getParentFragmentManager(), fragment.getTag());
+        return fragment;
     }
 }
