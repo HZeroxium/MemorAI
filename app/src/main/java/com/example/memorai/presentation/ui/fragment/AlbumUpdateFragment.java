@@ -94,7 +94,7 @@ public class AlbumUpdateFragment extends Fragment {
         // Remove photo from album
         selectedPhotoAdapter.setOnRemoveClickListener(photo -> {
             albumCreationViewModel.removePhoto(photo);
-            showSnackbar("Photo removed from album");
+            showSnackbar(getString(R.string.photo_removed));
         });
     }
 
@@ -170,13 +170,13 @@ public class AlbumUpdateFragment extends Fragment {
 
             // Validation
             if (TextUtils.isEmpty(title)) {
-                Toast.makeText(requireContext(), "Enter a valid title", Toast.LENGTH_SHORT).show();
+                Toast.makeText(requireContext(), R.string.enter_album_title, Toast.LENGTH_SHORT).show();
                 return;
             }
 
             List<Photo> selectedPhotos = albumCreationViewModel.getSelectedPhotos().getValue();
             if (selectedPhotos == null || selectedPhotos.isEmpty()) {
-                Toast.makeText(requireContext(), "No photos selected for album!", Toast.LENGTH_SHORT).show();
+                Toast.makeText(requireContext(), R.string.no_photos_selected, Toast.LENGTH_SHORT).show();
                 return;
             }
 
@@ -198,7 +198,7 @@ public class AlbumUpdateFragment extends Fragment {
             // Cập nhật album với danh sách ảnh mới
             albumViewModel.updateAlbumWithPhotos(updatedAlbum, selectedPhotos);
 
-            Toast.makeText(requireContext(), "Album updated!", Toast.LENGTH_SHORT).show();
+            Toast.makeText(requireContext(), R.string.album_updated, Toast.LENGTH_SHORT).show();
 
             // Clear selection và quay lại
             albumCreationViewModel.clear();

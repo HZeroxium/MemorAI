@@ -120,7 +120,7 @@ public class BiometricFragment extends BottomSheetDialogFragment {
                         isAuthenticationInProgress = false;
                         if (errorCode != BiometricPrompt.ERROR_USER_CANCELED) {
                             Toast.makeText(requireContext(),
-                                    getString(R.string.biometric_authentication_error, errString),
+                                   R.string.biometric_authentication_error,
                                     Toast.LENGTH_SHORT).show();
                         }
                     }

@@ -106,7 +106,7 @@ public class AlbumAddPhotosFragment extends Fragment {
             }
 
             if (selectedList.isEmpty()) {
-                Toast.makeText(requireContext(), "No photos selected!", Toast.LENGTH_SHORT).show();
+                Toast.makeText(requireContext(), R.string.no_photos_selected, Toast.LENGTH_SHORT).show();
                 return;
             }
 

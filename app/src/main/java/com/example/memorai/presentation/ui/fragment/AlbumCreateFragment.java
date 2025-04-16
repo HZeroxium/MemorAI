@@ -20,10 +20,12 @@ import androidx.recyclerview.widget.GridLayoutManager;
 import com.example.memorai.R;
 import com.example.memorai.databinding.FragmentAlbumCreateBinding;
 import com.example.memorai.domain.model.Album;
+import com.example.memorai.domain.model.Notification;
 import com.example.memorai.domain.model.Photo;
 import com.example.memorai.presentation.ui.adapter.SelectedPhotoAdapter;
 import com.example.memorai.presentation.viewmodel.AlbumCreationViewModel;
 import com.example.memorai.presentation.viewmodel.AlbumViewModel;
+import com.example.memorai.presentation.viewmodel.NotificationViewModel;
 import com.google.android.material.snackbar.Snackbar;
 
 import java.util.ArrayList;
@@ -39,6 +41,8 @@ public class AlbumCreateFragment extends Fragment {
     private AlbumViewModel albumViewModel;
     private AlbumCreationViewModel albumCreationViewModel;
     private SelectedPhotoAdapter selectedPhotoAdapter;
+    private NotificationViewModel notificationViewModel;
+
 
     @Nullable
     @Override
@@ -55,7 +59,7 @@ public class AlbumCreateFragment extends Fragment {
 
         albumViewModel = new ViewModelProvider(requireActivity()).get(AlbumViewModel.class);
         albumCreationViewModel = new ViewModelProvider(requireActivity()).get(AlbumCreationViewModel.class);
-
+        notificationViewModel = new ViewModelProvider(requireActivity()).get(NotificationViewModel.class);
         setupToolbar();
         setupRecyclerView();
         observeSelectedPhotos();
@@ -75,7 +79,7 @@ public class AlbumCreateFragment extends Fragment {
 
         selectedPhotoAdapter.setOnRemoveClickListener(photo -> {
             albumCreationViewModel.removePhoto(photo);
-            showSnackbar("Photo removed from selection");
+            showSnackbar(getString(R.string.photo_removed));
         });
     }
 
@@ -114,12 +118,12 @@ public class AlbumCreateFragment extends Fragment {
         List<Photo> selectedPhotos = albumCreationViewModel.getSelectedPhotos().getValue();
 
         if (TextUtils.isEmpty(name)) {
-            Toast.makeText(requireContext(), "Please enter an album title", Toast.LENGTH_SHORT).show();
+            Toast.makeText(requireContext(), getString(R.string.please_enter_album_title), Toast.LENGTH_SHORT).show();
             return;
         }
 
         if (selectedPhotos == null || selectedPhotos.isEmpty()) {
-            Toast.makeText(requireContext(), "No photos selected for album!", Toast.LENGTH_SHORT).show();
+            Toast.makeText(requireContext(), getString(R.string.no_photos_selected), Toast.LENGTH_SHORT).show();
             return;
         }
 
@@ -148,7 +152,15 @@ public class AlbumCreateFragment extends Fragment {
         albumViewModel.createAlbumWithPhotos(newAlbum, selectedPhotos);
 
         // Hiển thị thông báo và quay lại
-        Toast.makeText(requireContext(), "Album created!", Toast.LENGTH_SHORT).show();
+        Toast.makeText(requireContext(), getString(R.string.album_created), Toast.LENGTH_SHORT).show();
+        String notificationId = UUID.randomUUID().toString();
+        Notification notification = new Notification(
+                notificationId,
+                getString(R.string.album_created),
+                getString(R.string.album_created),
+                System.currentTimeMillis()
+        );
+        notificationViewModel.sendNotification(notification);
         albumCreationViewModel.clear();
         Navigation.findNavController(requireView()).popBackStack();
     }
