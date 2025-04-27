@@ -69,17 +69,8 @@ public class PhotoListFragment extends Fragment {
         binding.toolbarPhotoList.setNavigationIcon(R.drawable.ic_more_vert);
         binding.toolbarPhotoList.setNavigationOnClickListener(this::showViewModePopup);
 
-        // Ẩn "Select All" mặc định
+        // Ẩn "Select All" mặc định - always hide, we won't use this anymore
         binding.checkBoxSelectAll.setVisibility(View.GONE);
-        binding.checkBoxSelectAll.setOnCheckedChangeListener((buttonView, isChecked) -> {
-            if (!isSelectionMode)
-                return;
-            if (isChecked) {
-                adapter.selectAllInSection(0);
-            } else {
-                adapter.clearSectionSelection(0);
-            }
-        });
 
         // Thiết lập RecyclerView
         setupRecyclerView();
@@ -203,7 +194,8 @@ public class PhotoListFragment extends Fragment {
             binding.toolbarPhotoList.setTitle("");
             binding.toolbarPhotoList.setNavigationOnClickListener(v -> toggleSelectionMode(false));
             binding.buttonDeleteSelected.setVisibility(View.VISIBLE);
-            binding.checkBoxSelectAll.setVisibility(View.VISIBLE);
+            // Always hide the global Select All checkbox - only use section level selection
+            binding.checkBoxSelectAll.setVisibility(View.GONE);
         } else {
             binding.toolbarPhotoList.setNavigationIcon(R.drawable.ic_more_vert);
             binding.toolbarPhotoList.setTitle(getString(R.string.photos));

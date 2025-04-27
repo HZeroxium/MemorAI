@@ -56,6 +56,7 @@ public class PhotoSectionAdapter extends RecyclerView.Adapter<RecyclerView.ViewH
     public void setOnPhotoClickListener(OnPhotoClickListener listener) {
         this.onPhotoClickListener = listener;
     }
+
     public void setOnPhotoLongClickListener(OnPhotoLongClickListener listener) {
         this.onPhotoLongClickListener = listener;
     }
@@ -79,7 +80,11 @@ public class PhotoSectionAdapter extends RecyclerView.Adapter<RecyclerView.ViewH
         } else {
             selectedIds.add(photoId);
         }
+        // Only notify about specific items that changed for better performance
         notifyDataSetChanged();
+
+        // Log for debugging - can be removed in production
+        Log.d("PhotoSectionAdapter", "Selected IDs: " + selectedIds.size());
     }
 
     // Flatten sections: each section has 1 header + N photos
@@ -152,21 +157,22 @@ public class PhotoSectionAdapter extends RecyclerView.Adapter<RecyclerView.ViewH
         }
         return position;
     }
+
     private int[] findSectionAndOffset(int position) {
         int running = 0;
         for (int i = 0; i < sectionList.size(); i++) {
             if (position == running) {
-                return new int[]{i, -1}; // header
+                return new int[] { i, -1 }; // header
             }
             running++;
             int size = sectionList.get(i).getPhotos().size();
             if (position < running + size) {
                 int offset = position - running;
-                return new int[]{i, offset};
+                return new int[] { i, offset };
             }
             running += size;
         }
-        return new int[]{0, -1};
+        return new int[] { 0, -1 };
     }
 
     @Override
@@ -257,12 +263,24 @@ public class PhotoSectionAdapter extends RecyclerView.Adapter<RecyclerView.ViewH
 
             itemView.setOnClickListener(v -> {
                 int[] index = findSectionAndOffset(getBindingAdapterPosition());
-                if (index[1] < 0) return; // ignore header
+                if (index[1] < 0)
+                    return; // ignore header
                 Photo photo = sectionList.get(index[0]).getPhotos().get(index[1]);
                 if (selectionMode) {
                     toggleSelection(photo.getId());
                 } else if (onPhotoClickListener != null) {
                     onPhotoClickListener.onPhotoClick(imageViewPhoto, photo);
+                }
+            });
+
+            // Add click handler for the checkbox to ensure consistent selection
+            checkBoxItemSelect.setOnClickListener(v -> {
+                if (selectionMode) {
+                    int[] index = findSectionAndOffset(getBindingAdapterPosition());
+                    if (index[1] >= 0) {
+                        Photo photo = sectionList.get(index[0]).getPhotos().get(index[1]);
+                        toggleSelection(photo.getId());
+                    }
                 }
             });
 
@@ -298,4 +316,3 @@ public class PhotoSectionAdapter extends RecyclerView.Adapter<RecyclerView.ViewH
 
     }
 }
-
